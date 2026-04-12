@@ -1031,6 +1031,8 @@ User presses "EXPAND"
 │ -> D3 draws new    │
 └─────────────────────────┘
 ```
+
+```
 User opens app
          │
          ▼
