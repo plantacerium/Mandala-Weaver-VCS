@@ -16,9 +16,9 @@ Mandala Weaver abraza el **Espacio de Versionado Radial**. En este sistema, el c
 
 El "Telar" está construido sobre tres pilares de ingeniería de alto rendimiento:
 
-* ** El Motor (Core):** `Rust` + `nalgebra` (Cálculo orbital y espacial) + `ast-grep` (Parsing semántico).
-* ** El Registro Akáshico:** `SurrealDB` embebido (Base de datos de grafos para trazar el linaje evolutivo del código).
-* ** El Lienzo (UI):** `Tauri` + `Astro` + `React` + `D3.js` (Renderizado interactivo masivo acelerado por hardware).
+* **El Motor (Core):** `Rust` + `nalgebra` (Cálculo orbital y espacial) + `ast-grep` (Parsing semántico).
+* **El Registro Akáshico:** `SurrealDB` embebido (Base de datos de grafos para trazar el linaje evolutivo del código).
+* **El Lienzo (UI):** `Tauri` + `Astro` + `React` + `D3.js` (Renderizado interactivo masivo acelerado por hardware).
 
 
 *** *El software se cultiva desde el centro hacia afuera.*
