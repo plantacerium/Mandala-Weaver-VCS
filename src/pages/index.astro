@@ -1,0 +1,65 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import MandalaCanvas from '../components/mandala/MandalaCanvas';
+import SidebarHistory from '../components/panels/SidebarHistory';
+import MonadInspector from '../components/panels/MonadInspector';
+import '../styles/components/sidebar.css';
+import '../styles/components/workspace.css';
+import '../styles/panels/panels.css';
+---
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const expandBtn = document.querySelector('.btn-expand');
+    if (expandBtn) {
+      expandBtn.addEventListener('click', () => {
+        if ((window as any).openCommitDialog) {
+          (window as any).openCommitDialog();
+        }
+      });
+    }
+  });
+</script>
+
+<AppLayout title="Mandala Weaver VCS">
+	<main>
+		<nav class="sidebar">
+			<div class="logo">
+				<img src="/assets/mandala-icon.png" alt="Mandala" class="logo-img" />
+				<span>MANDALA</span>
+			</div>
+			<div class="nav-links">
+				<button class="active">Explorar</button>
+				<button>Anillos</button>
+				<button>Vectores</button>
+				<button>Fuentes (Distill)</button>
+			</div>
+			
+			<SidebarHistory client:load />
+
+			<footer class="sidebar-footer">
+				<div class="status">
+					<span class="dot"></span>
+					<span>Registro Akáshico Online</span>
+				</div>
+			</footer>
+		</nav>
+
+		<section class="workspace">
+			<header class="workspace-header">
+				<div class="project-info">
+					<h1>Untitled_Project</h1>
+					<span class="path">~/mandala/default</span>
+				</div>
+				<div class="actions">
+					<button class="btn-expand">EXPAND (Commit)</button>
+				</div>
+			</header>
+
+			<div class="canvas-wrapper">
+				<MandalaCanvas client:only="react" />
+				<MonadInspector client:load />
+			</div>
+		</section>
+	</main>
+</AppLayout>

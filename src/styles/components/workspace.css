@@ -1,0 +1,57 @@
+.workspace {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	background: var(--gradient-radial), var(--bg-dark);
+}
+
+.workspace-header {
+	padding: 1.5rem 2rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: linear-gradient(to bottom, rgba(10, 10, 12, 0.95), transparent);
+	z-index: 10;
+	border-bottom: 1px solid var(--glass-border);
+}
+
+.workspace-header h1 {
+	margin: 0;
+	font-size: 1.25rem;
+	letter-spacing: 0.5px;
+	font-weight: 600;
+}
+
+.path {
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 0.75rem;
+	color: var(--text-dim);
+}
+
+.btn-expand {
+	background: linear-gradient(135deg, var(--accent-primary), #6b2fb3);
+	border: none;
+	color: white;
+	padding: 0.6rem 1.2rem;
+	border-radius: 6px;
+	font-weight: 700;
+	cursor: pointer;
+	box-shadow: 0 4px 15px rgba(136, 58, 234, 0.3);
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-expand:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(136, 58, 234, 0.4);
+}
+
+.canvas-wrapper {
+	flex: 1;
+	position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(circle at center, rgba(136, 58, 234, 0.05) 0%, transparent 50%);
+}
