@@ -1,0 +1,33 @@
+{
+  "productName": "Mandala Weaver",
+  "version": "0.1.0",
+  "identifier": "com.mandala.weaver",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:4322",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Mandala Weaver VCS",
+        "width": 1280,
+        "height": 800
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; img-src 'self' data:; style-src 'self' 'unsafe-inline';"
+    }
+  },
+  "plugins": {
+    "shell": {
+      "all": false,
+      "open": true
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": "all"
+  }
+}
