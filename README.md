@@ -16,7 +16,9 @@ Mandala Weaver abraza el **Espacio de Versionado Radial**. En este sistema, el c
 * **El Fin de los Merge Conflicts:** Las ramas no chocan. Las características coexisten en el espacio geométrico, eliminando la necesidad de fusiones de texto destructivas.
 * **La Destilación (Spatial Checkout):** Compila una versión ejecutable seleccionando coordenadas precisas en diversos anillos y vectores para consolidar una Fuente única mediante el tejido selectivo de capacidades funcionales.
 * **Plantillas de Destilación (YAML):** Define recetas de ensamblaje mediante manifiestos declarativos. Permite automatizar la selección de nodos, establecer reglas de compatibilidad e inyectar adaptadores semánticos para garantizar la armonía entre componentes de diferentes anillos.
-
+* **La Respiración del Mandala (Zoom Semántico y Fractalidad):** La navegación en el espacio radial no utiliza un zoom de motor de Nivel de Detalle Semántico (LOD). El sistema "respira" con el Arquitecto en dos direcciones:
+    * **Macro-Orquestación (Zoom Out):** Al alejar la perspectiva sin un objetivo seleccionado, el sistema expande el campo visual para revelar la totalidad del ecosistema. Los nodos individuales ceden protagonismo a la macro-estructura, permitiendo visualizar galaxias de dependencias, la densidad de los anillos evolutivos y la salud global de la arquitectura de un solo vistazo.
+    * **Micro-Inmersión (Zoom In Enfocado):** Al fijar (seleccionar) una Mónada y acercar la perspectiva, el usuario atraviesa la membrana del nodo. La Mónada no solo aumenta de tamaño, sino que experimenta un **despliegue fractal**: revela su universo interno, exponiendo su Árbol de Sintaxis Abstracta (AST), sus mutaciones históricas y su lógica atómica pura. Es la transición fluida desde la órbita estelar hasta la microcirugía del código.
 ---
 
 ## Stack Tecnológico
