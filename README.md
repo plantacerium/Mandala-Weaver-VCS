@@ -21,4 +21,4 @@ El "Telar" está construido sobre tres pilares de ingeniería de alto rendimient
 * **El Lienzo (UI):** `Tauri` + `Astro` + `React` + `D3.js` (Renderizado interactivo masivo acelerado por hardware).
 
 
-*** *El software se cultiva desde el centro hacia afuera.*
+*El software se cultiva desde el centro hacia afuera.*
