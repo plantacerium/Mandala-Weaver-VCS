@@ -47,13 +47,13 @@ const CommitDialog: React.FC<CommitDialogProps> = ({ isOpen, onClose, onCommit }
 const MandalaCanvas: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setMandalaState, selectMonad, hoverMonad } = useWorkspaceStore();
+  const { setMandalaState, selectMonad, hoverMonad, setSelectedForDistill } = useWorkspaceStore();
   const [showCommitDialog, setShowCommitDialog] = useState(false);
   const svgGroupRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
 
   const handleSelect = useCallback((monads: Monad[]) => {
-    console.log('Selected monads:', monads);
-  }, []);
+    setSelectedForDistill(monads);
+  }, [setSelectedForDistill]);
 
   const handleCommit = useCallback(async (filePath: string) => {
     console.log('Expanding with file:', filePath);
@@ -144,12 +144,14 @@ const MandalaCanvas: React.FC = () => {
   return (
     <>
       <div ref={containerRef} style={{ 
-        width: '100%', 
-        height: '100%', 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex', 
         justifyContent: 'center', 
-        alignItems: 'center',
-        position: 'relative'
+        alignItems: 'center'
       }}>
         <svg ref={svgRef}></svg>
       </div>

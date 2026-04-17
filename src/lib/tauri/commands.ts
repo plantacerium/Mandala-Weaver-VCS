@@ -14,12 +14,21 @@ function getMockState(): MandalaState {
         const count = ringCounts[ring - 1] || 3;
         for (let i = 0; i < count; i++) {
             const angle = (360 / count) * i + (ring * 15);
+            // Alternate kinds for visual variety in dev mode
+            const kinds = ['Function', 'Struct', 'Module', 'Unknown'];
+            const kind = kinds[i % kinds.length] as any;
+            
             monads.push({
                 id: `monad-${ring}-${i}`,
-                name: `fn_${ringNames[ring - 1].toLowerCase()}_${i}`,
+                semantic_hash: `e3b0c44298fc1c1${ring}${i}`,
+                name: `${kind === 'Struct' ? 'Struct_' : kind === 'Module' ? 'Mod_' : 'fn_'}${ringNames[ring - 1].toLowerCase()}_${i}`,
                 coord: { r: ring * 80, theta: angle },
                 ring: ring,
-                content: `function ${ringNames[ring - 1].toLowerCase()}_action_${i}() {\n  // Ring ${ring} - ${ringNames[ring - 1]}\n  return true;\n}`
+                kind: kind,
+                language: 'rust',
+                line_start: i * 10,
+                line_end: i * 10 + 8,
+                content: `// Ring ${ring} - ${ringNames[ring - 1]}\nexport const example_${i} = () => {\n  return true;\n}`
             });
         }
     }

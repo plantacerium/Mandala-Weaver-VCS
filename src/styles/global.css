@@ -1,12 +1,16 @@
 :root {
-	--bg-dark: #0a0a0c;
-	--bg-panel: rgba(20, 20, 25, 0.85);
-	--accent-primary: #883aea;
-	--accent-secondary: #ff3e83;
-	--text-main: #e0e0e0;
-	--text-dim: #a0a0a0;
-	--glass-border: rgba(255, 255, 255, 0.08);
-	--gradient-radial: radial-gradient(ellipse at center, rgba(136, 58, 234, 0.08) 0%, transparent 70%);
+	--bg-dark: #050508;
+	--bg-panel: rgba(15, 15, 20, 0.65);
+	--bg-panel-solid: #121218;
+	--accent-primary: #00e5ff; /* Cyan glow */
+	--accent-secondary: #9d4edd; /* Purple glow */
+	--text-main: #f0f0f5;
+	--text-dim: #8a8a9a;
+	--glass-border: rgba(255, 255, 255, 0.05);
+	--glass-highlight: rgba(255, 255, 255, 0.1);
+	--gradient-radial: radial-gradient(ellipse at center, rgba(157, 78, 221, 0.05) 0%, rgba(0, 229, 255, 0.02) 40%, transparent 80%);
+	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+	--font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -14,9 +18,10 @@
 }
 
 html {
-	font-family: 'Outfit', system-ui, sans-serif;
+	font-family: var(--font-sans);
 	background: var(--bg-dark);
 	color: var(--text-main);
+	-webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -28,19 +33,28 @@ body {
 	overflow: hidden;
 }
 
-code, pre {
-	font-family: 'JetBrains Mono', monospace;
+main {
+	display: flex;
+	flex: 1;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
 }
 
-/* Scrollbars */
+code, pre {
+	font-family: var(--font-mono);
+}
+
+/* Scrollbars - Minimalist and modern */
 ::-webkit-scrollbar {
-	width: 6px;
+	width: 4px;
+	height: 4px;
 }
 ::-webkit-scrollbar-track {
 	background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-	background: var(--glass-border);
+	background: rgba(255, 255, 255, 0.1);
 	border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {

@@ -23,11 +23,19 @@ const MonadInspector: React.FC = () => {
     <div className="inspector">
       <header>
         <h2>{monad.name}</h2>
-        <span className="hash">#{monad.id.slice(0, 12)}</span>
+        <span className="hash">#{monad.semantic_hash ? monad.semantic_hash.slice(0, 12) : monad.id.slice(0, 12)}</span>
         <div className="monad-meta">
+          {monad.kind && monad.kind !== 'Unknown' && (
+            <span className="kind-badge">{monad.kind}</span>
+          )}
           <span className="ring-badge">Anillo {monad.ring}</span>
           <span className="coord-badge">θ: {monad.coord.theta.toFixed(1)}°</span>
         </div>
+        {monad.language && (
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: '0.5rem', fontFamily: 'monospace' }}>
+                {monad.language.toUpperCase()} | L: {monad.line_start} - {monad.line_end}
+            </div>
+        )}
       </header>
       <div className="code-viewer">
         <pre><code>{monad.content || '// Sin contenido'}</code></pre>

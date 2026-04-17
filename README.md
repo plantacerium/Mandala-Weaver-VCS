@@ -7,6 +7,9 @@ Mandala Weaver embraces Radial Version Space. In this system, code emanates as p
 
 Mandala Weaver projects software evolution onto a radial plane where each point on the circumference represents a specific functional unit—from atomic business logic to complete file and folder structures. This topology enables non-linear code orchestration: the user selects precise coordinates across various rings and vectors to consolidate them into an executable version. The result is the Distillation of a unique Source, composed of the selective weaving of functional capabilities distributed across the geometric space of the system.
 
+
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V1.JPG)
+
 ---
 
 ## Core Concepts
@@ -1032,118 +1035,6 @@ User presses "EXPAND"
 └─────────────────────────┘
 ```
 
-```
-User opens app
-         │
-         ▼
-┌─────────────────────────┐
-│ index.astro            │
-│ MandalaCanvas (React)  │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ fetchMandalaState()     │
-│ lib/tauri/commands.ts   │
-└───────────���─���───────────┘
-            │
-            ▼ invoke('export_mandala_state')
-┌─────────────────────────┐
-│ projection_api.rs     │
-│ export_mandala_state() │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ surreal_bridge.rs      │
-│ get_all_monads()       │
-└───────────┬─────────────┘
-            │
-            ▼ SELECT * FROM monad
-┌─────────────────────────┐
-│ SurrealDB (Mem)        │
-│ → Vec<Monad>           │
-└───────────┬─────────────┘
-            │
-            ▼ JSON
-┌─────────────────────────┐
-│ Zustand Store          │
-│ setMandalaState()      │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ D3 Renderer            │
-│ renderMonads()         │
-└─────────────────────────┘
-```
-
-### Flow 2: Monad Selection
-
-```
-User clicks on node
-         │
-         ▼
-┌─────────────────────────┐
-│ D3 Event Handler       │
-│ onClick(monad)         │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ Zustand Store          │
-│ selectMonad(monad)     │
-└───────────┬─────────────┘
-       ┌─────┴─────┐
-       ▼           ▼
-┌──────────┐ ┌──────────────┐
-│ Sidebar  │ │ MonadInspect│
-│ (update) │ │ or (update)  │
-└──────────┘ └──────────────┘
-```
-
-### Flow 3: Expand (New Ring)
-
-```
-User presses "EXPAND"
-         │
-         ▼
-┌─────────────────────────┐
-│ invokeExpand(filePath)   │
-│ lib/tauri/commands.ts  │
-└───────────┬─────────────┘
-            │
-            ▼ invoke('expand_ring')
-┌─────────────────────────┐
-│ projection_api.rs      │
-│ expand_ring(filePath)  │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ weaver/mod.rs          │
-│ expand_from_source()   │
-│ 1. Read file         │
-│ 2. Extract monads   │
-│ 3. Detect deltas   │
-│ 4. Persist in DB  │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ surreal_bridge.rs      │
-│ insert_and_link()     │
-│ → RELATE monad edges │
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│ Return new ring level │
-│ → Frontend updates  │
-│ → D3 draws new    │
-└─────────────────────────┘
-```
-
 ---
 
 ## Essential Commands
@@ -1358,6 +1249,28 @@ interface WorkspaceState {
 2. **React (The Interactive Island):** Components like `<MandalaCanvas client:only="react" />` hydrate on the client. React manages global state (which node the user clicked) but **DOES NOT** render the thousands of visual nodes, because React would collapse calculating the virtual DOM for a massive graph.
 3. **D3.js (The Painter):** React hands the `<svg ref={canvasRef}>` container to D3.js. From there, `lib/d3/renderer.ts` takes total control of the DOM within that SVG, injecting nodes with hardware acceleration.
 4. **Zustand (The State):** Manages the reactive state of the application. The store centralizes `mandalaState`, `selectedMonad`, `hoveredMonad`, and `viewMode`. Any component can subscribe to these changes without prop drilling.
+
+---
+
+## Implementation Roadmap
+
+For the full 10-phase development roadmap — from the completed foundations through Distillation Templates, CLI/TUI, Multi-Language AST, Performance Optimization, and Collaborative Mandala Networks — see **[Roadmap.md](./Roadmap.md)**.
+
+**Current progress:** 22 items complete, 9 needing refinement, 69 pending across 98 total work items.
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 0 — Foundation | Scaffolding & Config | ✅ Complete |
+| 1 — Core Engine | Geometry & Parsing | 🔧 4/7 done — AST integration pending |
+| 2 — Akashic Record | SurrealDB Persistence | 🔧 4/7 done — Search & lineage queries pending |
+| 3 — The Weaver | Version Control Logic | 🚧 1/14 done — Incoherence detection, semantic diff pending |
+| 4 — The Loom | Tauri IPC Bridge | 🚧 3/12 done — FS watcher, distill/lineage commands pending |
+| 5 — The Mandala | D3.js Visualization | 🚧 6/20 done — Lineage rendering, breathing animation pending |
+| 6 — Distillation Templates | YAML Manifests | ⬜ Not started |
+| 7 — CLI & TUI | Command-Line Interface | ⬜ Not started |
+| 8 — Multi-Language | Polyglot AST Support | ⬜ Not started |
+| 9 — Performance | Storage & Rendering | ⬜ Not started |
+| 10 — Collaboration | Sharing & Distribution | ⬜ Not started |
 
 ---
 

@@ -2,20 +2,20 @@ import * as d3 from 'd3';
 import type { Monad } from '../../types/ontology';
 
 const COLORS = {
-    primary: '#8b5cf6',
-    primaryLight: '#a78bfa',
-    secondary: '#06b6d4',
-    tertiary: '#f472b6',
-    quaternary: '#34d399',
-    ringStroke: 'rgba(255, 255, 255, 0.08)',
+    primary: '#00e5ff',
+    primaryLight: 'rgba(0, 229, 255, 0.5)',
+    secondary: '#9d4edd',
+    tertiary: '#ff3e83',
+    quaternary: '#00ff88',
+    ringStroke: 'rgba(255, 255, 255, 0.1)',
     ringFill: 'rgba(255, 255, 255, 0.02)',
 };
 
 const RING_COLORS = [
-    'rgba(139, 92, 246, 0.15)',
-    'rgba(6, 182, 212, 0.12)',
-    'rgba(244, 114, 182, 0.10)',
-    'rgba(52, 211, 153, 0.08)',
+    'rgba(0, 229, 255, 0.08)',
+    'rgba(157, 78, 221, 0.08)',
+    'rgba(255, 62, 131, 0.08)',
+    'rgba(0, 255, 136, 0.08)',
     'rgba(251, 191, 36, 0.06)',
     'rgba(248, 113, 113, 0.05)',
 ];
@@ -59,31 +59,25 @@ export function drawMandalaGrid(
             .attr('r', radius)
             .attr('fill', getRingColor(i))
             .attr('stroke', COLORS.ringStroke)
-            .attr('stroke-width', 1);
+            .attr('stroke-dasharray', i % 2 === 0 ? '4,4' : 'none')
+            .attr('stroke-width', 0.8);
     }
 
-    const sectorAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-    const sectorColors = [
-        COLORS.primary,
-        COLORS.secondary,
-        COLORS.tertiary,
-        COLORS.quaternary,
-        COLORS.primaryLight,
-        '#f59e0b',
-        '#ec4899',
-        '#10b981',
-    ];
-
+    const sectorAngles = Array.from({ length: 16 }, (_, i) => i * 22.5);
+    
     sectorAngles.forEach((angle, idx) => {
         const rad = angle * Math.PI / 180;
+        const isMainAxis = angle % 90 === 0;
+        
         sectorsGroup.append('line')
             .attr('x1', 0)
             .attr('y1', 0)
             .attr('x2', maxRadius * Math.cos(rad))
             .attr('y2', maxRadius * Math.sin(rad))
-            .attr('stroke', sectorColors[idx])
-            .attr('stroke-width', 0.5)
-            .attr('stroke-opacity', 0.15);
+            .attr('stroke', isMainAxis ? COLORS.secondary : COLORS.primary)
+            .attr('stroke-width', isMainAxis ? 1 : 0.5)
+            .attr('stroke-dasharray', isMainAxis ? 'none' : '2,4')
+            .attr('stroke-opacity', isMainAxis ? 0.3 : 0.15);
     });
 }
 
@@ -92,22 +86,24 @@ export function drawBindu(svg: d3.Selection<SVGGElement, unknown, null, undefine
     
     binduGroup.append('circle')
         .attr('r', 40)
-        .attr('fill', 'rgba(139, 92, 246, 0.1)');
+        .attr('fill', 'url(#glow)')
+        .attr('opacity', 0.1);
 
     binduGroup.append('circle')
         .attr('r', 20)
-        .attr('fill', 'rgba(139, 92, 246, 0.2)')
-        .attr('stroke', COLORS.primary)
+        .attr('fill', 'rgba(157, 78, 221, 0.1)')
+        .attr('stroke', COLORS.secondary)
         .attr('stroke-width', 1.5)
-        .attr('stroke-opacity', 0.5);
+        .attr('stroke-opacity', 0.8)
+        .attr('stroke-dasharray', '2,2');
 
     binduGroup.append('circle')
         .attr('r', 8)
         .attr('fill', COLORS.primary)
-        .style('filter', 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.8))');
+        .style('filter', 'drop-shadow(0 0 12px rgba(0, 229, 255, 0.9))');
 
     binduGroup.append('circle')
-        .attr('r', 3)
+        .attr('r', 2)
         .attr('fill', '#fff');
 }
 
@@ -132,11 +128,23 @@ export function renderMonads(
             const r = d.coord.r || (d.ring * config.ringGap);
             return r * Math.sin(d.coord.theta * Math.PI / 180);
         })
-        .attr('fill', d => RING_COLORS[(d.ring - 1) % RING_COLORS.length])
-        .attr('stroke', COLORS.primary)
+        .attr('fill', d => {
+            if (d.kind === 'Struct' || d.kind === 'Enum') return 'rgba(157, 78, 221, 0.8)';
+            if (d.kind === 'Module') return 'rgba(255, 62, 131, 0.8)';
+            return 'rgba(0, 229, 255, 0.8)'; // Functions and traits
+        })
+        .attr('stroke', d => {
+            if (d.kind === 'Struct' || d.kind === 'Enum') return COLORS.secondary;
+            if (d.kind === 'Module') return COLORS.tertiary;
+            return COLORS.primary;
+        })
         .attr('stroke-width', 1.5)
         .style('cursor', 'pointer')
-        .style('filter', 'drop-shadow(0 0 4px rgba(139, 92, 246, 0.6))')
+        .style('filter', d => {
+            const color = d.kind === 'Struct' || d.kind === 'Enum' ? '157, 78, 221' :
+                         d.kind === 'Module' ? '255, 62, 131' : '0, 229, 255';
+            return `drop-shadow(0 0 6px rgba(${color}, 0.8))`;
+        })
         .transition()
         .duration(600)
         .ease(d3.easeBackOut)
@@ -157,9 +165,13 @@ export function highlightMonad(
         .transition()
         .duration(200)
         .attr('r', (d: any) => d.id === monadId ? 10 : 6)
-        .attr('stroke', (d: any) => d.id === monadId ? '#00ff88' : COLORS.primary)
-        .style('filter', (d: any) => d.id === monadId 
-            ? 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.9))' 
-            : 'drop-shadow(0 0 4px rgba(139, 92, 246, 0.6))'
-        );
+        .attr('stroke-width', (d: any) => d.id === monadId ? 3 : 1.5)
+        .style('filter', (d: any) => {
+            if (d.id === monadId) {
+                return 'drop-shadow(0 0 12px rgba(255, 255, 255, 0.9))';
+            }
+            const color = d.kind === 'Struct' || d.kind === 'Enum' ? '157, 78, 221' :
+                         d.kind === 'Module' ? '255, 62, 131' : '0, 229, 255';
+            return `drop-shadow(0 0 6px rgba(${color}, 0.8))`;
+        });
 }

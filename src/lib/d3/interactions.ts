@@ -16,7 +16,7 @@ export function setupZoom(
   const zoom = d3.zoom<SVGSVGElement, unknown>()
     .scaleExtent([config.minZoom, config.maxZoom])
     .on('zoom', (event) => {
-      svgSelection.select('g.canvas-content').attr('transform', event.transform);
+      svgSelection.select('g.mandala-content').attr('transform', event.transform);
     });
 
   svgSelection.call(zoom);

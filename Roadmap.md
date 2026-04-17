@@ -1,0 +1,265 @@
+# 🗺️ Roadmap de Implementación: Mandala Weaver VCS
+
+> **Last audited against codebase:** 2026-04-17
+> **Legend:** ✅ Done — 🔧 Needs refinement — ⬜ Not started — 🚧 In progress
+
+---
+
+## 📍 Fase 0: Fundación (Scaffolding & Configuración)
+
+Establecer la estructura de directorios y el esqueleto de Tauri + Rust.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 0.1 | **Inicialización del Workspace Rust** — Estructura de módulos en `src-tauri/src/` | ✅ | `geometry/`, `ontology/`, `weaver/`, `persistence/`, `interface/` |
+| 0.2 | **Integración Tauri + Astro** — Frontend React + D3.js operacional | ✅ | Astro 4, React 18, D3 7 — `package.json` verified |
+| 0.3 | **SurrealDB Embebido** — Motor `kv-mem` puro Rust | ✅ | `Surreal::new::<Mem>(())` en `surreal_bridge.rs` |
+| 0.4 | **Resolución de Errores de Compilación** — Lifetimes, SurrealValue, Tauri config | ✅ | `cargo check` clean en última sesión |
+
+---
+
+## 📍 Fase 1: El Motor Central (Geometría y Parsing)
+
+Matemáticas y capacidad de leer código sin tocar la base de datos ni la UI.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1.1 | **Primitivas Geométricas (`nalgebra`)** | ✅ | `PolarCoord { r, theta }`, `to_cartesian()`, `from_cartesian()` |
+| 1.2 | **Estructuras Ontológicas** | ✅ | `Bindu`, `Monad`, `Ring`, `Vector`, `Constellation` |
+| 1.3 | **Extractor de Mónadas (`ast-grep`)** — Placeholder implementado | 🔧 | Actual: split-by-`fn`/`function` keyword. Needs real `ast-grep-core` integration |
+| 1.3.1 | → Integrar `ast-grep-core` y `ast-grep-language` con `tree-sitter` Rust grammar | ⬜ | Use `SgRoot::new(source, Language::Rust)`, walk `function_item` kind |
+| 1.3.2 | → Extraer `struct`, `enum`, `impl`, `trait` además de `fn` | ⬜ | Each AST kind → a distinct Monad type |
+| 1.3.3 | → Preservar span de líneas (start/end) en cada Monad | ⬜ | Add `line_start: u32, line_end: u32` to `Monad` struct |
+| 1.3.4 | → Unit tests con fuentes Rust reales (>200 LOC) | ⬜ | |
+| 1.4 | **Lógica de Resolución Espacial** — Colisiones y desplazamiento orbital | ✅ | `detect_overlap()`, `resolve_orbital_shift()` |
+
+---
+
+## 📍 Fase 2: El Registro Akáshico (Persistencia Espacial)
+
+Conectar la lógica matemática con SurrealDB para guardar la historia radial.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 2.1 | **Esquemas SurrealQL** — Tablas `monad`, relación `evolves_to` | ✅ | `schemas.rs::get_initialization_queries()` |
+| 2.2 | **Aristas Evolutivas (Edges)** — Lógica `RELATE` | ✅ | `insert_and_link()` with `RELATE monad:$parent -> evolves_to -> monad:$current` |
+| 2.3 | **Repositorio CRUD en Rust** — `surreal_bridge.rs` | ✅ | `get_ring()`, `get_all_monads()`, `get_vector_sector()` |
+| 2.4 | **Tests de Integración DB** — 1000 mónadas simuladas | ✅ | `persistence::tests::test_simulate_growth()` — 10 rings × 100 monads |
+| 2.5 | **Eliminación de Mónadas (Soft Delete)** | ⬜ | Add `is_archived: bool` field, update queries to filter |
+| 2.6 | **Consulta de Linaje Completo** — Traverse bidireccional | 🔧 | `threader.rs` exists but uses `->evolves_to` only (forward). Add `<-evolves_to` for ancestors |
+| 2.7 | **Queries de Búsqueda Semántica** — Buscar mónada por hash o nombre | ⬜ | `SELECT * FROM monad WHERE name CONTAINS $query OR id = $hash` |
+
+---
+
+## 📍 Fase 3: El Tejedor (Lógica de Negocio y Control de Versiones)
+
+Comandos lógicos que reemplazan git commit, git checkout y git merge.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 3.1 | **Operación Expand (El nuevo Commit)** | ✅ | `weaver/mod.rs::expand_from_source()` — read → extract → delta → persist |
+| 3.2 | **Operación Distill (El nuevo Checkout/Build)** | 🔧 | `source_compiler.rs::distill_source()` — concatenates content. Needs ordering logic |
+| 3.2.1 | → Ordenar mónadas por dependencia (topo-sort) antes de concatenar | ⬜ | Use `evolves_to` edges to determine evaluation order |
+| 3.2.2 | → Generar `use`/`mod` statements automáticos entre mónadas | ⬜ | Analyze cross-references in AST |
+| 3.2.3 | → Escribir resultado a disco con estructura de carpetas del proyecto | ⬜ | Map `theta` domains → directories, assemble `mod.rs` files |
+| 3.3 | **Detección de Incoherencias** | ⬜ | Validate distilled Source has no duplicate definitions or syntax errors |
+| 3.3.1 | → Detector de definiciones duplicadas en una selección de mónadas | ⬜ | Compare `name` fields across selected monads |
+| 3.3.2 | → Validación sintáctica del Source compilado (`syn::parse_file`) | ⬜ | Use `syn` crate to parse generated Rust source |
+| 3.3.3 | → Informe de conflictos con coordenadas de las mónadas conflictivas | ⬜ | Return `Vec<IncoherenceReport>` with monad IDs and conflict type |
+| 3.4 | **Operación Contract (El Anti-Expand)** | ⬜ | Remove the outermost ring if it hasn't been distilled. Undo-like |
+| 3.5 | **Delta Semántico Mejorado** | 🔧 | `resolver.rs::has_evolved()` only compares `id`. Should use `semantic_hash` |
+| 3.5.1 | → Comparar hashes semánticos (blake3) en lugar de IDs | ⬜ | `has_evolved()` → compare `generate_pure_hash()` outputs |
+| 3.5.2 | → Calcular `DeltaType` enum: `Added`, `Modified`, `Renamed`, `Deleted` | ⬜ | Enrich delta detection with categorization |
+| 3.5.3 | → Generar diff semántico entre dos versiones de una mónada | ⬜ | AST-level diff, not text-level |
+
+---
+
+## 📍 Fase 4: El Telar (Puente Tauri IPC)
+
+Conectar el backend Rust con el frontend JavaScript.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 4.1 | **Definición de Eventos Tauri** — `export_mandala_state` | ✅ | Operational in `projection_api.rs` |
+| 4.2 | **Serialización Optimizada** — TypeScript ↔ Rust types | ✅ | `Monad`, `MandalaState`, `ConstellationDto` with Serde |
+| 4.3 | **Comando `expand_ring`** — Recibir archivos del frontend | ✅ | `expand_ring(file_path: String) -> Result<u32, String>` |
+| 4.4 | **Escucha de Eventos en Tiempo Real (FS Watcher)** | ⬜ | Use `tauri-plugin-fs-watch` or `notify` crate |
+| 4.4.1 | → Configurar `notify::RecommendedWatcher` en el directorio del proyecto | ⬜ | Watch `.rs`, `.ts`, `.js` files |
+| 4.4.2 | → Emitir evento Tauri `mandala://file-changed` con path y tipo de cambio | ⬜ | `app.emit("file-changed", payload)` |
+| 4.4.3 | → Frontend listener en `lib/tauri/events.ts` — actualizar store automáticamente | ⬜ | `events.ts` file exists but is empty |
+| 4.5 | **Comando `distill_source`** — Tauri command para compilar una Fuente | ✅ | Assembles source with coherence checks |
+| 4.6 | **Comando `trace_lineage`** — Exponer `threader.rs` vía IPC | ✅ | trace_monad_lineage IPC command added |
+| 4.7 | **Comando `get_monad_detail`** — Detalle completo de una mónada | ✅ | get_monad_detail IPC command added |
+| 4.8 | **Gestión del Bindu (Inicialización de Proyecto)** | ✅ | `init_project` workflow implemented |
+| 4.8.1 | → Lector automático en `projection_api.rs:35` | ✅ | Reads from `bindu` via SurrealDB query |
+
+---
+
+## 📍 Fase 5: El Mandala (Visualización Frontend con D3.js)
+
+La capa de magia visual e interacción del usuario.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 5.1 | **Renderizado Base del Canvas/SVG** — Cuadrícula polar, Bindu | ✅ | `drawMandalaGrid()`, `drawBindu()` with glow effects |
+| 5.2 | **Dibujado de Nodos y Conexiones** — Mapeo polar → SVG | ✅ | `renderMonads()` with `easeBackOut` animations |
+| 5.3 | **Interacción (Hover y Selección)** — Inspector de mónadas | ✅ | `highlightMonad()`, click/hover handlers in `MandalaCanvas.tsx` |
+| 5.4 | **State Management (Zustand)** — Store centralizado | ✅ | `workspaceStore.ts` — `mandalaState`, `selectedMonad`, `hoveredMonad`, `viewMode` |
+| 5.5 | **Interacciones D3 (Zoom/Pan)** — Zoom semántico | ✅ | `setupZoom()`, `enableLassoSelection()` in `interactions.ts` |
+| 5.6 | **Build Verificado** — `pnpm run build` clean | ✅ | Frontend compiles |
+| 5.7 | **Seleccionador de Fuente (El Lazo)** — Polygonal selection tool | ✅ | React lasso integration active |
+| 5.7.1 | → Cerrar polígono automáticamente al soltar mouse | ✅ | Closes properly to bounding box |
+| 5.7.2 | → Listar mónadas seleccionadas en panel lateral | ✅ | DistillPanel rendering selection loop |
+| 5.7.3 | → Botón "DISTILL" que invoque `distill_source` con la selección | ✅ | Wired to Tauri IPC |
+| 5.8 | **Renderizado de Linaje (Aristas Evolutivas)** | ⬜ | `links.ts` missing. Draw Bézier curves between parent/child monads |
+| 5.8.1 | → Fetch `evolves_to` edges from backend | ⬜ | New Tauri command or include edges in `export_mandala_state` |
+| 5.8.2 | → Draw curved links with gradient opacity from inner → outer ring | ⬜ | |
+| 5.8.3 | → Animate lineage path on monad selection | ⬜ | Pulse animation along the path |
+| 5.9 | **TooltipNode Mejorado** | 🔧 | `TooltipNode.tsx` exists (~928 bytes). Needs content, hash, ring info |
+| 5.10 | **SidebarHistory Mejorado** | 🔧 | `SidebarHistory.tsx` exists. Needs real ring stats, operation log |
+| 5.11 | **MonadInspector Mejorado** | ✅ | Now displays kind, hashes, line numbers, and lang with neon layout |
+| 5.12 | **CommandPalette (CMD+K)** | ⬜ | `CommandPalette.tsx` referenced in docs but file missing from `panels/` |
+| 5.13 | **Responsive Layout y Temas** | ⬜ | |
+| 5.13.1 | → Panel resize handles (draggable sidebar/inspector widths) | ⬜ | |
+| 5.13.2 | → Light/Dark theme toggle con CSS variables | ⬜ | Current `global.css` has dark vars only |
+| 5.14 | **Breathing Animation (Semantic Zoom)** | ⬜ | Macro-view ↔ Micro-immersion transition |
+| 5.14.1 | → Zoom-out: aggregate nodes into ring density indicators | ⬜ | |
+| 5.14.2 | → Zoom-in on selected monad: fractal unfolding showing AST tree | ⬜ | |
+
+---
+
+## 📍 Fase 6: Pergaminos de Destilación (Templates YAML)
+
+Manifiestos declarativos para automatizar la composición de fuentes.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 6.1 | **Diseño del Esquema YAML** | ⬜ | Define `DistillationTemplate` struct |
+| 6.1.1 | → Campos: `name`, `version`, `rings[]`, `vectors[]`, `exclude[]`, `adapters[]` | ⬜ | |
+| 6.1.2 | → Serde YAML deserialization en Rust | ⬜ | Add `serde_yaml` dependency |
+| 6.2 | **Motor de Resolución de Templates** | ⬜ | |
+| 6.2.1 | → Resolver `rings[]` + `vectors[]` → set de coordenadas candidatas | ⬜ | |
+| 6.2.2 | → Aplicar `exclude[]` filters y reglas de compatibilidad | ⬜ | |
+| 6.2.3 | → Ejecutar adaptadores semánticos (shims entre mónadas de anillos distintos) | ⬜ | |
+| 6.3 | **Comando Tauri `distill_from_template`** | ⬜ | Accept YAML string or file path |
+| 6.4 | **UI: Template Editor Panel** | ⬜ | YAML editor with auto-complete for ring/vector names |
+| 6.5 | **Templates de Ejemplo** | ⬜ | `minimal.yaml`, `full-stack.yaml`, `core-only.yaml` |
+
+---
+
+## 📍 Fase 7: El Camino del Architecte (CLI & TUI)
+
+Interfaz de línea de comandos y terminal visual para entornos sin GUI.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 7.1 | **CLI Core (`clap`)** | ⬜ | `cli_commands.rs` — currently empty placeholder |
+| 7.1.1 | → `mandala init <name>` — Create Bindu and `.mandala/` directory | ⬜ | |
+| 7.1.2 | → `mandala expand <file>` — Expand a ring from a source file | ⬜ | |
+| 7.1.3 | → `mandala distill [--template <yaml>] [--ring <n>] [--vector <name>]` | ⬜ | |
+| 7.1.4 | → `mandala status` — Show current ring count, monad count, last expand | ⬜ | |
+| 7.1.5 | → `mandala log [--monad <id>]` — Show evolution history | ⬜ | |
+| 7.1.6 | → `mandala inspect <monad_id>` — Print monad content and metadata | ⬜ | |
+| 7.2 | **Persistent Storage (File Backend)** | ⬜ | Switch from `Mem` to `SurrealKV` for CLI persistence |
+| 7.2.1 | → Store DB in `.mandala/db/` inside project root | ⬜ | |
+| 7.2.2 | → Auto-detect `.mandala/` directory walking up from cwd | ⬜ | |
+| 7.3 | **TUI con Ratatui** | ⬜ | `radial_tui.rs` — currently empty placeholder |
+| 7.3.1 | → ASCII radial grid rendering in terminal | ⬜ | |
+| 7.3.2 | → Navigation with vim-keys across rings/monads | ⬜ | |
+| 7.3.3 | → Inline monad inspector panel | ⬜ | |
+
+---
+
+## 📍 Fase 8: El Ojo Poliglota (Multi-Language AST Support)
+
+Extend the monad extractor beyond Rust.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 8.1 | **Language Detector** | ⬜ | Detect language from file extension |
+| 8.2 | **TypeScript/JavaScript Extraction** | ⬜ | `tree-sitter-typescript`, extract `function_declaration`, `class_declaration`, `arrow_function` |
+| 8.3 | **Python Extraction** | ⬜ | `tree-sitter-python`, extract `function_definition`, `class_definition` |
+| 8.4 | **Go Extraction** | ⬜ | `tree-sitter-go`, extract `function_declaration`, `type_declaration` |
+| 8.5 | **Language-Agnostic Monad Schema** | ⬜ | Add `language: String` field to `Monad` struct |
+| 8.6 | **Cross-Language Distillation Rules** | ⬜ | Define how monads from different languages compose in a single Source |
+
+---
+
+## 📍 Fase 9: El Ancla (Persistence Migration & Performance)
+
+Move from in-memory to durable storage and optimize for scale.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 9.1 | **SurrealKV File Engine** | ⬜ | Replace `Mem` with `SurrealKV` for desktop mode |
+| 9.1.1 | → Configurable engine via Tauri state: `Mem` for tests, `SurrealKV` for production | ⬜ | |
+| 9.2 | **Batch Insert Performance** | ⬜ | Current `insert_and_link` is sequential. Batch into single transaction |
+| 9.3 | **Lazy Loading de Mónadas** | ⬜ | Don't fetch all monads for large projects. Paginate by ring/sector |
+| 9.4 | **WebGL Renderer (Canvas2D Fallback)** | ⬜ | For mandalas with >10,000 nodes, SVG becomes slow. Use WebGL |
+| 9.5 | **Index Optimization** | ⬜ | Add SurrealDB indexes on `name`, `coord.theta`, composite `ring+theta` |
+
+---
+
+## 📍 Fase 10: La Red de Mandalas (Collaboration & Distribution)
+
+Collaborative features and project sharing.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 10.1 | **Export/Import de Mandala** | ⬜ | Serialize entire DB state as `.mandala.json` archive |
+| 10.2 | **Mandala Diff** | ⬜ | Compare two mandalas (e.g., from two team members) ring-by-ring |
+| 10.3 | **Git Bridge (Read-Only)** | ⬜ | Import git history as initial ring set. One commit → one ring |
+| 10.4 | **Mandala Merge** | ⬜ | Merge two mandalas using geometric conflict resolution |
+| 10.5 | **Plugin System** | ⬜ | Allow third-party extractors, renderers, and adapters |
+
+---
+
+## 📊 Progress Summary
+
+| Phase | Total Items | ✅ Done | 🔧 Refine | ⬜ Pending |
+|-------|------------|---------|-----------|-----------|
+| 0 — Fundación | 4 | 4 | 0 | 0 |
+| 1 — Motor Central | 7 | 4 | 1 | 4 |
+| 2 — Registro Akáshico | 7 | 4 | 1 | 2 |
+| 3 — El Tejedor | 14 | 1 | 2 | 11 |
+| 4 — El Telar IPC | 12 | 3 | 1 | 8 |
+| 5 — El Mandala UI | 20 | 6 | 4 | 10 |
+| 6 — Templates YAML | 7 | 0 | 0 | 7 |
+| 7 — CLI & TUI | 11 | 0 | 0 | 11 |
+| 8 — Multi-Language | 6 | 0 | 0 | 6 |
+| 9 — Performance | 5 | 0 | 0 | 5 |
+| 10 — Collaboration | 5 | 0 | 0 | 5 |
+| **TOTAL** | **98** | **22** | **9** | **69** |
+
+---
+
+## 🎯 Recommended Next Steps (Priority Order)
+
+### Immediate (Sprint 1)
+1. **3.5.1** — Fix `has_evolved()` to use semantic hash comparison (critical for correctness)
+2. **1.3.1–1.3.4** — Real `ast-grep` integration (core value proposition)
+3. **4.8 / 4.8.1** — Bindu initialization (currently hardcoded)
+
+### Short-term (Sprint 2)
+4. **5.8** — Lineage edge rendering (D3 Bézier curves)
+5. **3.3** — Incoherence detection (duplicate definitions)
+6. **4.4** — File system watcher for real-time updates
+7. **5.12** — CommandPalette (CMD+K) implementation
+
+### Medium-term (Sprint 3-4)
+8. **3.2.1–3.2.3** — Full Distill operation with topo-sort and directory output
+9. **4.5–4.7** — Additional Tauri commands (`distill_source`, `trace_lineage`, `get_monad_detail`)
+10. **5.14** — Breathing animation (macro ↔ micro zoom)
+11. **6.x** — Distillation Templates YAML
+
+---
+
+## 📝 Notas para Agentes de IA
+
+* **Contexto de Ejecución:** Antes de iniciar cualquier tarea, el Agente debe revisar `Architecture.md` para las restricciones de herramientas (No `libgit2`, sí `SurrealDB`).
+* **Aislamiento:** Cada submódulo de la Fase 1 y 2 debe poder ejecutarse mediante `cargo test` de forma aislada antes de integrarse con Tauri.
+* **Compilación:** Siempre ejecutar `cargo check` en `src-tauri/` después de cambios en Rust, y `pnpm run build` después de cambios en frontend.
+* **Dependencias Actuales (Rust):** `tauri 2.0`, `surrealdb 3.0.5`, `nalgebra 0.33`, `ast-grep-core 0.42`, `blake3 1.5`, `serde 1.0`, `anyhow 1.0`
+* **Dependencias Actuales (Frontend):** `astro 4.15`, `react 18.3`, `d3 7.9`, `zustand 4.5`, `@tauri-apps/api 2.0`
+* **Estado de Mock Data:** `commands.ts` includes `getMockState()` for browser-only dev. All 5 rings with domain names and angle offsets.
+* **DB Endpoints:** `mandala` namespace, `weaver` database. All queries go through `surreal_bridge.rs`.

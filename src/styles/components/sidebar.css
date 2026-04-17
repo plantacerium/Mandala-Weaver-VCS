@@ -1,6 +1,6 @@
 .sidebar {
 	width: 260px;
-	background: var(--bg-panel);
+	background: var(--bg-panel-solid);
 	backdrop-filter: blur(20px);
 	border-right: 1px solid var(--glass-border);
 	display: flex;
@@ -13,17 +13,20 @@
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	font-weight: 700;
-	letter-spacing: 2px;
+	font-weight: 500;
+	letter-spacing: 3px;
 	margin-bottom: 2.5rem;
-	font-size: 0.9rem;
+	font-size: 0.85rem;
+	color: var(--text-main);
+	text-transform: uppercase;
 }
 
 .logo-img {
 	width: 28px;
 	height: 28px;
 	object-fit: contain;
-	border-radius: 6px;
+	border-radius: 4px;
+	filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.4));
 }
 
 .nav-links {
@@ -38,16 +41,39 @@
 	color: var(--text-dim);
 	text-align: left;
 	padding: 0.75rem 1rem;
-	border-radius: 8px;
+	border-radius: 4px;
 	cursor: pointer;
-	font-family: inherit;
-	font-size: 0.9rem;
-	transition: all 0.2s;
+	font-family: var(--font-sans);
+	font-size: 0.85rem;
+	font-weight: 400;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	position: relative;
+	overflow: hidden;
+}
+
+.nav-links button::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	background: var(--accent-primary);
+	transform: scaleY(0);
+	transition: transform 0.2s;
+	transform-origin: left center;
 }
 
 .nav-links button:hover, .nav-links button.active {
-	background: rgba(136, 58, 234, 0.15);
+	background: rgba(0, 229, 255, 0.05);
 	color: var(--accent-primary);
+	text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.nav-links button.active::before {
+	transform: scaleY(1);
 }
 
 .sidebar-footer {
@@ -56,6 +82,9 @@
 	color: var(--text-dim);
 	padding-top: 1rem;
 	border-top: 1px solid var(--glass-border);
+	font-family: var(--font-mono);
+	letter-spacing: 1px;
+	text-transform: uppercase;
 }
 
 .status {
@@ -67,13 +96,13 @@
 .dot {
 	width: 6px;
 	height: 6px;
-	background: #00ff88;
+	background: var(--accent-primary);
 	border-radius: 50%;
-	box-shadow: 0 0 8px #00ff88;
+	box-shadow: 0 0 8px var(--accent-primary);
 	animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.6; }
+	0%, 100% { opacity: 1; transform: scale(1); }
+	50% { opacity: 0.6; transform: scale(1.2); }
 }

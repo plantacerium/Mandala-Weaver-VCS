@@ -3,6 +3,7 @@ import AppLayout from '../layouts/AppLayout.astro';
 import MandalaCanvas from '../components/mandala/MandalaCanvas';
 import SidebarHistory from '../components/panels/SidebarHistory';
 import MonadInspector from '../components/panels/MonadInspector';
+import DistillPanel from '../components/panels/DistillPanel';
 import '../styles/components/sidebar.css';
 import '../styles/components/workspace.css';
 import '../styles/panels/panels.css';
@@ -59,6 +60,7 @@ import '../styles/panels/panels.css';
 			<div class="canvas-wrapper">
 				<MandalaCanvas client:only="react" />
 				<MonadInspector client:load />
+                <DistillPanel client:load />
 			</div>
 		</section>
 	</main>

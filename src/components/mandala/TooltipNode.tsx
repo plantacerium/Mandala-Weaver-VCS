@@ -23,7 +23,12 @@ const TooltipNode: React.FC = () => {
     >
       <div className="tooltip-content">
         <span className="tooltip-name">{hoveredMonad.name}</span>
-        <span className="tooltip-ring">Anillo {hoveredMonad.ring}</span>
+        <span className="tooltip-ring" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span>Anillo {hoveredMonad.ring}</span>
+          {hoveredMonad.kind && hoveredMonad.kind !== 'Unknown' && (
+            <span style={{ color: 'var(--accent-secondary)' }}>{hoveredMonad.kind}</span>
+          )}
+        </span>
       </div>
     </div>
   );
