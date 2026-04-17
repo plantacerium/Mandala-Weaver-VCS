@@ -8,7 +8,14 @@ mod ontology;
 mod weaver;
 
 use persistence::surreal_bridge::{connect_embedded, Db};
-use interface::projection_api::{export_mandala_state, expand_ring};
+use interface::projection_api::{
+    export_mandala_state, 
+    expand_ring,
+    init_project,
+    distill_from_selection,
+    trace_monad_lineage,
+    get_monad_detail,
+};
 use surrealdb::Surreal;
 use tauri::Manager;
 
@@ -17,7 +24,11 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             export_mandala_state,
-            expand_ring
+            expand_ring,
+            init_project,
+            distill_from_selection,
+            trace_monad_lineage,
+            get_monad_detail,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

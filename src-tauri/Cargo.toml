@@ -1,8 +1,8 @@
 [package]
 name = "mandala-weaver"
 version = "0.1.0"
-description = "VCS Espacial Semantico y Radial"
-authors = ["Plantacerium"]
+description = "VCS Espacial y Radial"
+authors = ["Tu Nombre"]
 edition = "2021"
 
 [profile.release]
