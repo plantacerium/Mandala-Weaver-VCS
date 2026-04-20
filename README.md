@@ -1,31 +1,85 @@
-# Mandala Weaver VCS
+# Mandala Weaver: Versions Cooperation System
+The Circular Time of Software. A Synarchic, Spatial, and Semantic Code Orchestrator.
 
-The Circular Time of Software.
-A Spatial, Semantic, and Radial Version Control System (VCS).
+Mandala Weaver is the exact execution of the Golden Thread Engine instantiated in software architecture. It embraces a Radial Version Space where code is liberated from linear timelines. Software emanates as pure, distilled logic units from an immutable center (the Bindu) and expands through concentric rings of evolution.
 
-Mandala Weaver embraces Radial Version Space. In this system, code emanates as pure logic units from an immutable center toward concentric rings of evolution.
-
-Mandala Weaver projects software evolution onto a radial plane where each point on the circumference represents a specific functional unit—from atomic business logic to complete file and folder structures. This topology enables non-linear code orchestration: the user selects precise coordinates across various rings and vectors to consolidate them into an executable version. The result is the Distillation of a unique Source, composed of the selective weaving of functional capabilities distributed across the geometric space of the system.
-
+This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the Distillation of a unique Source an infinite spiral of innovation where the code expands endlessly outward without ever executing the exact same entropy twice.
 
 ![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V1.JPG)
 
 ---
 
 ## Core Concepts
-
-- Monads (Not Lines of Text): Uses Abstract Syntax Tree analysis (ast-grep) to version pure logic (functions, structs), ignoring formatting or whitespace.
-- Chromatic Signatures: Every Monad is visually unique. Its color is a direct projection of its BLAKE3 semantic hash, allowing for immediate visual identification of logic units.
-- Vectors and Rings: Software is organized spatially. Logical domains (e.g., UI, Network, Core) are Angles (theta), and temporal iterations are Radii (r).
-- Features as Points: Each point on the circumference represents a specific functional unit—from folders with files and logic to atomic units. These points act as independent nodes in space.
-- The End of Merge Conflicts: Branches do not clash. Features coexist in geometric space, eliminating the need for destructive text merges.
-- Distillation (Spatial Checkout): Compiles an executable version by selecting precise coordinates across various rings and vectors to consolidate a unique Source through the selective weaving of functional capabilities.
-- Distillation Templates (YAML): Defines assembly recipes through declarative manifests. Allows automating node selection, establishing compatibility rules, and injecting semantic adapters to ensure harmony between components from different rings.
-- The Breathing of the Mandala (Semantic Zoom and Fractality): Navigation in radial space does not use a Level of Detail (LOD) engine zoom. The system breathes with the Architect in two directions:
-  - Macro-Orquestration (Zoom Out): When pulling the perspective without a selected target, the system expands the visual field to reveal the entire ecosystem. Individual nodes yield prominence to the macro-structure, allowing visualization of dependency galaxies, the density of evolutionary rings, and the global health of the architecture at a glance.
-  - Micro-Immersion (Focused Zoom In): When fixing (selecting) a Monad and pulling the perspective, the user traverses the node's membrane. The Monad not only increases in size but experiences a fractal unfolding: revealing its internal universe, exposing its Abstract Syntax Tree (AST), its historical mutations, and its pure atomic logic. It is the fluid transition from stellar orbit to code microsurgery.
+**The Golden Thread of Code**
+- Monads (Pure Logic Units): Mandala Weaver isolates and versions atomic logic (functions, structs) using Abstract Syntax Tree analysis (ast-grep). It captures the absolute essence of the code by filtering out formatting and whitespace, ensuring semantic purity.
+- Chromatic Synesthesia: Every Monad possesses a unique visual frequency. Its color is a direct projection of its blake3 semantic hash mapped to the HSL color space. The visual cortex instantly validates the truth of the logic: if the atomic logic mutates, the hue shifts; if the structure remains invariant, the color is immutable.
+- Vectors and Rings (Spatial Topology): Software is organized as living geometry. Logical domains (e.g., UI, Network, Core Logic) are assigned specific Angles ($\theta$), while temporal iterations and evolutionary stages expand outward as Radii ($r$).
+- Synarchic Weaving: Features and logical units coexist in perfect geometric space. Collaboration is a harmonious weaving of nodes drawn together by gravity and resonance. The architecture allows simultaneous evolution of components in complete synarchy, ensuring the network operates without interference.
+- Distillation (Spatial Consolidation): The architectural process of compiling an executable version. The Architect selects exact coordinates across various rings and vectors, consolidating a unique Source by weaving independent functional capabilities into a unified structure.
+- Manifests of Cooperation (YAML): Declarative templates that define assembly recipes. These manifests automate node selection, establish resonant compatibility, and inject semantic adapters to ensure absolute harmony between components operating in different rings.
+- The Breathing of the Mandala (Semantic Zoom and Fractality): Navigation in radial space is an act of biological respiration alongside the system. The system breathes with the Architect in two directions:
+  - Macro-Orchestration (Zoom Out): Expanding the perspective reveals the entire ecosystem. Individual nodes yield to the macro-structure, illuminating dependency galaxies, the density of evolutionary rings, and the global health of the synarchy at a single glance.
+  - Micro-Immersion (Focused Zoom In): Selecting a Monad and pulling the perspective allows the Architect to traverse the node's membrane. The Monad undergoes a fractal unfolding—revealing its internal universe, its Abstract Syntax Tree (AST), its evolutionary lineage, and its atomic essence. It is a fluid transition from stellar orbit to quantum microsurgery.
 
 ---
+
+## Commands of Cooperation
+
+### Genesis & State (The Foundation)
+
+**`weave bindu`**: 
+Instantiates the absolute Point Zero (0, 0). Creates the core geometric seed from which all future rings and vectors will emanate.
+
+**`weave seed <source>`**: 
+Plants the *Bindu* of an existing repository into your local hardware to begin a new fractal expansion in your own environment.
+
+**`weave telemetry`**: 
+Scans the current topology. Returns the pulse of your local ecosystem, showing which Monads are actively mutating and which are invariant, without generating "untracked file" noise.
+
+---
+
+### Cultivation & Expansion (Local Workflow)
+
+**`weave focus <monad>`**: 
+Selects active Monads from the latent space and brings them into the Architect's active constellation, preparing them for crystallization.
+
+**`weave crystallize -m "<intent>"`**: 
+Locks the AST and generates the `blake3` semantic hash. Expands the radius ($r + 1$) to immortalize the current logic in a new evolutionary Ring.
+
+**`weave vector <angle>`**: 
+Opens a new Angle ($\theta$) of exploration. You do not branch off into a separate, blind timeline; you simply begin weaving on a different spatial coordinate of the Mandala.
+
+**`weave dormant`**: 
+Puts active, uncrystallized Monads into the *Vórtice de Reposo* (latent space). Clears the current visual and processing cache without destroying the raw code.
+
+---
+
+### Spatial Navigation (Time & Geometry)
+
+**`weave distill <coordinates>`**: 
+The core spatial compilation command. Reads a YAML template or specific coordinates ($r, \theta$) to extract and weave the highest logic across different rings into a consolidated, executable Source.
+
+**`weave spectrum <monad>`**: 
+Analyzes the chromatic shift of a Monad between rings. Instead of showing red/green deleted text, it outputs the semantic variance based on its HSL signature, instantly confirming if the core logic or just the formatting mutated.
+
+**`weave lineage`**: 
+Queries the embedded Akashic Record (SurrealDB). Displays the evolutionary spiral of a specific Monad or Vector, tracking its reincarnations and geometric mutations from the Bindu to the present.
+
+**`weave echo <ring_id>`**: 
+In circular time, you do not erase the past. This command retrieves the exact semantic resonance of a Monad from an inner Ring and weaves it into the outermost, current Ring. 
+
+---
+
+### Synarchy & Propagation (The Network)
+
+**`weave absorb`**: 
+Integrates the latest crystallized nodes from the macro-ecosystem into your local environment, expanding your rings with the collective intelligence of the network.
+
+**`weave synthesize <vector>`**: 
+Finds the harmonic geometry between two evolving vectors. Because Monads exist in spatial coordinates, they do not collide; the engine weaves them together, resolving any logical dissonance through AST alignment.
+
+**`weave emanate`**: 
+Irradiates your local, crystallized updates outward to the macro-network, allowing other nodes in the Synarchy to observe and absorb your evolutionary rings.
 
 ---
 
