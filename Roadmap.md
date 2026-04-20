@@ -26,11 +26,11 @@ Matemáticas y capacidad de leer código sin tocar la base de datos ni la UI.
 |---|------|--------|-------|
 | 1.1 | **Primitivas Geométricas (`nalgebra`)** | ✅ | `PolarCoord { r, theta }`, `to_cartesian()`, `from_cartesian()` |
 | 1.2 | **Estructuras Ontológicas** | ✅ | `Bindu`, `Monad`, `Ring`, `Vector`, `Constellation` |
-| 1.3 | **Extractor de Mónadas (`ast-grep`)** — Placeholder implementado | 🔧 | Actual: split-by-`fn`/`function` keyword. Needs real `ast-grep-core` integration |
-| 1.3.1 | → Integrar `ast-grep-core` y `ast-grep-language` con `tree-sitter` Rust grammar | ⬜ | Use `SgRoot::new(source, Language::Rust)`, walk `function_item` kind |
-| 1.3.2 | → Extraer `struct`, `enum`, `impl`, `trait` además de `fn` | ⬜ | Each AST kind → a distinct Monad type |
-| 1.3.3 | → Preservar span de líneas (start/end) en cada Monad | ⬜ | Add `line_start: u32, line_end: u32` to `Monad` struct |
-| 1.3.4 | → Unit tests con fuentes Rust reales (>200 LOC) | ⬜ | |
+| 1.3 | **Extractor de Mónadas (`ast-grep`)** | ✅ | Native `ast-grep-core` tree-sitter extraction integrated |
+| 1.3.1 | → Integrar `ast-grep-core` y `ast-grep-language` con `tree-sitter` Rust grammar | ✅ | Complete in `ast_extractor.rs` |
+| 1.3.2 | → Extraer `struct`, `enum`, `impl`, `trait` además de `fn` | ✅ | Mapping implemented via `kind_from_node` fallback |
+| 1.3.3 | → Preservar span de líneas (start/end) en cada Monad | ✅ | `line_start` and `line_end` fields extracted |
+| 1.3.4 | → Unit tests con fuentes Rust reales (>200 LOC) | ✅ | Tests passing locally |
 | 1.4 | **Lógica de Resolución Espacial** — Colisiones y desplazamiento orbital | ✅ | `detect_overlap()`, `resolve_orbital_shift()` |
 
 ---
@@ -62,14 +62,14 @@ Comandos lógicos que reemplazan git commit, git checkout y git merge.
 | 3.2.1 | → Ordenar mónadas por dependencia (topo-sort) antes de concatenar | ⬜ | Use `evolves_to` edges to determine evaluation order |
 | 3.2.2 | → Generar `use`/`mod` statements automáticos entre mónadas | ⬜ | Analyze cross-references in AST |
 | 3.2.3 | → Escribir resultado a disco con estructura de carpetas del proyecto | ⬜ | Map `theta` domains → directories, assemble `mod.rs` files |
-| 3.3 | **Detección de Incoherencias** | ⬜ | Validate distilled Source has no duplicate definitions or syntax errors |
-| 3.3.1 | → Detector de definiciones duplicadas en una selección de mónadas | ⬜ | Compare `name` fields across selected monads |
-| 3.3.2 | → Validación sintáctica del Source compilado (`syn::parse_file`) | ⬜ | Use `syn` crate to parse generated Rust source |
-| 3.3.3 | → Informe de conflictos con coordenadas de las mónadas conflictivas | ⬜ | Return `Vec<IncoherenceReport>` with monad IDs and conflict type |
+| 3.3 | **Detección de Incoherencias** | ✅ | Validates sources against duplicate definitions and syntax blockages |
+| 3.3.1 | → Detector de definiciones duplicadas en una selección de mónadas | ✅ | Implemented `validate_source_coherence` comparing `name` inside constraints |
+| 3.3.2 | → Validación sintáctica del Source compilado (`syn::parse_file`) | ✅ | Implemented native `syn` AST validation on compiler flow |
+| 3.3.3 | → Informe de conflictos con coordenadas de las mónadas conflictivas | ✅ | Returns `Vec<IncoherenceReport>` directly to frontend exceptions |
 | 3.4 | **Operación Contract (El Anti-Expand)** | ⬜ | Remove the outermost ring if it hasn't been distilled. Undo-like |
-| 3.5 | **Delta Semántico Mejorado** | 🔧 | `resolver.rs::has_evolved()` only compares `id`. Should use `semantic_hash` |
-| 3.5.1 | → Comparar hashes semánticos (blake3) en lugar de IDs | ⬜ | `has_evolved()` → compare `generate_pure_hash()` outputs |
-| 3.5.2 | → Calcular `DeltaType` enum: `Added`, `Modified`, `Renamed`, `Deleted` | ⬜ | Enrich delta detection with categorization |
+| 3.5 | **Delta Semántico Mejorado** | ✅ | `resolver.rs::identify_deltas_typed` utilizes full `blake3` semantics |
+| 3.5.1 | → Comparar hashes semánticos (blake3) en lugar de IDs | ✅ | Done inside `is_semantically_different` verification loop |
+| 3.5.2 | → Calcular `DeltaType` enum: `Added`, `Modified`, `Renamed`, `Deleted` | ✅ | Categorization cleanly outputted correctly |
 | 3.5.3 | → Generar diff semántico entre dos versiones de una mónada | ⬜ | AST-level diff, not text-level |
 
 ---
@@ -83,10 +83,10 @@ Conectar el backend Rust con el frontend JavaScript.
 | 4.1 | **Definición de Eventos Tauri** — `export_mandala_state` | ✅ | Operational in `projection_api.rs` |
 | 4.2 | **Serialización Optimizada** — TypeScript ↔ Rust types | ✅ | `Monad`, `MandalaState`, `ConstellationDto` with Serde |
 | 4.3 | **Comando `expand_ring`** — Recibir archivos del frontend | ✅ | `expand_ring(file_path: String) -> Result<u32, String>` |
-| 4.4 | **Escucha de Eventos en Tiempo Real (FS Watcher)** | ⬜ | Use `tauri-plugin-fs-watch` or `notify` crate |
-| 4.4.1 | → Configurar `notify::RecommendedWatcher` en el directorio del proyecto | ⬜ | Watch `.rs`, `.ts`, `.js` files |
-| 4.4.2 | → Emitir evento Tauri `mandala://file-changed` con path y tipo de cambio | ⬜ | `app.emit("file-changed", payload)` |
-| 4.4.3 | → Frontend listener en `lib/tauri/events.ts` — actualizar store automáticamente | ⬜ | `events.ts` file exists but is empty |
+| 4.4 | **Escucha de Eventos en Tiempo Real (FS Watcher)** | ✅ | Background watcher threaded tracking mutations |
+| 4.4.1 | → Configurar `notify::RecommendedWatcher` en el directorio del proyecto | ✅ | Handled by `notify_debouncer_mini` relaying debounced vectors |
+| 4.4.2 | → Emitir evento Tauri `mandala://file-changed` con path y tipo de cambio | ✅ | Hot-reload events emitted reliably from isolated std::thread |
+| 4.4.3 | → Frontend listener en `lib/tauri/events.ts` — actualizar store automáticamente | ✅ | `listenForFileChanges` triggers `loadData()` silently behind canvas |
 | 4.5 | **Comando `distill_source`** — Tauri command para compilar una Fuente | ✅ | Assembles source with coherence checks |
 | 4.6 | **Comando `trace_lineage`** — Exponer `threader.rs` vía IPC | ✅ | trace_monad_lineage IPC command added |
 | 4.7 | **Comando `get_monad_detail`** — Detalle completo de una mónada | ✅ | get_monad_detail IPC command added |
@@ -103,6 +103,7 @@ La capa de magia visual e interacción del usuario.
 |---|------|--------|-------|
 | 5.1 | **Renderizado Base del Canvas/SVG** — Cuadrícula polar, Bindu | ✅ | `drawMandalaGrid()`, `drawBindu()` with glow effects |
 | 5.2 | **Dibujado de Nodos y Conexiones** — Mapeo polar → SVG | ✅ | `renderMonads()` with `easeBackOut` animations |
+| 5.2.1 | → **Firmas Cromáticas Únicas** — Color dinámico basado en hash BLAKE3 | ✅ | Implementation in `renderer.ts` using HSL mapping |
 | 5.3 | **Interacción (Hover y Selección)** — Inspector de mónadas | ✅ | `highlightMonad()`, click/hover handlers in `MandalaCanvas.tsx` |
 | 5.4 | **State Management (Zustand)** — Store centralizado | ✅ | `workspaceStore.ts` — `mandalaState`, `selectedMonad`, `hoveredMonad`, `viewMode` |
 | 5.5 | **Interacciones D3 (Zoom/Pan)** — Zoom semántico | ✅ | `setupZoom()`, `enableLassoSelection()` in `interactions.ts` |
@@ -111,20 +112,20 @@ La capa de magia visual e interacción del usuario.
 | 5.7.1 | → Cerrar polígono automáticamente al soltar mouse | ✅ | Closes properly to bounding box |
 | 5.7.2 | → Listar mónadas seleccionadas en panel lateral | ✅ | DistillPanel rendering selection loop |
 | 5.7.3 | → Botón "DISTILL" que invoque `distill_source` con la selección | ✅ | Wired to Tauri IPC |
-| 5.8 | **Renderizado de Linaje (Aristas Evolutivas)** | ⬜ | `links.ts` missing. Draw Bézier curves between parent/child monads |
-| 5.8.1 | → Fetch `evolves_to` edges from backend | ⬜ | New Tauri command or include edges in `export_mandala_state` |
-| 5.8.2 | → Draw curved links with gradient opacity from inner → outer ring | ⬜ | |
+| 5.8 | **Renderizado de Linaje (Aristas Evolutivas)** | ✅ | Bézier curves drawn between parent/child monads |
+| 5.8.1 | → Fetch `evolves_to` edges from backend | ✅ | Edges loaded recursively and piped through `export_mandala_state` |
+| 5.8.2 | → Draw curved links with gradient opacity from inner → outer ring | ✅ | Implemented `renderEdges` connecting coordinate mappings |
 | 5.8.3 | → Animate lineage path on monad selection | ⬜ | Pulse animation along the path |
 | 5.9 | **TooltipNode Mejorado** | 🔧 | `TooltipNode.tsx` exists (~928 bytes). Needs content, hash, ring info |
-| 5.10 | **SidebarHistory Mejorado** | 🔧 | `SidebarHistory.tsx` exists. Needs real ring stats, operation log |
+| 5.10 | **SidebarHistory Mejorado** | ✅ | Implemented. Dynamically displays Bindu, Ring, and Monad stats in dark layout |
 | 5.11 | **MonadInspector Mejorado** | ✅ | Now displays kind, hashes, line numbers, and lang with neon layout |
-| 5.12 | **CommandPalette (CMD+K)** | ⬜ | `CommandPalette.tsx` referenced in docs but file missing from `panels/` |
+| 5.12 | **CommandPalette (CMD+K)** | ⬜ | Replaced by `DistillPanel.tsx` in current layout structure for source generation |
 | 5.13 | **Responsive Layout y Temas** | ⬜ | |
 | 5.13.1 | → Panel resize handles (draggable sidebar/inspector widths) | ⬜ | |
 | 5.13.2 | → Light/Dark theme toggle con CSS variables | ⬜ | Current `global.css` has dark vars only |
 | 5.14 | **Breathing Animation (Semantic Zoom)** | ⬜ | Macro-view ↔ Micro-immersion transition |
-| 5.14.1 | → Zoom-out: aggregate nodes into ring density indicators | ⬜ | |
-| 5.14.2 | → Zoom-in on selected monad: fractal unfolding showing AST tree | ⬜ | |
+| 5.14.1 | → Macro-Orchestration (Zoom Out) | ⬜ | Aggregate nodes into ring density indicators, revealing dependency galaxies and global architecture health |
+| 5.14.2 | → Micro-Immersion (Zoom In) | ⬜ | Fractal unfolding inside a selected Monad, exposing its AST tree, atomic logic, and historical mutations |
 
 ---
 
@@ -219,17 +220,17 @@ Collaborative features and project sharing.
 | Phase | Total Items | ✅ Done | 🔧 Refine | ⬜ Pending |
 |-------|------------|---------|-----------|-----------|
 | 0 — Fundación | 4 | 4 | 0 | 0 |
-| 1 — Motor Central | 7 | 4 | 1 | 4 |
+| 1 — Motor Central | 7 | 8 | 0 | 0 |
 | 2 — Registro Akáshico | 7 | 4 | 1 | 2 |
-| 3 — El Tejedor | 14 | 1 | 2 | 11 |
-| 4 — El Telar IPC | 12 | 3 | 1 | 8 |
-| 5 — El Mandala UI | 20 | 6 | 4 | 10 |
+| 3 — El Tejedor | 14 | 11 | 1 | 2 |
+| 4 — El Telar IPC | 12 | 7 | 1 | 4 |
+| 5 — El Mandala UI | 21 | 8 | 3 | 10 |
 | 6 — Templates YAML | 7 | 0 | 0 | 7 |
 | 7 — CLI & TUI | 11 | 0 | 0 | 11 |
 | 8 — Multi-Language | 6 | 0 | 0 | 6 |
 | 9 — Performance | 5 | 0 | 0 | 5 |
 | 10 — Collaboration | 5 | 0 | 0 | 5 |
-| **TOTAL** | **98** | **22** | **9** | **69** |
+| **TOTAL** | **99** | **42** | **6** | **51** |
 
 ---
 

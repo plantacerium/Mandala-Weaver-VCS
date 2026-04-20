@@ -17,6 +17,11 @@ export interface Monad {
     language: string;
 }
 
+export interface EdgeDto {
+    parent_id: string;
+    child_id: string;
+}
+
 export interface Constellation {
     ring_level: number;
     monads: Monad[];
@@ -25,4 +30,5 @@ export interface Constellation {
 export interface MandalaState {
     bindu_name: string;
     constellations: Constellation[];
+    edges: EdgeDto[];
 }

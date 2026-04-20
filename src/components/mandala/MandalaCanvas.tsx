@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import * as d3 from 'd3';
-import { drawMandalaGrid, drawBindu, renderMonads, highlightMonad } from '../../lib/d3/renderer';
+import { drawMandalaGrid, drawBindu, renderMonads, highlightMonad, renderEdges } from '../../lib/d3/renderer';
 import { setupZoom, enableLassoSelection } from '../../lib/d3/interactions';
 import { fetchMandalaState } from '../../lib/tauri/commands';
+import { listenForFileChanges } from '../../lib/tauri/events';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
 import type { Monad } from '../../types/ontology';
 
@@ -109,6 +110,9 @@ const MandalaCanvas: React.FC = () => {
         );
         
         if (svgGroupRef.current) {
+          if (state.edges) {
+            renderEdges(svgGroupRef.current as any, state.edges, allMonads);
+          }
           renderMonads(svgGroupRef.current as any, allMonads);
           
           svgGroupRef.current.selectAll('.monad')
@@ -133,11 +137,18 @@ const MandalaCanvas: React.FC = () => {
 
     loadData();
 
+    let unlisten: (() => void) | undefined;
+    listenForFileChanges(() => {
+      console.log('File changed, reloading state...');
+      loadData();
+    }).then(fn => { unlisten = fn; });
+
     (window as any).openCommitDialog = () => setShowCommitDialog(true);
 
     return () => {
       svg.on('*', null);
       delete (window as any).openCommitDialog;
+      if (unlisten) unlisten();
     };
   }, [setMandalaState, selectMonad, hoverMonad, handleSelect]);
 

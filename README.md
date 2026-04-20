@@ -15,6 +15,7 @@ Mandala Weaver projects software evolution onto a radial plane where each point 
 ## Core Concepts
 
 - Monads (Not Lines of Text): Uses Abstract Syntax Tree analysis (ast-grep) to version pure logic (functions, structs), ignoring formatting or whitespace.
+- Chromatic Signatures: Every Monad is visually unique. Its color is a direct projection of its BLAKE3 semantic hash, allowing for immediate visual identification of logic units.
 - Vectors and Rings: Software is organized spatially. Logical domains (e.g., UI, Network, Core) are Angles (theta), and temporal iterations are Radii (r).
 - Features as Points: Each point on the circumference represents a specific functional unit—from folders with files and logic to atomic units. These points act as independent nodes in space.
 - The End of Merge Conflicts: Branches do not clash. Features coexist in geometric space, eliminating the need for destructive text merges.
@@ -34,7 +35,7 @@ The Loom is built on three high-performance engineering pillars:
 
 - The Core (Engine): Rust + nalgebra (Orbital and Spatial Calculation) + ast-grep (Semantic Parsing).
 - The Akashic Record: SurrealDB embedded (Graph database to trace the evolutionary lineage of code).
-- The Canvas (UI): Tauri + Astro + React + D3.js (Massive interactive hardware-accelerated rendering).
+- The Canvas (UI): Tauri + Astro + React + D3.js (Massive interactive hardware-accelerated rendering). Features a dark neo-metric glassmorphism aesthetic with glowing monads, geometric polar grids, dynamic stat panels (Bindu, Rings, Monads), and an integrated real-time code inspector.
 
 *Software is cultivated from the center outward.*
 
@@ -102,7 +103,7 @@ This section provides the complete technical architecture including all folder s
 Mandala-Weaver-VCS/
 ├── src-tauri/                              # Rust Backend (Tauri Desktop Application)
 │   └── src/
-│       ├── main.rs                        # Application entry point - initializes Tauri, registers plugins
+│       ├── main.rs                        # Application entry point - initializes Tauri, maps DB state, mounts FS watcher
 │       ├── lib.rs                     # Library root - module declarations
 │       │   // Exposes: geometry, ontology, weaver, persistence, interface modules
 │       │
@@ -163,6 +164,10 @@ Mandala-Weaver-VCS/
 │       │   │   /// pub async fn expand_from_source(db: &Surreal<Db>, file_path: &str) -> Result<u32>
 │       │   │   // Main expand: read file -> extract -> detect deltas -> persist
 │       │   │
+│       │   ├── watcher.rs          # File system observer
+│       │   │   /// pub fn spawn_watcher(app_handle: AppHandle, watch_path: impl AsRef<Path>)
+│       │   │   // Emits mandala://file-changed IPC events on local workspace edits
+│       │   │
 │       │   ├── ast_extractor.rs    # Extraction of monads from source code
 │       │   │   /// pub fn extract_raw_monads(source_code: &str, ring: u32) -> Vec<Monad>
 │       │   │   // Parses source into semantic units using ast-grep
@@ -178,7 +183,8 @@ Mandala-Weaver-VCS/
 │       │   │
 │       │   └── source_compiler.rs  # Source assembler (distillation)
 │       │       /// pub fn distill_source(monads: &[Monad]) -> String
-│       │       // Assembles monads into compilable source
+│       │       /// pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<IncoherenceReport>>
+│       │       // Assembles monads and validates syntax via syn AST parsing
 │       │
 │       ├── persistence/             # SurrealDB database layer
 │       │   ├── mod.rs           # Module exports
@@ -212,7 +218,7 @@ Mandala-Weaver-VCS/
 │       │       // Tauri IPC handlers for frontend
 │       │
 │       └── Cargo.toml            # Rust dependencies
-│           // tauri, tokio, nalgebra, ast-grep-core, surrealdb, blake3, serde
+│           // tauri, tokio, nalgebra, ast-grep-core, surrealdb, blake3, serde, syn, notify
 │
 ├── src/                          # Frontend (Astro + React + D3.js)
 │   ├── pages/
@@ -235,14 +241,17 @@ Mandala-Weaver-VCS/
 │   │   │       // Shows monad details on hover
 │   │   │
 │   │   ├── panels/            # Control and navigation interface
+│   │   │   ├── SidebarNav.tsx      # Sidebar state toggle
+│   │   │   │   // Top navigation mapping to workspace viewMode
+│   │   │   │
 │   │   │   ├── SidebarHistory.tsx  # Vertical ring/operation list
 │   │   │   │   // Displays ring statistics and recent operations
 │   │   │   │
 │   │   │   ├── MonadInspector.tsx # Source code and Hash display
 │   │   │   │   // Shows selected monad content and semantic hash
 │   │   │   │
-│   │   │   └── CommandPalette.tsx # Command bar (CMD+K)
-│   │   │       // Quick command access
+│   │   │   └── DistillPanel.tsx   # Sources (Distill) integration
+│   │   │       // UI for compiling selected monads into executables
 │   │   │
 │   │   └── ui/              # Dumb components
 │   │       ├── Icon.tsx        # SVG icon wrapper
@@ -259,8 +268,8 @@ Mandala-Weaver-VCS/
 │   │   │   │   // Invokes Tauri commands
 │   │   │   │
 │   │   │   └── events.ts     # Event listeners
-│   │   │       /// export function listenForFileChanges(callback: () => void): UnlistenFn
-│   │   │       // Listens for Rust events
+│   │   │       /// export async function listenForFileChanges(callback: (payload: FileChangeEvent) => void): Promise<UnlistenFn>
+│   │   │       // Subscribes to backend FS watcher hot-reload broadcasts
 │   │   │
 │   │   ├── d3/             # Visual Mathematical Rendering
 │   │   │   ├── renderer.ts   # Static geometry rendering

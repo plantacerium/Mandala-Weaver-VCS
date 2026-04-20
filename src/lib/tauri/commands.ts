@@ -20,7 +20,7 @@ function getMockState(): MandalaState {
             
             monads.push({
                 id: `monad-${ring}-${i}`,
-                semantic_hash: `e3b0c44298fc1c1${ring}${i}`,
+                semantic_hash: `hash_${ring}_${i}_${Math.random().toString(16).slice(2)}`,
                 name: `${kind === 'Struct' ? 'Struct_' : kind === 'Module' ? 'Mod_' : 'fn_'}${ringNames[ring - 1].toLowerCase()}_${i}`,
                 coord: { r: ring * 80, theta: angle },
                 ring: ring,
@@ -34,12 +34,27 @@ function getMockState(): MandalaState {
     }
     
     const constellations = [];
+    let prevRingMonads = [];
+    const edges = [];
     for (let ring = 1; ring <= 5; ring++) {
         const ringMonads = monads.filter(m => m.ring === ring);
         constellations.push({ ring_level: ring, monads: ringMonads });
+        
+        // Generate some evolutionary edges between ring N and ring N+1
+        if (prevRingMonads.length > 0) {
+            ringMonads.forEach((m, idx) => {
+                // Link each monad to a somewhat corresponding parent in the previous ring
+                const parent = prevRingMonads[idx % prevRingMonads.length];
+                edges.push({
+                    parent_id: parent.id,
+                    child_id: m.id
+                });
+            });
+        }
+        prevRingMonads = ringMonads;
     }
     
-    return { bindu_name: 'Genesis_Project', constellations };
+    return { bindu_name: 'Genesis_Project', constellations, edges };
 }
 
 /// Pide a Rust el estado espacial completo del Mandala.

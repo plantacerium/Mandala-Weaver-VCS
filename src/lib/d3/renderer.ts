@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import type { Monad } from '../../types/ontology';
+import type { Monad, EdgeDto } from '../../types/ontology';
 
 const COLORS = {
     primary: '#00e5ff',
@@ -19,6 +19,22 @@ const RING_COLORS = [
     'rgba(251, 191, 36, 0.06)',
     'rgba(248, 113, 113, 0.05)',
 ];
+
+function getMonadColor(hash: string): string {
+    if (!hash) return COLORS.primary;
+    
+    // DJB2 hash algorithm for better distribution
+    let h = 0;
+    for (let i = 0; i < hash.length; i++) {
+        h = ((h << 5) - h) + hash.charCodeAt(i);
+        h |= 0; // Convert to 32bit integer
+    }
+    
+    // Map to Hue (0-360)
+    const hue = Math.abs(h) % 360;
+    // Keep it bright and saturated for the "Glow" aesthetic
+    return `hsl(${hue}, 85%, 60%)`;
+}
 
 interface RingConfig {
     baseRadius: number;
@@ -128,11 +144,7 @@ export function renderMonads(
             const r = d.coord.r || (d.ring * config.ringGap);
             return r * Math.sin(d.coord.theta * Math.PI / 180);
         })
-        .attr('fill', d => {
-            if (d.kind === 'Struct' || d.kind === 'Enum') return 'rgba(157, 78, 221, 0.8)';
-            if (d.kind === 'Module') return 'rgba(255, 62, 131, 0.8)';
-            return 'rgba(0, 229, 255, 0.8)'; // Functions and traits
-        })
+        .attr('fill', d => getMonadColor(d.semantic_hash))
         .attr('stroke', d => {
             if (d.kind === 'Struct' || d.kind === 'Enum') return COLORS.secondary;
             if (d.kind === 'Module') return COLORS.tertiary;
@@ -141,9 +153,8 @@ export function renderMonads(
         .attr('stroke-width', 1.5)
         .style('cursor', 'pointer')
         .style('filter', d => {
-            const color = d.kind === 'Struct' || d.kind === 'Enum' ? '157, 78, 221' :
-                         d.kind === 'Module' ? '255, 62, 131' : '0, 229, 255';
-            return `drop-shadow(0 0 6px rgba(${color}, 0.8))`;
+            const color = getMonadColor(d.semantic_hash);
+            return `drop-shadow(0 0 6px ${color})`;
         })
         .transition()
         .duration(600)
@@ -170,8 +181,64 @@ export function highlightMonad(
             if (d.id === monadId) {
                 return 'drop-shadow(0 0 12px rgba(255, 255, 255, 0.9))';
             }
-            const color = d.kind === 'Struct' || d.kind === 'Enum' ? '157, 78, 221' :
-                         d.kind === 'Module' ? '255, 62, 131' : '0, 229, 255';
-            return `drop-shadow(0 0 6px rgba(${color}, 0.8))`;
+            const color = getMonadColor(d.semantic_hash);
+            return `drop-shadow(0 0 6px ${color})`;
         });
+}
+
+export function renderEdges(
+    svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+    edges: EdgeDto[],
+    monads: Monad[]
+) {
+    const edgesGroup = svg.select('.edges-group').empty() 
+        ? svg.insert('g', '.monads-group').attr('class', 'edges-group')
+        : svg.select('.edges-group');
+
+    const monadMap = new Map(monads.map(m => [m.id, m]));
+
+    const validEdges = edges.filter(e => monadMap.has(e.parent_id) && monadMap.has(e.child_id));
+
+    const link = edgesGroup.selectAll<SVGPathElement, EdgeDto>('.edge')
+        .data(validEdges, e => `${e.parent_id}-${e.child_id}`);
+
+    link.enter()
+        .append('path')
+        .attr('class', 'edge')
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(0, 229, 255, 0.4)')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', '4,4')
+        .style('filter', 'drop-shadow(0 0 4px rgba(0, 229, 255, 0.2))')
+        .attr('d', e => {
+            const source = monadMap.get(e.parent_id)!;
+            const target = monadMap.get(e.child_id)!;
+
+            const sr = source.coord.r || (source.ring * config.ringGap);
+            const sx = sr * Math.cos(source.coord.theta * Math.PI / 180);
+            const sy = sr * Math.sin(source.coord.theta * Math.PI / 180);
+
+            const tr = target.coord.r || (target.ring * config.ringGap);
+            const tx = tr * Math.cos(target.coord.theta * Math.PI / 180);
+            const ty = tr * Math.sin(target.coord.theta * Math.PI / 180);
+
+            // Draw a bezier curve bowing slightly outwards
+            const cx = (sx + tx) / 2;
+            const cy = (sy + ty) / 2;
+            const dist = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
+            const angle = Math.atan2(ty - sy, tx - sx);
+
+            // Perpendicular bow
+            const bowDist = dist * 0.2;
+            const cpx = cx + Math.cos(angle + Math.PI/2) * bowDist;
+            const cpy = cy + Math.sin(angle + Math.PI/2) * bowDist;
+
+            return `M ${sx},${sy} Q ${cpx},${cpy} ${tx},${ty}`;
+        })
+        .style('opacity', 0)
+        .transition()
+        .duration(800)
+        .style('opacity', 1);
+
+    link.exit().remove();
 }

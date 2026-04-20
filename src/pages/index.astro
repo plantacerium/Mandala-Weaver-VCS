@@ -2,6 +2,7 @@
 import AppLayout from '../layouts/AppLayout.astro';
 import MandalaCanvas from '../components/mandala/MandalaCanvas';
 import SidebarHistory from '../components/panels/SidebarHistory';
+import SidebarNav from '../components/panels/SidebarNav';
 import MonadInspector from '../components/panels/MonadInspector';
 import DistillPanel from '../components/panels/DistillPanel';
 import '../styles/components/sidebar.css';
@@ -29,12 +30,7 @@ import '../styles/panels/panels.css';
 				<img src="/assets/mandala-icon.png" alt="Mandala" class="logo-img" />
 				<span>MANDALA</span>
 			</div>
-			<div class="nav-links">
-				<button class="active">Explorar</button>
-				<button>Anillos</button>
-				<button>Vectores</button>
-				<button>Fuentes (Distill)</button>
-			</div>
+			<SidebarNav client:load />
 			
 			<SidebarHistory client:load />
 
