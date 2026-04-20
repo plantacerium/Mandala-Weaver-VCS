@@ -86,6 +86,19 @@ pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<Incoherence
         }
     }
 
+    // Syntax Validation for Rust code
+    let primary_lang = monads.first().map(|m| m.language.as_str()).unwrap_or("unknown");
+    if primary_lang == "rust" {
+        let compiled_source = distill_source(monads);
+        if let Err(syn_err) = syn::parse_file(&compiled_source) {
+            errors.push(IncoherenceReport {
+                kind: IncoherenceKind::SyntaxError,
+                message: format!("Syntax error in distilled source: {}", syn_err),
+                monad_ids: monads.iter().map(|m| m.id.clone()).collect(),
+            });
+        }
+    }
+
     if errors.is_empty() {
         Ok(())
     } else {

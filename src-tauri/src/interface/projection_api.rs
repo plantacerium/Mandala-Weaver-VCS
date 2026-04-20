@@ -1,6 +1,6 @@
 use tauri::State;
 use serde::Serialize;
-use crate::persistence::surreal_bridge::{Db, get_all_monads};
+use crate::persistence::surreal_bridge::{Db, get_all_monads, get_all_edges, EdgeDto};
 use crate::ontology::monad::Monad;
 use crate::ontology::bindu::Bindu;
 use crate::weaver::source_compiler::{distill_source, validate_source_coherence};
@@ -12,6 +12,7 @@ use serde_json::Value as JsonValue;
 pub struct MandalaState {
     pub bindu_name: String,
     pub constellations: Vec<ConstellationDto>,
+    pub edges: Vec<EdgeDto>,
     pub total_monads: usize,
     pub max_ring: u32,
 }
@@ -50,11 +51,13 @@ async fn get_bindu_name(db: &Surreal<Db>) -> String {
 }
 
 /// Exports the complete spatial state of the Mandala as JSON.
-/// Returns: { bindu_name, constellations, total_monads, max_ring }
+/// Returns: { bindu_name, constellations, edges, total_monads, max_ring }
 #[tauri::command]
 pub async fn export_mandala_state(db: State<'_, Surreal<Db>>) -> Result<String, String> {
     let all_monads = get_all_monads(&db).await
         .map_err(|e| e.to_string())?;
+        
+    let edges = get_all_edges(&db).await.unwrap_or_default();
 
     let bindu_name = get_bindu_name(&db).await;
     let total_monads = all_monads.len();
@@ -76,6 +79,7 @@ pub async fn export_mandala_state(db: State<'_, Surreal<Db>>) -> Result<String, 
     let state = MandalaState {
         bindu_name,
         constellations,
+        edges,
         total_monads,
         max_ring,
     };

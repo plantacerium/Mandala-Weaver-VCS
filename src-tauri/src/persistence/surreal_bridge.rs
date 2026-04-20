@@ -88,6 +88,25 @@ pub async fn get_all_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
     Ok(monads)
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct EdgeDto {
+    pub parent_id: String,
+    pub child_id: String,
+}
+
+/// Recupera todas las aristas de evolución
+pub async fn get_all_edges(db: &Surreal<Db>) -> anyhow::Result<Vec<EdgeDto>> {
+    let mut response = db.query(r#"
+        SELECT 
+            string::slice(type::string(in), 6) as parent_id,
+            string::slice(type::string(out), 6) as child_id 
+        FROM evolves_to
+    "#).await?;
+    let values: Vec<JsonValue> = response.take(0)?;
+    let edges: Vec<EdgeDto> = values.into_iter().filter_map(|v| serde_json::from_value(v).ok()).collect();
+    Ok(edges)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

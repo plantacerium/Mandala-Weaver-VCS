@@ -2,6 +2,7 @@ pub mod ast_extractor;
 pub mod threader;
 pub mod resolver;
 pub mod source_compiler;
+pub mod watcher;
 
 use crate::persistence::surreal_bridge::{Db, insert_and_link, get_ring, get_all_monads};
 use crate::weaver::ast_extractor::extract_raw_monads;

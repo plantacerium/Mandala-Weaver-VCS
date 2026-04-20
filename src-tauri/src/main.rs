@@ -22,6 +22,26 @@ use tauri::Manager;
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .setup(|app| {
+            let handle = app.handle().clone();
+            
+            // Initialize embedded DB and Schemas
+            let db = tauri::async_runtime::block_on(async {
+                let db_conn = connect_embedded().await.expect("Failed to initialize SurrealDB");
+                let queries = crate::persistence::schemas::get_initialization_queries();
+                for q in queries {
+                    let _ = db_conn.query(q).await;
+                }
+                db_conn
+            });
+            handle.manage(db);
+
+            // Setup FS Watcher for hot-reload
+            let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            crate::weaver::watcher::spawn_watcher(handle, cwd);
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             export_mandala_state,
             expand_ring,
