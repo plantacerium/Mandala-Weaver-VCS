@@ -1,7 +1,7 @@
 #  Mandala Weaver VCS
 
 > **El Tiempo Circular del Software.**
-> Un Sistema de Control de Versiones (VCS) espacial, semántico y radial.
+> Un Sistema de Cooperacion de Versiones (VCS) espacial, semántico y radial.
 
 Mandala Weaver abraza el **Espacio de Versionado Radial**. En este sistema, el código emana como unidades de lógica pura desde un centro inmutable hacia anillos concéntricos de evolución.
 
