@@ -6,26 +6,29 @@ const SidebarNav: React.FC = () => {
 
   return (
     <div className="nav-links">
-      <button 
-        className={viewMode === 'orbit' ? 'active' : ''} 
+      <a href="/explorer" className="nav-link">
+        Synarchy
+      </a>
+      <button
+        className={viewMode === 'orbit' ? 'active' : ''}
         onClick={() => setViewMode('orbit')}
       >
         Explorar
       </button>
-      <button 
-        className={viewMode === 'rings' ? 'active' : ''} 
+      <button
+        className={viewMode === 'rings' ? 'active' : ''}
         onClick={() => setViewMode('rings')}
       >
         Anillos
       </button>
-      <button 
-        className={viewMode === 'vectors' ? 'active' : ''} 
+      <button
+        className={viewMode === 'vectors' ? 'active' : ''}
         onClick={() => setViewMode('vectors')}
       >
         Vectores
       </button>
-      <button 
-        className={viewMode === 'distill' ? 'active' : ''} 
+      <button
+        className={viewMode === 'distill' ? 'active' : ''}
         onClick={() => setViewMode('distill')}
       >
         Fuentes (Distill)

@@ -11,6 +11,7 @@
 	--gradient-radial: radial-gradient(ellipse at center, rgba(157, 78, 221, 0.05) 0%, rgba(0, 229, 255, 0.02) 40%, transparent 80%);
 	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 	--font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+	--border: #333;
 }
 
 * {

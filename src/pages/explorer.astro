@@ -1,0 +1,9 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import ProjectList from '../components/synarchy/ProjectList';
+import '../styles/synarchy.css';
+---
+
+<AppLayout title="Synarchy Explorer">
+  <ProjectList client:load />
+</AppLayout>

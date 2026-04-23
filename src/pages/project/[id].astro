@@ -1,0 +1,148 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import MandalaCanvas from '../../components/mandala/MandalaCanvas';
+---
+
+<AppLayout title="Project Detail">
+  <div class="project-detail" id="project-detail">
+    <div class="detail-header">
+      <a href="/explorer" class="back-link">← Back to Explorer</a>
+      <h1 id="project-name">Loading...</h1>
+    </div>
+    
+    <div class="detail-content">
+      <div class="detail-stats">
+        <div class="stat-card">
+          <span class="value" id="ring-count">0</span>
+          <span class="label">Rings</span>
+        </div>
+        <div class="stat-card">
+          <span class="value" id="monad-count">0</span>
+          <span class="label">Monads</span>
+        </div>
+        <div class="stat-card">
+          <span class="value" id="last-activity">—</span>
+          <span class="label">Last Activity</span>
+        </div>
+        <div class="stat-card full-width">
+          <span class="value" id="project-path">—</span>
+          <span class="label">Path</span>
+        </div>
+      </div>
+      
+      <div class="detail-canvas">
+        <MandalaCanvas client:only="react" />
+      </div>
+    </div>
+  </div>
+</AppLayout>
+
+<script>
+  import { getProjectDetail, getProjectMandala } from '../../lib/tauri/synarchy_api';
+  
+  const pathParts = window.location.pathname.split('/');
+  const projectId = pathParts[pathParts.length - 1];
+  
+  async function loadProject() {
+    try {
+      const project = await getProjectDetail(projectId);
+      
+      document.getElementById('project-name').textContent = project.name;
+      document.getElementById('ring-count').textContent = String(project.ring_count);
+      document.getElementById('monad-count').textContent = String(project.monad_count);
+      document.getElementById('last-activity').textContent = project.last_scanned > 0 
+        ? new Date(project.last_scanned * 1000).toLocaleDateString()
+        : '—';
+      document.getElementById('project-path').textContent = project.path;
+    } catch (error) {
+      console.error('Failed to load project:', error);
+      document.getElementById('project-name').textContent = 'Error loading project';
+    }
+  }
+  
+  loadProject();
+</script>
+
+<style>
+  .project-detail {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-dark, #0d0d0d);
+  }
+  
+  .detail-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border, #333);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .back-link {
+    color: var(--text-secondary, #888);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  
+  .back-link:hover {
+    color: var(--accent-primary, #e85d04);
+  }
+  
+  .detail-header h1 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--text-main, #fff);
+    margin: 0;
+  }
+  
+  .detail-content {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .detail-stats {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-right: 1px solid var(--border, #333);
+    overflow-y: auto;
+  }
+  
+  .stat-card {
+    background: var(--bg-panel, #1a1a2e);
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .stat-card.full-width {
+    text-align: left;
+  }
+  
+  .stat-card .value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--accent-primary, #e85d04);
+    margin-bottom: 4px;
+  }
+  
+  .stat-card .label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #888);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .detail-canvas {
+    background: var(--bg-dark, #0d0d0d);
+    border-radius: 12px;
+    margin: 16px;
+    overflow: hidden;
+  }
+</style>

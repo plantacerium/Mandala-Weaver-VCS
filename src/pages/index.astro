@@ -5,6 +5,7 @@ import SidebarHistory from '../components/panels/SidebarHistory';
 import SidebarNav from '../components/panels/SidebarNav';
 import MonadInspector from '../components/panels/MonadInspector';
 import DistillPanel from '../components/panels/DistillPanel';
+import TerminalPanel from '../components/panels/TerminalPanel';
 import '../styles/components/sidebar.css';
 import '../styles/components/workspace.css';
 import '../styles/panels/panels.css';
@@ -59,5 +60,7 @@ import '../styles/panels/panels.css';
                 <DistillPanel client:load />
 			</div>
 		</section>
+		
+		<TerminalPanel client:load />
 	</main>
 </AppLayout>

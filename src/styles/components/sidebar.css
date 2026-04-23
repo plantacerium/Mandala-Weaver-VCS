@@ -35,7 +35,7 @@
 	gap: 0.25rem;
 }
 
-.nav-links button {
+.nav-links button, .nav-links a {
 	background: transparent;
 	border: none;
 	color: var(--text-dim);
@@ -51,9 +51,11 @@
 	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 	position: relative;
 	overflow: hidden;
+	text-decoration: none;
+	display: block;
 }
 
-.nav-links button::before {
+.nav-links button::before, .nav-links a::before {
 	content: '';
 	position: absolute;
 	left: 0;
@@ -66,7 +68,7 @@
 	transform-origin: left center;
 }
 
-.nav-links button:hover, .nav-links button.active {
+.nav-links button:hover, .nav-links a:hover, .nav-links button.active {
 	background: rgba(0, 229, 255, 0.05);
 	color: var(--accent-primary);
 	text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
