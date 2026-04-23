@@ -88,6 +88,20 @@ pub async fn get_all_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
     Ok(monads)
 }
 
+/// Busca una mónada por nombre (contiene el string)
+pub async fn get_monad_by_name(db: &Surreal<Db>, name_contains: &str) -> anyhow::Result<Vec<Monad>> {
+    let name_owned = name_contains.to_string();
+    let mut response = db.query("SELECT * FROM monad WHERE name CONTAINS $name")
+        .bind(("name", name_owned))
+        .await?;
+    let values: Vec<JsonValue> = response.take(0)?;
+    let monads: Vec<Monad> = values
+        .into_iter()
+        .filter_map(|v| serde_json::from_value(v).ok())
+        .collect();
+    Ok(monads)
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct EdgeDto {
     pub parent_id: String,

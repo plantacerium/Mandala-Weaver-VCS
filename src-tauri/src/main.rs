@@ -5,6 +5,7 @@ mod interface;
 mod persistence;
 mod geometry;
 mod ontology;
+mod synarchy;
 mod weaver;
 
 use persistence::surreal_bridge::{connect_embedded, Db};
@@ -16,16 +17,55 @@ use interface::projection_api::{
     trace_monad_lineage,
     get_monad_detail,
 };
+use interface::cli_api::{
+    cli_bindu,
+    cli_telemetry,
+    cli_status,
+    cli_crystallize,
+    cli_distill,
+    cli_lineage,
+    cli_spectrum,
+    cli_inspect,
+    cli_echo,
+    cli_vector,
+    cli_focus,
+    cli_dormant,
+    cli_synthesize,
+    cli_absorb,
+    cli_emanate,
+};
+use interface::synarchy_api::{
+    get_projects,
+    add_project,
+    remove_project,
+    get_project_detail,
+    rescan_project,
+    get_project_mandala,
+    SynarchyState,
+};
+use interface::cli_commands::{Cli, run_cli};
 use surrealdb::Surreal;
 use tauri::Manager;
+use std::path::PathBuf;
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    
+    if args.len() > 1 {
+        std::process::exit(match run_weave().await {
+            Ok(()) => 0,
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                1
+            }
+        });
+    }
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let handle = app.handle().clone();
             
-            // Initialize embedded DB and Schemas
             let db = tauri::async_runtime::block_on(async {
                 let db_conn = connect_embedded().await.expect("Failed to initialize SurrealDB");
                 let queries = crate::persistence::schemas::get_initialization_queries();
@@ -36,19 +76,44 @@ fn main() {
             });
             handle.manage(db);
 
-            // Setup FS Watcher for hot-reload
+            let synarchy_state = SynarchyState::new(
+                app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."))
+            );
+            handle.manage(synarchy_state);
+
             let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
             crate::weaver::watcher::spawn_watcher(handle, cwd);
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            export_mandala_state,
+            export_mandala_state, 
             expand_ring,
             init_project,
             distill_from_selection,
             trace_monad_lineage,
             get_monad_detail,
+            cli_bindu,
+            cli_telemetry,
+            cli_status,
+            cli_crystallize,
+            cli_distill,
+            cli_lineage,
+            cli_spectrum,
+            cli_inspect,
+            cli_echo,
+            cli_vector,
+            cli_focus,
+            cli_dormant,
+            cli_synthesize,
+            cli_absorb,
+            cli_emanate,
+            get_projects,
+            add_project,
+            remove_project,
+            get_project_detail,
+            rescan_project,
+            get_project_mandala,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
