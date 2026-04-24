@@ -1241,23 +1241,8 @@ interface WorkspaceState {
 
 ## Implementation Roadmap
 
-For the full 10-phase development roadmap — from the completed foundations through Distillation Templates, CLI/TUI, Multi-Language AST, Performance Optimization, and Collaborative Mandala Networks — see **[Roadmap.md](./Roadmap.md)**.
+For the full development roadmap — from the completed foundations through Distillation Templates, CLI/TUI, Multi-Language AST, Performance Optimization, and Collaborative Mandala Networks — see **[Roadmap.md](./Roadmap.md)**.
 
-**Current progress:** 22 items complete, 9 needing refinement, 69 pending across 98 total work items.
-
-| Phase | Focus | Status |
-|-------|-------|--------|
-| 0 — Foundation | Scaffolding & Config | ✅ Complete |
-| 1 — Core Engine | Geometry & Parsing | 🔧 4/7 done — AST integration pending |
-| 2 — Akashic Record | SurrealDB Persistence | 🔧 4/7 done — Search & lineage queries pending |
-| 3 — The Weaver | Version Control Logic | 🚧 1/14 done — Incoherence detection, semantic diff pending |
-| 4 — The Loom | Tauri IPC Bridge | 🚧 3/12 done — FS watcher, distill/lineage commands pending |
-| 5 — The Mandala | D3.js Visualization | 🚧 6/20 done — Lineage rendering, breathing animation pending |
-| 6 — Distillation Templates | YAML Manifests | ⬜ Not started |
-| 7 — CLI & TUI | Command-Line Interface | ⬜ Not started |
-| 8 — Multi-Language | Polyglot AST Support | ⬜ Not started |
-| 9 — Performance | Storage & Rendering | ⬜ Not started |
-| 10 — Collaboration | Sharing & Distribution | ⬜ Not started |
 
 ---
 
