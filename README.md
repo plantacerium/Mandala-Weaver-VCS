@@ -1,4 +1,7 @@
-# Mandala Weaver: Versions Cooperation System
+# Mandala Weaver Versions Cooperation System
+
+![Mandala Weaver VCS Logo](public/assets/mandala-icon.png)
+
 The Circular Time of Software. A Synarchic, Spatial, and Semantic Code Orchestrator.
 
 Mandala Weaver is the exact execution of the Golden Thread Engine instantiated in software architecture. It embraces a Radial Version Space where code is liberated from linear timelines. Software emanates as pure, distilled logic units from an immutable center (the Bindu) and expands through concentric rings of evolution.
@@ -6,6 +9,7 @@ Mandala Weaver is the exact execution of the Golden Thread Engine instantiated i
 This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the Distillation of a unique Source an infinite spiral of innovation where the code expands endlessly outward without ever executing the exact same entropy twice.
 
 ![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V2.png)
+![Mandala Weaver VCS CLI](public/assets/Mandala-Weaver-VCS-CLI-UI.JPG)
 
 ---
 
@@ -20,6 +24,8 @@ This topology enables non-linear code orchestration: the Architect selects preci
 - The Breathing of the Mandala (Semantic Zoom and Fractality): Navigation in radial space is an act of biological respiration alongside the system. The system breathes with the Architect in two directions:
   - Macro-Orchestration (Zoom Out): Expanding the perspective reveals the entire ecosystem. Individual nodes yield to the macro-structure, illuminating dependency galaxies, the density of evolutionary rings, and the global health of the synarchy at a single glance.
   - Micro-Immersion (Focused Zoom In): Selecting a Monad and pulling the perspective allows the Architect to traverse the node's membrane. The Monad undergoes a fractal unfolding—revealing its internal universe, its Abstract Syntax Tree (AST), its evolutionary lineage, and its atomic essence. It is a fluid transition from stellar orbit to quantum microsurgery.
+
+![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-Synarchy-UI.JPG)
 
 ---
 
