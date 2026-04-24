@@ -32,6 +32,27 @@ This topology enables non-linear code orchestration: the Architect selects preci
 ![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-Synarchy-UI.JPG)
 
 ---
+## Essential Commands
+
+*Note: The first time you run this, Cargo will take several minutes to download and compile `surrealdb` and `tauri`. Subsequent runs will be almost instant.*
+### Play
+
+```bash
+pnpm run dev
+pnpm run tauri-dev
+```
+
+### Testing the Core Engine (Backend Rust)
+
+```bash
+# Navigate to backend directory
+cd src-tauri
+
+# Check if code compiles without generating binary (fast)
+cargo check
+```
+
+---
 
 ## Commands of Cooperation
 
@@ -499,32 +520,6 @@ Mandala-Weaver-VCS/
 ├── pnpm-lock.yaml           # Locked dependencies
 └── astro.config.mjs         # Astro configuration
 ```
-
----
-
-## Essential Commands
-
-*Note: The first time you run this, Cargo will take several minutes to download and compile `surrealdb` and `tauri`. Subsequent runs will be almost instant.*
-
-### Testing the Core Engine (Backend Rust)
-
-```bash
-# Navigate to backend directory
-cd src-tauri
-
-# Check if code compiles without generating binary (fast)
-cargo check
-```
-
----
-
-### Play
-
-```bash
-pnpm run dev
-pnpm run tauri-dev
-```
-
 
 ---
 
