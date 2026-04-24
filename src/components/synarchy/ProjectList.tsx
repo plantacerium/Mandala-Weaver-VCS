@@ -85,6 +85,7 @@ const ProjectList: React.FC = () => {
 
   return (
     <main className="explorer">
+      <a href="/" className="back-link">← Back to Mandala</a>
 
       {filteredProjects.length === 0 ? (
         <div className="empty-state">

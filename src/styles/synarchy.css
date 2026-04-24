@@ -8,6 +8,19 @@
     var(--bg-dark);
 }
 
+.back-link {
+  display: inline-block;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--accent-primary);
+}
+
 .explorer-header {
   margin-bottom: 20px;
 }
