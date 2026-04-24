@@ -1,4 +1,20 @@
 :root {
+	--bg-dark: #1a0a10;
+	--bg-panel: rgba(40, 10, 20, 0.75);
+	--bg-panel-solid: #1f0a12;
+	--accent-primary: #ff2d55; /* Rose red */
+	--accent-secondary: #ff6b9d; /* Soft pink */
+	--text-main: #ffdde5;
+	--text-dim: #aa6677;
+	--glass-border: rgba(255, 45, 85, 0.1);
+	--glass-highlight: rgba(255, 45, 85, 0.15);
+	--border: #3a1520;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(255, 45, 85, 0.08) 0%, rgba(255, 107, 157, 0.03) 40%, transparent 80%);
+	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+	--font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
 	--bg-dark: #050508;
 	--bg-panel: rgba(15, 15, 20, 0.65);
 	--bg-panel-solid: #121218;
@@ -8,10 +24,8 @@
 	--text-dim: #8a8a9a;
 	--glass-border: rgba(255, 255, 255, 0.05);
 	--glass-highlight: rgba(255, 255, 255, 0.1);
-	--gradient-radial: radial-gradient(ellipse at center, rgba(157, 78, 221, 0.05) 0%, rgba(0, 229, 255, 0.02) 40%, transparent 80%);
-	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-	--font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
 	--border: #333;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(157, 78, 221, 0.05) 0%, rgba(0, 229, 255, 0.02) 40%, transparent 80%);
 }
 
 [data-theme="light"] {
