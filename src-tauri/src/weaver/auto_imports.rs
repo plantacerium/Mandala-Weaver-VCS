@@ -56,7 +56,7 @@ impl ImportAnalyzer {
     
     /// Generate mod statements for a collection of monads
     pub fn generate_mod_statements(monads: &[Monad]) -> Vec<String> {
-        let mut modules: HashSet<String> = monads.iter()
+        let modules: HashSet<String> = monads.iter()
             .map(|m| Self::to_snake_case(&m.name))
             .collect();
         

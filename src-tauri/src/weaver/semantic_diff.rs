@@ -1,7 +1,9 @@
 // Pre-implementation: Semantic diff
 // ==========================
 
-use serde::{Deserialize, Serialize};
+#![allow(dead_code)]
+
+use serde::Serialize;
 use crate::ontology::monad::Monad;
 
 /// Semantic diff result between two monads
@@ -21,7 +23,7 @@ pub struct Change {
 }
 
 /// Type of change detected
-#[derive(Debug, Serialize, Debug, PartialEq, Eq)]
+#[derive(Debug, Serialize, PartialEq, Eq)]
 pub enum ChangeKind {
     ContentModified,
     NameChanged,

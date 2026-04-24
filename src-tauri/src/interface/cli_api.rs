@@ -427,3 +427,28 @@ pub async fn cli_emanate(remote: Option<String>) -> Result<CliResponse, String> 
 
     Ok(CliResponse { success: true, output, error: None })
 }
+
+#[tauri::command]
+pub async fn cli_seed(source: String) -> Result<CliResponse, String> {
+    let db = crate::persistence::surreal_bridge::connect_embedded()
+        .await
+        .map_err(|e| e.to_string())?;
+    
+    let path = std::path::PathBuf::from(&source);
+    if !path.exists() {
+        return Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Path not found: {}", source)) });
+    }
+
+    match crate::collaboration::import_git_history(&db, &path).await {
+        Ok(commits) => {
+            Ok(CliResponse {
+                success: true,
+                output: format!("🌱 Seed planted from {}\n  Imported {} historical rings from Git.", source, commits),
+                error: None,
+            })
+        },
+        Err(e) => {
+            Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Seed failed: {}", e)) })
+        }
+    }
+}

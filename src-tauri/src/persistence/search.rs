@@ -1,7 +1,7 @@
 // Pre-implementation: Semantic Search
 // ==============================
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use crate::ontology::monad::Monad;
 use crate::persistence::surreal_bridge::Db;
 use surrealdb::Surreal;

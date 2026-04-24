@@ -4,6 +4,8 @@
 // Plugin trait for extensibility
 // Users can create custom extractors, renderers, and adapters
 
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use crate::ontology::monad::Monad;
 

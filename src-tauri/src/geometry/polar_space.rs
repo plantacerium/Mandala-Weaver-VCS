@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Representa una coordenada exacta en el Mandala (Espacio Polar).
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct PolarCoord {
     pub r: f64,
     pub theta: f64, // Ángulo en grados [0, 360)

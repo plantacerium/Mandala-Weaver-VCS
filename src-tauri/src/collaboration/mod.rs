@@ -7,10 +7,12 @@
 // - Synarchic Synthesis (geometric merge with spatial conflict resolution)
 // - Git bridge for importing history as rings
 
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use crate::ontology::monad::Monad;
-use crate::persistence::surreal_bridge::{Db, get_all_monads, insert_and_link, EdgeDto};
+use crate::persistence::surreal_bridge::{Db, get_all_monads, get_all_edges, insert_and_link, EdgeDto};
 use crate::geometry::polar_space::PolarCoord;
 
 /// Archive format for Mandala export/import
@@ -272,7 +274,7 @@ pub async fn merge_mandala(
 /// Imports git history as initial rings (read-only bridge)
 /// Each commit becomes a ring with its files as monads
 pub async fn import_git_history(
-    db: &Surreal<Db>,
+    _db: &Surreal<Db>,
     repo_path: &PathBuf,
 ) -> anyhow::Result<u32> {
     use std::process::Command;

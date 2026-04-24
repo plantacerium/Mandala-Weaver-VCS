@@ -7,6 +7,9 @@ mod geometry;
 mod ontology;
 mod synarchy;
 mod weaver;
+mod language;
+mod collaboration;
+mod plugins;
 
 use persistence::surreal_bridge::connect_embedded;
 use interface::projection_api::{
@@ -33,6 +36,7 @@ use interface::cli_api::{
     cli_synthesize,
     cli_absorb,
     cli_emanate,
+    cli_seed,
 };
 use interface::synarchy_api::{
     get_projects,
@@ -94,6 +98,7 @@ fn main() {
             cli_synthesize,
             cli_absorb,
             cli_emanate,
+            cli_seed,
             get_projects,
             add_project,
             remove_project,

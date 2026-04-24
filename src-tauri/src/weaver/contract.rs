@@ -1,6 +1,7 @@
 // Pre-implementation: Contract operation
 // ==============================
 
+#![allow(dead_code)]
 use crate::persistence::surreal_bridge::{Db, get_all_monads, archive_monad};
 use surrealdb::Surreal;
 
@@ -42,11 +43,11 @@ pub async fn revert_to_ring(db: &Surreal<Db>, ring: u32) -> anyhow::Result<()> {
 
 /// Gets the count of archived monads
 pub async fn get_archived_count(db: &Surreal<Db>) -> anyhow::Result<usize> {
-    let mut response = db.query("SELECT count() FROM monad WHERE is_archived = true")
+    let mut response = db.query("SELECT count() as count FROM monad WHERE is_archived = true")
         .await?;
     
-    let count: usize = response.take(0)?;
-    Ok(count)
+    let count: Option<usize> = response.take("count")?;
+    Ok(count.unwrap_or(0))
 }
 
 /// Permanently deletes archived monads
