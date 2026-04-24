@@ -68,6 +68,38 @@ pub async fn sync_project(
     synchronizer.register(entry).await;
     Ok(())
 }
+#[tauri::command]
+pub async fn remove_sync_project(
+    id: String,
+    synchronizer: State<'_, crate::synarchy::sync::Synchronizer>,
+) -> Result<(), String> {
+    synchronizer.unregister(&id).await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn stop_sync(
+    synchronizer: State<'_, crate::synarchy::sync::Synchronizer>,
+) -> Result<(), String> {
+    synchronizer.stop().await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_sync_status(
+    id: String,
+    status: String,
+    synchronizer: State<'_, crate::synarchy::sync::Synchronizer>,
+) -> Result<(), String> {
+    let s = match status.as_str() {
+        "Active" => crate::synarchy::registry::ProjectStatus::Active,
+        "Dormant" => crate::synarchy::registry::ProjectStatus::Dormant,
+        "Scanning" => crate::synarchy::registry::ProjectStatus::Scanning,
+        _ => crate::synarchy::registry::ProjectStatus::Error(status),
+    };
+    synchronizer.update_status(&id, s).await;
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn get_sync_status(
