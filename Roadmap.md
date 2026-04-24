@@ -1,6 +1,6 @@
 # 🗺️ Roadmap de Implementación: Mandala Weaver VCS
 
-> **Last audited against codebase:** 2026-04-24
+> **Last audited against codebase:** 2026-04-24 (Post-Synarchy-UI-Review)
 > **Legend:** ✅ Done — 🔧 Needs refinement — ⬜ Not started — 🚧 In progress
 
 ---
@@ -233,17 +233,17 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 | 11.1.1 | → Agregar path de proyecto | ✅ | `ProjectRegistry::add()` method |
 | 11.1.2 | → Detección automática | ✅ | `ProjectScanner::scan()` with multi-language file counting |
 | 11.1.3 | → Persistencia de registry | ✅ | `save()` / `load()` JSON persistence |
-| 11.2 | **Explorer UI** — Interfaz de exploración | ⬜ | Lista de proyectos estilo Gitea |
-| 11.2.1 | → Vista de lista de proyectos | ⬜ | Grid/List de repositorios |
-| 11.2.2 | → Tarjeta visual de proyecto | ⬜ | Mini-mandala por proyecto |
-| 11.2.3 | → Estadísticas radiales | ⬜ | Rings,monads por proyecto |
+| 11.2 | **Explorer UI** — Interfaz de exploración | ✅ | Operational in `explorer.astro` with dark/neon aesthetics |
+| 11.2.1 | → Vista de lista de proyectos | ✅ | `ProjectList.tsx` with filtering and search |
+| 11.2.2 | → Tarjeta visual de proyecto | ✅ | `ProjectCard.tsx` with Mini-mandala SVG generator |
+| 11.2.3 | → Estadísticas radiales | ✅ | Rings and monads counts per project |
 | 11.3 | **Synchronizer** — Sincronización | ✅ | `synarchy/sync.rs` — `Synchronizer` with periodic auto-scan |
 | 11.3.1 | → Auto-scan periódico | ✅ | `Synchronizer::start()` with 300s interval |
 | 11.3.2 | → Notificaciones de cambios | ✅ | `ProjectChangeEvent` with `ChangeType` enum |
-| 11.4 | **Project Detail** — Detalle de proyecto | ⬜ | Página individual |
-| 11.4.1 | → Radial view del proyecto | ⬜ | Canvas individual |
-| 11.4.2 | → Actividad récente | ⬜ | Log de cambios |
-| 11.4.3 | → Comparación de rings | ⬜ | Diff visual |
+| 11.4 | **Project Detail** — Detalle de proyecto | 🚧 | Implementation in `pages/project/[id].astro` |
+| 11.4.1 | → Radial view del proyecto | ✅ | Integrated `MandalaCanvas` in detail view |
+| 11.4.2 | → Actividad récente | 🔧 | Stats implemented, detailed log pending |
+| 11.4.3 | → Comparación de rings | ⬜ | Diff visual logic |
 
 ---
 
@@ -262,24 +262,23 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 | 8 — Multi-Language | 6 | 6 | 0 | 0 |
 | 9 — Performance | 5 | 0 | 0 | 5 |
 | 10 — Collaboration | 5 | 0 | 0 | 5 |
-| 11 — Synarchy Explorer | 9 | 5 | 0 | 4 |
+| 11 — Synarchy Explorer | 15 | 12 | 1 | 2 |
 | R — Remaining Tasks | 13 | 0 | 0 | 13 |
-| **TOTAL** | **128** | **80** | **0** | **48** |
+| **TOTAL** | **134** | **94** | **1** | **39** |
 
 ---
 
 ## 🎯 Recommended Next Steps (Priority Order)
 
 ### Immediate (Sprint 1)
-1. **3.2.2–3.2.3** — Generate automatic `use`/`mod` statements and write to disk with proper directory structure (Distill directory output)
-2. **5.14** — Breathing animation (macro ↔ micro zoom)
-3. **5.8.3** — Animate lineage path on selection
+1. **11.4.2–11.4.3** — Complete Project Detail view with activity logs and ring comparison
+2. **6.1–6.2** — Implement YAML Distillation Templates
+3. **3.4** — Implement Contract operation (outer ring archiving)
 
 ### Short-term (Sprint 2)
-4. **5.14.1** — Macro-Orchestration (Zoom Out)
-5. **5.14.2** — Micro-Immersion (Zoom In)
-6. **6.x** — Distillation Templates YAML
-7. **3.4** — Contract operation (undo-like)
+4. **9.1** — Migration to persistent SurrealKV storage (from in-memory)
+5. **10.1** — P2P synchronization logic
+6. **7.3** — TUI Implementation with Ratatui
 
 ### Medium-term (Sprint 3-4)
 
