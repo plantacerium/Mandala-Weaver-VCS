@@ -1,0 +1,23 @@
+name: minimal
+version: "0.1.0"
+
+variables:
+  MODULE_NAME:
+    description: "Name of the output module"
+    default: "core"
+    required: false
+
+rings:
+  type: Latest
+
+vectors:
+  - name: CORE
+
+exclude: []
+
+adapters: []
+
+output:
+  filename: "minimal.rs"
+  structure: Flat
+  generate_modules: false
