@@ -51,7 +51,7 @@ Conectar la lógica matemática con SurrealDB para guardar la historia radial.
 
 ---
 
-## 📍 Fase 3: El Tejedor (Lógica de Negocio y Control de Versiones)
+## 📍 Fase 3: El Tejedor (Lógica de Negocio y Cooperacion de Versiones)
 
 Comandos lógicos que reemplazan git commit, git checkout y git merge.
 
