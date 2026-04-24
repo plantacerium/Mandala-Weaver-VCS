@@ -90,6 +90,7 @@ pub async fn get_all_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
 }
 
 /// Get only active (non-archived) monads
+#[allow(dead_code)]
 pub async fn get_active_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
     let mut response = db.query(
         "SELECT * FROM monad WHERE is_archived = false"
@@ -113,6 +114,7 @@ pub async fn archive_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<(
 }
 
 /// Restore an archived monad
+#[allow(dead_code)]
 pub async fn restore_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<()> {
     let id_owned = monad_id.to_string();
     db.query("UPDATE monad:$id SET is_archived = false")

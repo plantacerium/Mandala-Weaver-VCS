@@ -107,6 +107,7 @@ pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<Incoherence
 }
 
 /// Orders monads by language for mixed-language source output.
+#[allow(dead_code)]
 pub fn order_by_language(monads: &[Monad]) -> Vec<Monad> {
     let mut sorted = monads.to_vec();
     sorted.sort_by_key(|m| match m.language.as_str() {
@@ -120,6 +121,7 @@ pub fn order_by_language(monads: &[Monad]) -> Vec<Monad> {
 }
 
 /// Groups monads by language.
+#[allow(dead_code)]
 pub fn group_by_language(monads: &[Monad]) -> HashMap<String, Vec<Monad>> {
     let mut groups: HashMap<String, Vec<Monad>> = HashMap::new();
     for monad in monads {
@@ -129,6 +131,7 @@ pub fn group_by_language(monads: &[Monad]) -> HashMap<String, Vec<Monad>> {
 }
 
 /// Distills source for multiple languages, generating separate sections per language.
+#[allow(dead_code)]
 pub fn distill_multi_lang(monads: &[Monad], mode: CrossLangMode) -> String {
     if monads.is_empty() {
         return String::new();
@@ -169,6 +172,7 @@ pub fn distill_multi_lang(monads: &[Monad], mode: CrossLangMode) -> String {
 
 /// Mode for handling multiple languages during distillation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum CrossLangMode {
     SingleFile,
     SectionPerLanguage,

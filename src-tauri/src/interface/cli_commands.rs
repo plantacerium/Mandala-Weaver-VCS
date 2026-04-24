@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "weave")]
-#[command(about = "Mandala Weaver: Circular Version Control System", long_about = None)]
+#[command(about = "Mandala Weaver: Circular Version Cooperation System", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,

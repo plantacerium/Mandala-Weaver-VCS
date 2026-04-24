@@ -8,6 +8,7 @@ use surrealdb::Surreal;
 
 /// Search result including match type
 #[derive(Serialize)]
+#[allow(dead_code)]
 pub struct SearchResult {
     pub id: String,
     pub name: String,
@@ -20,6 +21,7 @@ pub struct SearchResult {
 
 /// Type of match in search results
 #[derive(Serialize, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum MatchType {
     Name,
     Content,
@@ -28,8 +30,10 @@ pub enum MatchType {
 }
 
 /// Search engine for monads
+#[allow(dead_code)]
 pub struct SearchEngine;
 
+#[allow(dead_code)]
 impl SearchEngine {
     /// Search monads by name pattern
     pub async fn by_name(db: &Surreal<Db>, query: &str) -> anyhow::Result<Vec<Monad>> {
