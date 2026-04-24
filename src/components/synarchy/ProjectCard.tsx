@@ -29,7 +29,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Git': return '';
+      case 'Git': return '🐙';
       case 'Weaver': return '🌀';
       case 'Remote': return '🌐';
       default: return '📁';

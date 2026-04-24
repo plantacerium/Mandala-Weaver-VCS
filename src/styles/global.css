@@ -14,6 +14,19 @@
 	--border: #333;
 }
 
+[data-theme="light"] {
+	--bg-dark: #f5f7fa;
+	--bg-panel: rgba(255, 255, 255, 0.8);
+	--bg-panel-solid: #ffffff;
+	--accent-primary: #0284c7;
+	--accent-secondary: #7c3aed;
+	--text-main: #1f2937;
+	--text-dim: #6b7280;
+	--glass-border: rgba(0, 0, 0, 0.05);
+	--glass-highlight: rgba(255, 255, 255, 0.8);
+	--border: #e5e7eb;
+}
+
 * {
 	box-sizing: border-box;
 }

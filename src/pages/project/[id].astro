@@ -1,23 +1,37 @@
 ---
+prerender = false;
 import AppLayout from '../../layouts/AppLayout.astro';
 import MandalaCanvas from '../../components/mandala/MandalaCanvas';
+import { getProjects } from '../../lib/tauri/synarchy_api';
+
+export function getStaticPaths() {
+  return [];
+}
+
+const { id } = Astro.params;
+
+let project = null;
+let projects = await getProjects().catch(() => []);
+if (id && projects) {
+  project = projects.find(p => p.id === id);
+}
 ---
 
-<AppLayout title="Project Detail">
+<AppLayout title={project ? `${project.name} - Project Detail` : 'Project Detail'}>
   <div class="project-detail" id="project-detail">
     <div class="detail-header">
       <a href="/explorer" class="back-link">← Back to Explorer</a>
-      <h1 id="project-name">Loading...</h1>
+      <h1 id="project-name">{project ? project.name : 'Loading...'}</h1>
     </div>
     
     <div class="detail-content">
       <div class="detail-stats">
         <div class="stat-card">
-          <span class="value" id="ring-count">0</span>
+          <span class="value" id="ring-count">{project ? project.ring_count : 0}</span>
           <span class="label">Rings</span>
         </div>
         <div class="stat-card">
-          <span class="value" id="monad-count">0</span>
+          <span class="value" id="monad-count">{project ? project.monad_count : 0}</span>
           <span class="label">Monads</span>
         </div>
         <div class="stat-card">
@@ -25,7 +39,7 @@ import MandalaCanvas from '../../components/mandala/MandalaCanvas';
           <span class="label">Last Activity</span>
         </div>
         <div class="stat-card full-width">
-          <span class="value" id="project-path">—</span>
+          <span class="value" id="project-path">{project ? project.path : '—'}</span>
           <span class="label">Path</span>
         </div>
       </div>
@@ -36,32 +50,6 @@ import MandalaCanvas from '../../components/mandala/MandalaCanvas';
     </div>
   </div>
 </AppLayout>
-
-<script>
-  import { getProjectDetail, getProjectMandala } from '../../lib/tauri/synarchy_api';
-  
-  const pathParts = window.location.pathname.split('/');
-  const projectId = pathParts[pathParts.length - 1];
-  
-  async function loadProject() {
-    try {
-      const project = await getProjectDetail(projectId);
-      
-      document.getElementById('project-name').textContent = project.name;
-      document.getElementById('ring-count').textContent = String(project.ring_count);
-      document.getElementById('monad-count').textContent = String(project.monad_count);
-      document.getElementById('last-activity').textContent = project.last_scanned > 0 
-        ? new Date(project.last_scanned * 1000).toLocaleDateString()
-        : '—';
-      document.getElementById('project-path').textContent = project.path;
-    } catch (error) {
-      console.error('Failed to load project:', error);
-      document.getElementById('project-name').textContent = 'Error loading project';
-    }
-  }
-  
-  loadProject();
-</script>
 
 <style>
   .project-detail {
@@ -83,7 +71,6 @@ import MandalaCanvas from '../../components/mandala/MandalaCanvas';
     color: var(--text-secondary, #888);
     text-decoration: none;
     font-size: 14px;
-    transition: color 0.2s;
   }
   
   .back-link:hover {

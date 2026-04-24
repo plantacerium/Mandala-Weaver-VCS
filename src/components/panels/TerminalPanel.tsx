@@ -56,7 +56,7 @@ const TerminalPanel: React.FC = () => {
   }, [isOpen]);
 
   const isTauri = (): boolean => {
-    return typeof window !== 'undefined' && '__TAURI__' in window;
+    return typeof window !== 'undefined' && ('__TAURI__' in window || '__TAURI_INTERNALS__' in window);
   };
 
   const parseCommand = (cmdStr: string): { command: string; args: string[] } => {
