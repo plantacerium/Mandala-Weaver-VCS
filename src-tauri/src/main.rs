@@ -34,6 +34,9 @@ use interface::collaboration_api::{
     merge_mandala_states,
     sync_project,
     get_sync_status,
+    remove_sync_project,
+    stop_sync,
+    set_sync_status,
 };
 use interface::cli_api::{
     cli_bindu,
@@ -149,6 +152,9 @@ fn main() {
             merge_mandala_states,
             sync_project,
             get_sync_status,
+            remove_sync_project,
+            stop_sync,
+            set_sync_status,
             cli_bindu,
             cli_telemetry,
             cli_status,
