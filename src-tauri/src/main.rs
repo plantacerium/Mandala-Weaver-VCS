@@ -8,7 +8,7 @@ mod ontology;
 mod synarchy;
 mod weaver;
 
-use persistence::surreal_bridge::{connect_embedded, Db};
+use persistence::surreal_bridge::connect_embedded;
 use interface::projection_api::{
     export_mandala_state, 
     expand_ring,
@@ -43,24 +43,10 @@ use interface::synarchy_api::{
     get_project_mandala,
     SynarchyState,
 };
-use interface::cli_commands::{Cli, run_cli};
-use surrealdb::Surreal;
 use tauri::Manager;
 use std::path::PathBuf;
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    
-    if args.len() > 1 {
-        std::process::exit(match run_weave().await {
-            Ok(()) => 0,
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                1
-            }
-        });
-    }
-    
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {

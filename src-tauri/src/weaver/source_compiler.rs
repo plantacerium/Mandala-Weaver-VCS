@@ -108,6 +108,7 @@ pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<Incoherence
 
 /// Describes a detected incoherence in a distillation selection.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct IncoherenceReport {
     pub kind: IncoherenceKind,
     pub message: String,
@@ -116,6 +117,7 @@ pub struct IncoherenceReport {
 
 /// Types of incoherences that can occur.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum IncoherenceKind {
     /// Two monads define the same entity (same name + kind).
     DuplicateDefinition,

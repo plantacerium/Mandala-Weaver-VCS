@@ -61,6 +61,8 @@ pub struct Monad {
     pub line_start: u32,         // Starting line in original source
     pub line_end: u32,           // Ending line in original source
     pub language: String,        // Source language ("rust", "typescript", etc.)
+    #[serde(default)]
+    pub is_archived: bool,       // Soft delete flag for archival
 }
 
 impl Monad {

@@ -60,6 +60,7 @@ impl ProjectRegistry {
         self.projects.iter_mut().find(|p| p.id == id)
     }
     
+    #[allow(dead_code)]
     pub fn active_projects(&self) -> Vec<&ProjectEntry> {
         self.projects.iter()
             .filter(|p| matches!(p.status, ProjectStatus::Active))
@@ -117,6 +118,7 @@ impl ProjectScanner {
         })
     }
     
+    #[allow(dead_code)]
     pub async fn scan_with_rings(path: &PathBuf, ring_count: u32) -> anyhow::Result<ProjectEntry> {
         let name = path.file_name()
             .and_then(|n| n.to_str())

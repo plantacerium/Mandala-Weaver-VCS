@@ -15,6 +15,7 @@ pub fn get_initialization_queries() -> Vec<&'static str> {
         "DEFINE FIELD line_start ON TABLE monad TYPE int;",
         "DEFINE FIELD line_end ON TABLE monad TYPE int;",
         "DEFINE FIELD language ON TABLE monad TYPE string;",
+        "DEFINE FIELD is_archived ON TABLE monad TYPE bool DEFAULT false;",
         
         // Definición de la relación evolutiva
         "DEFINE TABLE evolves_to TYPE RELATION FROM monad TO monad;",

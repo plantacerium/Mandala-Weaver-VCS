@@ -47,7 +47,7 @@ pub async fn insert_and_link(
 
 /// Recupera todas las mónadas de un anillo específico.
 pub async fn get_ring(db: &Surreal<Db>, ring: u32) -> anyhow::Result<Vec<Monad>> {
-    let mut response = db.query("SELECT * FROM monad WHERE ring = $ring")
+    let mut response = db.query("SELECT * FROM monad WHERE ring = $ring AND is_archived = false")
         .bind(("ring", ring))
         .await?;
     
@@ -60,6 +60,7 @@ pub async fn get_ring(db: &Surreal<Db>, ring: u32) -> anyhow::Result<Vec<Monad>>
 }
 
 /// Recupera mónadas dentro de un sector angular específico.
+#[allow(dead_code)]
 pub async fn get_vector_sector(
     db: &Surreal<Db>, 
     min_theta: f64, 
@@ -88,7 +89,40 @@ pub async fn get_all_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
     Ok(monads)
 }
 
+/// Get only active (non-archived) monads
+pub async fn get_active_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
+    let mut response = db.query(
+        "SELECT * FROM monad WHERE is_archived = false"
+    ).await?;
+    
+    let values: Vec<JsonValue> = response.take(0)?;
+    let monads: Vec<Monad> = values
+        .into_iter()
+        .map(|v| serde_json::from_value(v).unwrap_or_else(|_| Monad::spawn("error".to_string(), "error".to_string(), crate::geometry::polar_space::PolarCoord::new(0.0, 0.0), "error".to_string(), 0)))
+        .collect();
+    Ok(monads)
+}
+
+/// Archive (soft delete) a monad
+pub async fn archive_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<()> {
+    let id_owned = monad_id.to_string();
+    db.query("UPDATE monad:$id SET is_archived = true")
+        .bind(("id", id_owned))
+        .await?;
+    Ok(())
+}
+
+/// Restore an archived monad
+pub async fn restore_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<()> {
+    let id_owned = monad_id.to_string();
+    db.query("UPDATE monad:$id SET is_archived = false")
+        .bind(("id", id_owned))
+        .await?;
+    Ok(())
+}
+
 /// Busca una mónada por nombre (contiene el string)
+#[allow(dead_code)]
 pub async fn get_monad_by_name(db: &Surreal<Db>, name_contains: &str) -> anyhow::Result<Vec<Monad>> {
     let name_owned = name_contains.to_string();
     let mut response = db.query("SELECT * FROM monad WHERE name CONTAINS $name")

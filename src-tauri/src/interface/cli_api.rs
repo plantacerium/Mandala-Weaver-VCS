@@ -4,8 +4,7 @@ use crate::persistence::surreal_bridge::{get_all_monads, get_ring, insert_and_li
 use crate::weaver::ast_extractor::extract_raw_monads;
 use crate::weaver::source_compiler::distill_source;
 use crate::weaver::threader::trace_full_chain;
-use crate::geometry::polar_space::PolarCoord;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::path::PathBuf;
 
 #[derive(Serialize)]
@@ -110,7 +109,7 @@ pub async fn cli_crystallize(file_path: String, message: String) -> Result<CliRe
     let current_max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
     let next_ring = current_max_ring + 1;
     
-    let mut new_monads = extract_raw_monads(&source_code, next_ring);
+    let new_monads = extract_raw_monads(&source_code, next_ring);
     
     if new_monads.is_empty() {
         return Ok(CliResponse { success: false, output: String::new(), error: Some("No monads extracted".to_string()) });
@@ -181,7 +180,7 @@ pub async fn cli_distill(target_ring: Option<u32>, vector: Option<String>) -> Re
 }
 
 #[tauri::command]
-pub async fn cli_lineage(monad_name: Option<String>, limit: Option<usize>) -> Result<CliResponse, String> {
+pub async fn cli_lineage(monad_name: Option<String>, _limit: Option<usize>) -> Result<CliResponse, String> {
     let db = crate::persistence::surreal_bridge::connect_embedded()
         .await
         .map_err(|e| e.to_string())?;

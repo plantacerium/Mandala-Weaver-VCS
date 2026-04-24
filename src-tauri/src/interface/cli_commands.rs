@@ -1,6 +1,8 @@
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
 use thiserror::Error;
+
+#[allow(unused_imports)]
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "weave")]
@@ -134,13 +136,11 @@ pub async fn run_cli() -> Result<(), CliError> {
 use crate::ontology::bindu::Bindu;
 use crate::ontology::monad::Monad;
 use crate::persistence::surreal_bridge::{
-    Db, connect_embedded, get_all_monads, get_ring, get_monad_by_name, insert_and_link,
+    connect_embedded, get_all_monads, get_ring, insert_and_link,
 };
 use crate::weaver::ast_extractor::extract_raw_monads;
-use crate::weaver::resolver::identify_deltas;
 use crate::weaver::source_compiler::distill_source;
 use crate::weaver::threader::trace_full_chain;
-use crate::geometry::polar_space::PolarCoord;
 
 struct BinduOutput {
     project_name: String,
@@ -378,10 +378,10 @@ struct DistillOutput2 {
 }
 
 async fn cmd_distill(
-    coordinates: Option<String>,
+    _coordinates: Option<String>,
     ring: Option<u32>,
     vector: Option<String>,
-    template: Option<PathBuf>,
+    _template: Option<PathBuf>,
     output: Option<PathBuf>,
 ) -> Result<(), CliError> {
     println!("🔮 Distilling...");
@@ -485,8 +485,8 @@ struct LineageEntry2 {
     parent_id: Option<String>,
 }
 
-async fn cmd_lineage(monad: Option<String>, limit: Option<usize>) -> Result<(), CliError> {
-    let limit = limit.unwrap_or(50);
+async fn cmd_lineage(monad: Option<String>, _limit: Option<usize>) -> Result<(), CliError> {
+    let _limit = _limit.unwrap_or(50);
     
     println!("🧬 Querying lineage...");
     

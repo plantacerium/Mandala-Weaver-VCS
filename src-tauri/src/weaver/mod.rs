@@ -3,6 +3,10 @@ pub mod threader;
 pub mod resolver;
 pub mod source_compiler;
 pub mod watcher;
+pub mod auto_imports;
+pub mod file_writer;
+pub mod contract;
+pub mod semantic_diff;
 
 use crate::persistence::surreal_bridge::{Db, insert_and_link, get_ring, get_all_monads};
 use crate::weaver::ast_extractor::extract_raw_monads;

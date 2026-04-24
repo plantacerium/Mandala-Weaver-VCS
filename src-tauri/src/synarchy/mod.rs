@@ -1,5 +1,5 @@
 pub mod registry;
+#[allow(dead_code)]
 pub mod sync;
 
-pub use registry::{ProjectEntry, ProjectRegistry, ProjectScanner, ProjectStatus, ProjectType};
-pub use sync::{ChangeType, ProjectChangeEvent, Synchronizer};
+pub use registry::{ProjectEntry, ProjectRegistry, ProjectScanner};

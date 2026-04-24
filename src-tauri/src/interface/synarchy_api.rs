@@ -1,4 +1,4 @@
-use crate::synarchy::{ProjectEntry, ProjectRegistry, ProjectScanner, ProjectStatus};
+use crate::synarchy::{ProjectEntry, ProjectRegistry, ProjectScanner};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::State;
