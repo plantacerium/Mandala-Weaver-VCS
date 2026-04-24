@@ -1,4 +1,5 @@
 use crate::geometry::polar_space::PolarCoord;
+use crate::language::Language;
 use serde::{Deserialize, Serialize};
 
 /// Represents the kind of code entity that a Monad encapsulates.
@@ -86,6 +87,7 @@ impl Monad {
             line_start: 0,
             line_end: 0,
             language: "rust".to_string(),
+            is_archived: false,
         }
     }
 
@@ -114,11 +116,16 @@ impl Monad {
             line_start,
             line_end,
             language: language.to_string(),
+            is_archived: false,
         }
     }
 
     /// Returns true if this monad has semantically different content from another.
     pub fn is_semantically_different(&self, other: &Monad) -> bool {
         self.semantic_hash != other.semantic_hash
+    }
+
+    pub fn language_enum(&self) -> Language {
+        Language::from_extension(&self.language)
     }
 }

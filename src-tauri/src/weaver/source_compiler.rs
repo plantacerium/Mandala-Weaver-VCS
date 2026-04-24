@@ -106,6 +106,74 @@ pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<Incoherence
     }
 }
 
+/// Orders monads by language for mixed-language source output.
+pub fn order_by_language(monads: &[Monad]) -> Vec<Monad> {
+    let mut sorted = monads.to_vec();
+    sorted.sort_by_key(|m| match m.language.as_str() {
+        "rust" => 0,
+        "go" => 1,
+        "typescript" | "javascript" => 2,
+        "python" => 3,
+        _ => 99,
+    });
+    sorted
+}
+
+/// Groups monads by language.
+pub fn group_by_language(monads: &[Monad]) -> HashMap<String, Vec<Monad>> {
+    let mut groups: HashMap<String, Vec<Monad>> = HashMap::new();
+    for monad in monads {
+        groups.entry(monad.language.clone()).or_default().push(monad.clone());
+    }
+    groups
+}
+
+/// Distills source for multiple languages, generating separate sections per language.
+pub fn distill_multi_lang(monads: &[Monad], mode: CrossLangMode) -> String {
+    if monads.is_empty() {
+        return String::new();
+    }
+
+    let grouped = group_by_language(monads);
+    let mut source = String::new();
+
+    source.push_str(&format!(
+        "// Multi-Language Distilled Source — {} monads across {} language(s)\n\n",
+        monads.len(),
+        grouped.len()
+    ));
+
+    match mode {
+        CrossLangMode::SingleFile => {
+            let ordered = order_by_language(monads);
+            for monad in &ordered {
+                source.push_str(&format!("// === {} ===\n", monad.language));
+                source.push_str(&monad.content);
+                source.push_str("\n\n");
+            }
+        }
+        CrossLangMode::SectionPerLanguage => {
+            for (lang, lang_monads) in &grouped {
+                source.push_str(&format!("// ===== {} =====\n\n", lang));
+                let ordered = order_by_dependency(lang_monads);
+                for monad in &ordered {
+                    source.push_str(&monad.content);
+                    source.push_str("\n\n");
+                }
+            }
+        }
+    }
+
+    source
+}
+
+/// Mode for handling multiple languages during distillation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CrossLangMode {
+    SingleFile,
+    SectionPerLanguage,
+}
+
 /// Describes a detected incoherence in a distillation selection.
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -180,5 +248,64 @@ mod tests {
         ];
         let result = validate_source_coherence(&monads);
         assert!(result.is_ok(), "struct Foo and impl Foo are not duplicates");
+    }
+
+    #[test]
+    fn test_order_by_language() {
+        let monads = vec![
+            make_typed_monad("fn1", "fn fn1() {}", 1, MonadKind::Function),
+            make_typed_monad("fn2", "def fn2(): pass", 1, MonadKind::Function),
+            make_typed_monad("fn3", "func fn3()", 1, MonadKind::Function),
+        ];
+        let mut m = monads.clone();
+        m[0].language = "rust".to_string();
+        m[1].language = "python".to_string();
+        m[2].language = "go".to_string();
+
+        let ordered = order_by_language(&m);
+        assert_eq!(ordered[0].language, "rust");
+        assert_eq!(ordered[1].language, "go");
+        assert_eq!(ordered[2].language, "python");
+    }
+
+    #[test]
+    fn test_group_by_language() {
+        let mut m1 = make_typed_monad("fn1", "fn fn1() {}", 1, MonadKind::Function);
+        let mut m2 = make_typed_monad("fn2", "def fn2(): pass", 1, MonadKind::Function);
+        let mut m3 = make_typed_monad("fn3", "fn fn3() {}", 1, MonadKind::Function);
+        m1.language = "rust".to_string();
+        m2.language = "python".to_string();
+        m3.language = "rust".to_string();
+
+        let groups = group_by_language(&[m1, m2, m3]);
+        assert_eq!(groups.len(), 2);
+        assert_eq!(groups.get("rust").unwrap().len(), 2);
+        assert_eq!(groups.get("python").unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_distill_multi_lang_single_file() {
+        let mut m1 = make_typed_monad("fn1", "fn fn1() {}", 1, MonadKind::Function);
+        let mut m2 = make_typed_monad("fn2", "def fn2(): pass", 1, MonadKind::Function);
+        m1.language = "rust".to_string();
+        m2.language = "python".to_string();
+
+        let source = distill_multi_lang(&[m1, m2], CrossLangMode::SingleFile);
+        assert!(source.contains("rust"));
+        assert!(source.contains("python"));
+        assert!(source.contains("fn fn1()"));
+        assert!(source.contains("def fn2"));
+    }
+
+    #[test]
+    fn test_distill_multi_lang_section_per_language() {
+        let mut m1 = make_typed_monad("fn1", "fn fn1() {}", 1, MonadKind::Function);
+        let mut m2 = make_typed_monad("fn2", "def fn2(): pass", 1, MonadKind::Function);
+        m1.language = "rust".to_string();
+        m2.language = "python".to_string();
+
+        let source = distill_multi_lang(&[m1, m2], CrossLangMode::SectionPerLanguage);
+        assert!(source.contains("rust"));
+        assert!(source.contains("python"));
     }
 }
