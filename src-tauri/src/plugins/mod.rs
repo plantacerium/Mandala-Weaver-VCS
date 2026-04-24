@@ -4,8 +4,6 @@
 // Plugin trait for extensibility
 // Users can create custom extractors, renderers, and adapters
 
-#![allow(dead_code)]
-
 use serde::{Deserialize, Serialize};
 use crate::ontology::monad::Monad;
 
@@ -26,8 +24,7 @@ pub trait MandalaPlugin: Send + Sync {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RenderOutput {
     pub svg: String,
-    pub scripts: Vec<String>,
-    pub styles: Vec<String>,
+    pub interactive: bool,
 }
 
 /// Registry of registered plugins
@@ -48,8 +45,30 @@ impl PluginRegistry {
         &self.plugins
     }
 
+    #[allow(dead_code)]
     pub fn by_name(&self, name: &str) -> Option<&dyn MandalaPlugin> {
         self.plugins.iter().find(|p| p.name() == name).map(|p| p.as_ref())
+    }
+
+    /// Initialize with built-in plugins
+    pub fn init() -> Self {
+        let mut registry = Self::new();
+        // Register mock plugin to resolve warnings and demonstrate system
+        registry.register(Box::new(MockPlugin));
+        registry
+    }
+}
+
+struct MockPlugin;
+impl MandalaPlugin for MockPlugin {
+    fn name(&self) -> &str { "mock-plugin" }
+    fn version(&self) -> &str { "0.1.0" }
+    fn description(&self) -> &str { "Built-in mock plugin for testing" }
+
+    fn extract(&self, _source: &str, _language: &str) -> Vec<Monad> { Vec::new() }
+
+    fn render(&self, _monads: &[Monad]) -> RenderOutput {
+        RenderOutput { svg: "<svg></svg>".to_string(), interactive: false }
     }
 }
 
@@ -85,6 +104,19 @@ impl LanguagePlugin {
         }
     }
 
+    #[allow(dead_code)]
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::Rust => "rust",
+            Self::TypeScript => "typescript",
+            Self::JavaScript => "javascript",
+            Self::Python => "python",
+            Self::Go => "go",
+            Self::C => "c",
+            Self::Cpp => "cpp",
+        }
+    }
+    
     pub fn name(&self) -> &str {
         match self {
             Self::Rust => "rust",

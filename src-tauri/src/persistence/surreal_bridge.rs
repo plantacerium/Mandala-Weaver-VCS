@@ -60,7 +60,7 @@ pub async fn get_ring(db: &Surreal<Db>, ring: u32) -> anyhow::Result<Vec<Monad>>
 }
 
 /// Recupera mónadas dentro de un sector angular específico.
-#[allow(dead_code)]
+
 pub async fn get_vector_sector(
     db: &Surreal<Db>, 
     min_theta: f64, 
@@ -90,7 +90,7 @@ pub async fn get_all_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
 }
 
 /// Get only active (non-archived) monads
-#[allow(dead_code)]
+
 pub async fn get_active_monads(db: &Surreal<Db>) -> anyhow::Result<Vec<Monad>> {
     let mut response = db.query(
         "SELECT * FROM monad WHERE is_archived = false"
@@ -114,7 +114,7 @@ pub async fn archive_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<(
 }
 
 /// Restore an archived monad
-#[allow(dead_code)]
+
 pub async fn restore_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<()> {
     let id_owned = monad_id.to_string();
     db.query("UPDATE monad:$id SET is_archived = false")
@@ -124,7 +124,7 @@ pub async fn restore_monad(db: &Surreal<Db>, monad_id: &str) -> anyhow::Result<(
 }
 
 /// Busca una mónada por nombre (contiene el string)
-#[allow(dead_code)]
+
 pub async fn get_monad_by_name(db: &Surreal<Db>, name_contains: &str) -> anyhow::Result<Vec<Monad>> {
     let name_owned = name_contains.to_string();
     let mut response = db.query("SELECT * FROM monad WHERE name CONTAINS $name")

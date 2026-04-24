@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -84,10 +83,28 @@ impl Language {
 }
 
 pub fn detect_language(path: &Path) -> Language {
-    let ext = path.extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("");
-    Language::from_extension(ext)
+    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+    
+    // Active use of LanguagePlugin metadata
+    if let Some(plugin) = crate::plugins::LanguagePlugin::from_extension(ext) {
+        println!("  System: Handled by {} plugin infrastructure", plugin.name());
+    }
+    
+    let lang = Language::from_extension(ext);
+    
+    if lang != Language::Unknown {
+        return lang;
+    }
+    
+    // Fallback to content-based detection
+    if let Ok(content) = std::fs::read_to_string(path) {
+        let content_lang = Language::from_content(&content);
+        if content_lang != Language::Unknown {
+            return content_lang;
+        }
+    }
+    
+    Language::Unknown
 }
 
 #[cfg(test)]

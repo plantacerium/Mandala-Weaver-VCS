@@ -3,6 +3,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{interval, Duration};
 
+#[derive(Clone)]
 pub struct Synchronizer {
     projects: Arc<RwLock<Vec<ProjectEntry>>>,
     running: Arc<RwLock<bool>>,

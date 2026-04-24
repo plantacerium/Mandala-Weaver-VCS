@@ -1,7 +1,6 @@
 use crate::ontology::bindu::Bindu;
 use crate::ontology::monad::Monad;
-use crate::persistence::surreal_bridge::{get_all_monads, get_ring, insert_and_link};
-use crate::weaver::ast_extractor::extract_raw_monads;
+use crate::persistence::surreal_bridge::get_all_monads;
 use crate::weaver::source_compiler::distill_source;
 use crate::weaver::threader::trace_full_chain;
 use serde::Serialize;
@@ -93,52 +92,22 @@ pub async fn cli_status(verbose: bool) -> Result<CliResponse, String> {
 
 #[tauri::command]
 pub async fn cli_crystallize(file_path: String, message: String) -> Result<CliResponse, String> {
-    let source_path = PathBuf::from(&file_path);
-    if !source_path.exists() {
-        return Ok(CliResponse { success: false, output: String::new(), error: Some(format!("File not found: {}", file_path)) });
-    }
-    
-    let source_code = std::fs::read_to_string(&source_path)
-        .map_err(|e| format!("IO error: {}", e))?;
-    
     let db = crate::persistence::surreal_bridge::connect_embedded()
         .await
         .map_err(|e| e.to_string())?;
     
-    let all = get_all_monads(&db).await.map_err(|e| e.to_string())?;
-    let current_max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
-    let next_ring = current_max_ring + 1;
-    
-    let new_monads = extract_raw_monads(&source_code, next_ring);
-    
-    if new_monads.is_empty() {
-        return Ok(CliResponse { success: false, output: String::new(), error: Some("No monads extracted".to_string()) });
-    }
-    
-    let base_monads = get_ring(&db, current_max_ring).await.ok();
-    let mut added = 0;
-    let mut modified = 0;
-    
-    for monad in &new_monads {
-        let parent = base_monads.as_ref().and_then(|base| {
-            base.iter().find(|m| m.name == monad.name)
-        });
-        let parent_id = parent.map(|p| p.id.as_str());
-        
-        insert_and_link(&db, monad, parent_id)
-            .await
-            .map_err(|e| e.to_string())?;
-        
-        if parent.is_some() {
-            modified += 1;
-        } else {
-            added += 1;
+    match crate::weaver::expand_from_source(&db, &file_path).await {
+        Ok(next_ring) => {
+            Ok(CliResponse {
+                success: true,
+                output: format!("💎 Ring {} created\n  Intent: {}", next_ring, if message.is_empty() { "N/A" } else { &message }),
+                error: None,
+            })
+        },
+        Err(e) => {
+            Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Crystallization failed: {}", e)) })
         }
     }
-    
-    let output = format!("💎 Ring {} created\n  Added: {}\n  Modified: {}\n  Intent: {}", next_ring, added, modified, if message.is_empty() { "N/A" } else { &message });
-
-    Ok(CliResponse { success: true, output, error: None })
 }
 
 #[tauri::command]
@@ -362,52 +331,40 @@ pub async fn cli_dormant() -> Result<CliResponse, String> {
 
 #[tauri::command]
 pub async fn cli_synthesize(vector: String, with_vector: Option<String>) -> Result<CliResponse, String> {
-    let db = crate::persistence::surreal_bridge::connect_embedded()
+    let _db = crate::persistence::surreal_bridge::connect_embedded()
         .await
         .map_err(|e| e.to_string())?;
     
-    let all = get_all_monads(&db).await.map_err(|e| e.to_string())?;
-    
-    let angle_a = match vector.as_str() {
-        "CORE" => (0.0, 90.0),
-        "IO" => (90.0, 180.0),
-        "UI" => (180.0, 270.0),
-        "DATA" => (270.0, 360.0),
-        _ => (0.0, 360.0),
+    let output = if let Some(other) = with_vector {
+        format!("⚛ Synthesizing {} with {}...\n⚠ Synarchic Synthesis requires an archive path in this version.", vector, other)
+    } else {
+        format!("⚛ Vector {}: Selected for synthesis.", vector)
     };
-    
-    let vec_a: Vec<_> = all.iter()
-        .filter(|m| m.coord.theta >= angle_a.0 && m.coord.theta < angle_a.1)
-        .collect();
-    
-    let mut output = format!("⚛ Vector {}: {} monads\n", vector, vec_a.len());
-    
-    if let Some(b) = with_vector {
-        let angle_b = match b.as_str() {
-            "CORE" => (0.0, 90.0),
-            "IO" => (90.0, 180.0),
-            "UI" => (180.0, 270.0),
-            "DATA" => (270.0, 360.0),
-            _ => (0.0, 360.0),
-        };
-        
-        let vec_b: Vec<_> = all.iter()
-            .filter(|m| m.coord.theta >= angle_b.0 && m.coord.theta < angle_b.1)
-            .collect();
-        
-        output.push_str(&format!("  + {}: {} monads\n", b, vec_b.len()));
-    }
 
     Ok(CliResponse { success: true, output, error: None })
 }
 
 #[tauri::command]
 pub async fn cli_absorb(remote: Option<String>) -> Result<CliResponse, String> {
-    Ok(CliResponse {
-        success: true,
-        output: format!("🌐 Absorb from: {}\n⚠ Network sync not yet implemented", remote.unwrap_or_else(|| "network".to_string())),
-        error: None,
-    })
+    let db = crate::persistence::surreal_bridge::connect_embedded()
+        .await
+        .map_err(|e| e.to_string())?;
+    
+    let source = remote.unwrap_or_else(|| "mandala.json".to_string());
+    let path = PathBuf::from(&source);
+    
+    if !path.exists() {
+        return Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Archive not found: {}", source)) });
+    }
+
+    match crate::collaboration::import_mandala(&db, &path.parent().unwrap_or(&path).to_path_buf()).await {
+        Ok(_) => Ok(CliResponse {
+            success: true,
+            output: format!("🌐 Absorbed monads from: {}", source),
+            error: None,
+        }),
+        Err(e) => Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Absorb failed: {}", e)) })
+    }
 }
 
 #[tauri::command]
@@ -416,16 +373,17 @@ pub async fn cli_emanate(remote: Option<String>) -> Result<CliResponse, String> 
         .await
         .map_err(|e| e.to_string())?;
     
-    let all = get_all_monads(&db).await.map_err(|e| e.to_string())?;
-    
-    let max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
-    let min_ring = all.iter().map(|m| m.ring).min().unwrap_or(0);
-    
-    let output = format!("📡 Emanated {} monads\n  Rings: {} → {}\n  Target: {}",
-        all.len(), min_ring, max_ring, remote.unwrap_or_else(|| "network".to_string())
-    );
+    let target = remote.unwrap_or_else(|| ".".to_string());
+    let path = PathBuf::from(&target);
 
-    Ok(CliResponse { success: true, output, error: None })
+    match crate::collaboration::export_mandala(&db, "mandala-project", &path).await {
+        Ok(exported_path) => Ok(CliResponse {
+            success: true,
+            output: format!("📡 Emanated mandala to: {}", exported_path.display()),
+            error: None,
+        }),
+        Err(e) => Ok(CliResponse { success: false, output: String::new(), error: Some(format!("Emanation failed: {}", e)) })
+    }
 }
 
 #[tauri::command]

@@ -1,8 +1,6 @@
 // Pre-implementation: Semantic diff
 // ==========================
 
-#![allow(dead_code)]
-
 use serde::Serialize;
 use crate::ontology::monad::Monad;
 

@@ -7,3 +7,4 @@ pub mod synarchy;
 pub mod weaver;
 pub mod collaboration;
 pub mod plugins;
+pub mod template;

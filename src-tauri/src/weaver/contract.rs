@@ -1,7 +1,6 @@
 // Pre-implementation: Contract operation
 // ==============================
 
-#![allow(dead_code)]
 use crate::persistence::surreal_bridge::{Db, get_all_monads, archive_monad};
 use surrealdb::Surreal;
 

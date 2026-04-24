@@ -7,6 +7,7 @@ use tokio::sync::RwLock;
 pub struct SynarchyState {
     pub registry: Arc<RwLock<ProjectRegistry>>,
     pub registry_path: PathBuf,
+    pub plugin_config: Arc<RwLock<crate::plugins::PluginConfig>>,
 }
 
 impl SynarchyState {
@@ -22,6 +23,7 @@ impl SynarchyState {
         Self {
             registry: Arc::new(RwLock::new(registry)),
             registry_path,
+            plugin_config: Arc::new(RwLock::new(crate::plugins::PluginConfig::default())),
         }
     }
     

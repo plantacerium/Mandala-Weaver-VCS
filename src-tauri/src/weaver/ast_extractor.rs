@@ -90,17 +90,13 @@ pub fn extract_raw_monads(source_code: &str, ring: u32) -> Vec<Monad> {
     extract_raw_monads_lang(source_code, ring, "rust")
 }
 
+use crate::language::Language;
+
 /// Language-aware extraction. Currently supports Rust natively through ast-grep.
 /// For unsupported languages, falls back to the heuristic keyword scanner.
 pub fn extract_raw_monads_lang(source_code: &str, ring: u32, language: &str) -> Vec<Monad> {
-    let lang = match language {
-        "rust" => Some(SupportLang::Rust),
-        "typescript" | "ts" => Some(SupportLang::TypeScript),
-        "javascript" | "js" => Some(SupportLang::JavaScript),
-        "python" | "py" => Some(SupportLang::Python),
-        "go" => Some(SupportLang::Go),
-        _ => None,
-    };
+    let lang_enum = Language::from_extension(language);
+    let lang = lang_enum.ast_grep_lang();
 
     match lang {
         Some(supported_lang) => extract_with_ast_grep(source_code, ring, supported_lang, language),

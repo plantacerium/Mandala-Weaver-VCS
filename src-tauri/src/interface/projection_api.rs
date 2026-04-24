@@ -189,3 +189,76 @@ pub async fn get_monad_detail(
     serde_json::to_string(&monad)
         .map_err(|e| e.to_string())
 }
+
+/// Writes distilled monads to disk using a specific structure.
+#[tauri::command]
+pub async fn write_distilled_to_disk(
+    db: State<'_, Surreal<Db>>,
+    monad_ids: Vec<String>,
+    output_path: String,
+) -> Result<Vec<String>, String> {
+    let all_monads = get_all_monads(&db).await
+        .map_err(|e| e.to_string())?;
+
+    let selected: Vec<Monad> = all_monads.into_iter()
+        .filter(|m| monad_ids.contains(&m.id))
+        .collect();
+
+    if selected.is_empty() {
+        return Err("No monads found matching the provided IDs.".to_string());
+    }
+
+    let path = std::path::PathBuf::from(output_path);
+    let structure = crate::template::OutputStructure::Flat; // Default to flat for now
+    
+    crate::weaver::file_writer::FileWriter::write_with_structure(&selected, &path, &structure, &[])
+        .await
+        .map(|paths| paths.into_iter().map(|p| p.display().to_string()).collect())
+        .map_err(|e| e.to_string())
+}
+
+/// Contracts the outermost ring.
+#[tauri::command]
+pub async fn contract_outer_ring(
+    db: State<'_, Surreal<Db>>
+) -> Result<u32, String> {
+    crate::weaver::contract::contract_ring(&db).await
+        .map_err(|e| e.to_string())
+}
+
+/// Reverts the system state to a specific ring level.
+#[tauri::command]
+pub async fn revert_to_level(
+    db: State<'_, Surreal<Db>>,
+    ring: u32,
+) -> Result<(), String> {
+    crate::weaver::contract::revert_to_ring(&db, ring).await
+        .map_err(|e| e.to_string())
+}
+
+/// Gets the count of archived monads.
+#[tauri::command]
+pub async fn get_archived_monads_count(
+    db: State<'_, Surreal<Db>>
+) -> Result<usize, String> {
+    crate::weaver::contract::get_archived_count(&db).await
+        .map_err(|e| e.to_string())
+}
+
+/// Permanently deletes archived monads.
+#[tauri::command]
+pub async fn purge_archived_monads(
+    db: State<'_, Surreal<Db>>
+) -> Result<u32, String> {
+    crate::weaver::contract::purge_archived(&db).await
+        .map_err(|e| e.to_string())
+}
+#[tauri::command]
+pub async fn search_monads(
+    query: String,
+    db: State<'_, Surreal<Db>>,
+) -> Result<Vec<crate::persistence::search::SearchResult>, String> {
+    crate::persistence::search::SearchEngine::search(&db, &query)
+        .await
+        .map_err(|e| e.to_string())
+}

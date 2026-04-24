@@ -5,10 +5,10 @@ use std::collections::HashSet;
 use crate::ontology::monad::Monad;
 
 /// Analyzes cross-references and generates import statements
-#[allow(dead_code)]
+
 pub struct ImportAnalyzer;
 
-#[allow(dead_code)]
+
 impl ImportAnalyzer {
     /// Extracts all references from monad content
     pub fn extract_references(content: &str) -> Vec<String> {

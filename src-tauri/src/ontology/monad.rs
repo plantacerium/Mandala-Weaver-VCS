@@ -125,7 +125,7 @@ impl Monad {
         self.semantic_hash != other.semantic_hash
     }
 
-    #[allow(dead_code)]
+    
     pub fn language_enum(&self) -> Language {
         Language::from_extension(&self.language)
     }

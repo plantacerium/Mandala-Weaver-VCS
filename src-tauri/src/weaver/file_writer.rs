@@ -1,34 +1,24 @@
-#![allow(dead_code)]
-// Pre-implementation: File system writer
-// ===============================
+// File system writer for distilled monads
+// ====================================
+// Integrated with template OutputStructure from template module
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use crate::ontology::monad::Monad;
-use crate::weaver::source_compiler::distill_source;
+use crate::template::{OutputStructure, AdapterConfig};
+use crate::weaver::source_compiler::distill_source_with_adapters;
 
-/// Output directory structure
-#[derive(Debug, Clone)]
-pub enum OutputStructure {
-    Flat,
-    VectorDirs,
-    RingDirs,
-    Nested,
-}
-
-/// File system writer for distilled monads
 pub struct FileWriter;
 
 impl FileWriter {
-    /// Writes distilled monads to disk with directory structure
-    pub async fn write_to_disk(
+    pub async fn write_with_structure(
         monads: &[Monad],
         output_dir: &Path,
-        structure: OutputStructure,
+        structure: &OutputStructure,
+        adapters: &[AdapterConfig],
     ) -> anyhow::Result<Vec<PathBuf>> {
         let mut written = Vec::new();
-        
-        let content = distill_source(monads);
+        let content = distill_source_with_adapters(monads, adapters);
         
         match structure {
             OutputStructure::Flat => {
@@ -42,7 +32,7 @@ impl FileWriter {
                     let dir_name = format!("vector_{:.0}", theta);
                     let path = output_dir.join(dir_name).join("mod.rs");
                     std::fs::create_dir_all(path.parent().unwrap())?;
-                    let content = distill_source(&group_monads);
+                    let content = distill_source_with_adapters(&group_monads, adapters);
                     std::fs::write(&path, &content)?;
                     written.push(path);
                 }
@@ -53,12 +43,12 @@ impl FileWriter {
                     let dir_name = format!("ring_{}", ring);
                     let path = output_dir.join(dir_name).join("mod.rs");
                     std::fs::create_dir_all(path.parent().unwrap())?;
-                    let content = distill_source(&group_monads);
+                    let content = distill_source_with_adapters(&group_monads, adapters);
                     std::fs::write(&path, &content)?;
                     written.push(path);
                 }
             }
-            OutputStructure::Nested => {
+            OutputStructure::Nested { rings: _, vectors: _ } => {
                 let ring_groups = Self::group_by_ring(monads);
                 for (ring, ring_monads) in ring_groups {
                     let vector_groups = Self::group_by_theta(&ring_monads);
@@ -66,7 +56,7 @@ impl FileWriter {
                         let dir_name = format!("ring_{}/vector_{:.0}", ring, theta);
                         let path = output_dir.join(dir_name).join("mod.rs");
                         std::fs::create_dir_all(path.parent().unwrap())?;
-                        let content = distill_source(&group_monads);
+                        let content = distill_source_with_adapters(&group_monads, adapters);
                         std::fs::write(&path, &content)?;
                         written.push(path);
                     }
@@ -94,7 +84,6 @@ impl FileWriter {
         groups
     }
     
-    /// Write main.rs with module declarations
     pub fn write_modules(monads: &[Monad], output_dir: &Path) -> anyhow::Result<PathBuf> {
         let rings = Self::group_by_ring(monads);
         let mut ring_keys: Vec<_> = rings.keys().collect();

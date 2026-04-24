@@ -33,6 +33,16 @@ pub fn identify_deltas_typed(base_set: &[Monad], new_set: &[Monad]) -> Vec<(Mona
                 if renamed_from.is_some() {
                     deltas.push((new_monad.clone(), DeltaType::Renamed));
                 } else {
+                    // Check for potential rename using similarity
+                    let potential_rename = base_set.iter()
+                        .map(|m| (m, crate::weaver::semantic_diff::SemanticDiff::similarity(m, new_monad)))
+                        .filter(|(_, score)| *score > 0.7)
+                        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+                    if let Some((old, score)) = potential_rename {
+                        println!("  ? Potential rename detected: {} (from {}) with score {:.2}", new_monad.name, old.name, score);
+                    }
+                    
                     deltas.push((new_monad.clone(), DeltaType::Added));
                 }
             }

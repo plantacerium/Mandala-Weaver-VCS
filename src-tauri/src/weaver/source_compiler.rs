@@ -1,11 +1,21 @@
+use serde::{Serialize, Deserialize};
 use crate::ontology::monad::Monad;
+use crate::template::{AdapterConfig, AdapterEngine};
 use std::collections::HashMap;
 
 /// Assembles a collection of monads (a Constellation or selection) into a valid
 /// source file (The Source), ordered by logical domain and dependency.
 pub fn distill_source(monads: &[Monad]) -> String {
+    distill_source_with_adapters(monads, &[])
+}
+
+pub fn distill_source_with_adapters(monads: &[Monad], adapters: &[AdapterConfig]) -> String {
     if monads.is_empty() {
         return String::new();
+    }
+
+    if !adapters.is_empty() {
+        return AdapterEngine::apply_adapters(monads, adapters);
     }
 
     // Group by kind for proper ordering: modules/types first, then impls, then functions
@@ -23,6 +33,16 @@ pub fn distill_source(monads: &[Monad]) -> String {
         monads.len(), rings.len()
     ));
     source.push_str(&format!("// Language: {}\n\n", primary_lang));
+
+    // Auto-generate imports and mod statements
+    if primary_lang == "rust" {
+        let mod_statements: Vec<String> = crate::weaver::auto_imports::ImportAnalyzer::generate_mod_statements(monads);
+        for stmt in mod_statements.iter() {
+            source.push_str(stmt);
+            source.push('\n');
+        }
+        source.push('\n');
+    }
 
     for monad in &ordered {
         source.push_str(&monad.content);
@@ -107,7 +127,7 @@ pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<Incoherence
 }
 
 /// Orders monads by language for mixed-language source output.
-#[allow(dead_code)]
+
 pub fn order_by_language(monads: &[Monad]) -> Vec<Monad> {
     let mut sorted = monads.to_vec();
     sorted.sort_by_key(|m| match m.language.as_str() {
@@ -121,7 +141,7 @@ pub fn order_by_language(monads: &[Monad]) -> Vec<Monad> {
 }
 
 /// Groups monads by language.
-#[allow(dead_code)]
+
 pub fn group_by_language(monads: &[Monad]) -> HashMap<String, Vec<Monad>> {
     let mut groups: HashMap<String, Vec<Monad>> = HashMap::new();
     for monad in monads {
@@ -131,7 +151,7 @@ pub fn group_by_language(monads: &[Monad]) -> HashMap<String, Vec<Monad>> {
 }
 
 /// Distills source for multiple languages, generating separate sections per language.
-#[allow(dead_code)]
+
 pub fn distill_multi_lang(monads: &[Monad], mode: CrossLangMode) -> String {
     if monads.is_empty() {
         return String::new();
@@ -172,15 +192,14 @@ pub fn distill_multi_lang(monads: &[Monad], mode: CrossLangMode) -> String {
 
 /// Mode for handling multiple languages during distillation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+
 pub enum CrossLangMode {
     SingleFile,
     SectionPerLanguage,
 }
 
 /// Describes a detected incoherence in a distillation selection.
-#[derive(Debug, Clone)]
-#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IncoherenceReport {
     pub kind: IncoherenceKind,
     pub message: String,
@@ -188,8 +207,7 @@ pub struct IncoherenceReport {
 }
 
 /// Types of incoherences that can occur.
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum IncoherenceKind {
     /// Two monads define the same entity (same name + kind).
     DuplicateDefinition,

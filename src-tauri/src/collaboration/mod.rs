@@ -7,7 +7,6 @@
 // - Synarchic Synthesis (geometric merge with spatial conflict resolution)
 // - Git bridge for importing history as rings
 
-#![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
