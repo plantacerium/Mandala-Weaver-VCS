@@ -27,8 +27,8 @@ const VectorsPanel: React.FC = () => {
                   Evolución
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
-                  De: {edge.source.slice(0, 8)}...<br/>
-                  A: {edge.target.slice(0, 8)}...
+                  De: {edge.parent_id.slice(0, 8)}...<br/>
+                  A: {edge.child_id.slice(0, 8)}...
                 </div>
               </div>
             ))}
