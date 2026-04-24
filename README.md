@@ -229,7 +229,7 @@ Mandala-Weaver-VCS/
 │   │   │   ├── ProjectCard.tsx   # SVG mini-mandala preview
 │   │   │   └── AddProject.tsx    # Dialog for new projects
 │   │   │
-│   │   ├── panels/            # Control interface
+│   │   ├── panels/            # Cooperation interface
 │   │   │   ├── SidebarNav.tsx    # View mode toggle (Orbit, Sínarc, etc.)
 │   │   │   ├── MonadInspector.tsx# Source code & AST explorer
 │   │   │   ├── DistillPanel.tsx  # Distillation tools
@@ -443,7 +443,7 @@ pub struct Monad {
 pub fn spawn(id: String, name: String, coord: PolarCoord, content: String, ring: u32) -> Monad
 ```
 
-**Purpose:** The fundamental unit of version control - a logical code unit, not a text line.
+**Purpose:** The fundamental unit of version cooperation - a logical code unit, not a text line.
 
 ---
 
@@ -1234,7 +1234,7 @@ interface WorkspaceState {
 
 1. **Astro (The Shell):** `.astro` files (like `index.astro`) serve the initial HTML page. They are ultra-lightweight.
 2. **React (The Interactive Island):** Components like `<MandalaCanvas client:only="react" />` hydrate on the client. React manages global state (which node the user clicked) but **DOES NOT** render the thousands of visual nodes, because React would collapse calculating the virtual DOM for a massive graph.
-3. **D3.js (The Painter):** React hands the `<svg ref={canvasRef}>` container to D3.js. From there, `lib/d3/renderer.ts` takes total control of the DOM within that SVG, injecting nodes with hardware acceleration.
+3. **D3.js (The Painter):** React hands the `<svg ref={canvasRef}>` container to D3.js. From there, `lib/d3/renderer.ts` takes total cooperation of the DOM within that SVG, injecting nodes with hardware acceleration.
 4. **Zustand (The State):** Manages the reactive state of the application. The store centralizes `mandalaState`, `selectedMonad`, `hoveredMonad`, and `viewMode`. Any component can subscribe to these changes without prop drilling.
 
 ---
