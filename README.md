@@ -8,8 +8,8 @@ Mandala Weaver is the exact execution of the Golden Thread Engine instantiated i
 
 This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the Distillation of a unique Source an infinite spiral of innovation where the code expands endlessly outward without ever executing the exact same entropy twice.
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V2.png)
-![Mandala Weaver VCS CLI](public/assets/Mandala-Weaver-VCS-CLI-UI.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V3.png)
+![Mandala Weaver VCS CLI](public/assets/Mandala-Weaver-VCS-UI-V4.png)
 
 ---
 
@@ -29,7 +29,7 @@ This topology enables non-linear code orchestration: the Architect selects preci
 
 ## Synarchy
 
-![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-Synarchy-UI.JPG)
+![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-UI-V5.png)
 
 ---
 ## Essential Commands
