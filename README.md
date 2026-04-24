@@ -171,200 +171,91 @@ Mandala-Weaver-VCS/
 ├── src-tauri/                              # Rust Backend (Tauri Desktop Application)
 │   └── src/
 │       ├── main.rs                        # Application entry point - initializes Tauri, maps DB state, mounts FS watcher
-│       ├── lib.rs                     # Library root - module declarations
-│       │   // Exposes: geometry, ontology, weaver, persistence, interface modules
+│       ├── lib.rs                         # Library root - module declarations
+│       │   // Exposes: geometry, ontology, weaver, persistence, synarchy, language, interface
 │       │
-│       ├── geometry/                  # Topological engine - polar coordinate math
-│       │   ├── mod.rs                 # Module exports
-│       │   │   // Exposes: polar_space, transform, collision, ring, vector
-│       │   │
-│       │   ├── polar_space.rs         # Polar coordinates (r, theta)
-│       │   │   /// struct PolarCoord { r: f64, theta: f64 }
-│       │   │   /// pub fn new(r: f64, theta: f64) -> Self
-│       │   │   /// pub fn distance_to(&self, other: &PolarCoord) -> f64
-│       │   │   // Creates new coordinate normalized 0-360 degrees, calculates orbital distance
-│       │   │
-│       │   ├── transform.rs           # Polar <-> Cartesian conversion
-│       │   │   /// pub fn to_cartesian(coord: &PolarCoord) -> Vector2<f64>
-│       │   │   /// pub fn from_cartesian(x: f64, y: f64) -> PolarCoord
-│       │   │   // Converts polar to cartesian for UI rendering using nalgebra
-│       │   │
-│       │   ├── collision.rs          # Overlap detection logic
-│       │   │   /// pub fn detect_overlap(a: &PolarCoord, b: &PolarCoord, threshold: f64) -> bool
-│       │   │   /// pub fn resolve_orbital_shift(coord: &mut PolarCoord, shift_degrees: f64)
-│       │   │   // Detects if two coords too close, shifts to avoid overlap
-│       │   │
-│       │   ├── ring.rs              # Radial ring definitions
-│       │   │   /// pub struct Ring { level: u32, radius: f64, label: String }
-│       │   │   /// pub fn calculate_expansion_radius(previous_radius: f64, complexity_delta: f64) -> f64
-│       │   │   // Defines ring boundary and calculates expansion radius
-│       │   │
-│       │   └── vector.rs            # Angular domain mapping
-│       │       /// pub fn snap_to_nearest_domain(angle: f64) -> String
-│       │       // Maps angle to functional domain (UI, CORE, IO)
+│       ├── geometry/                      # Topological engine - polar coordinate math
+│       │   ├── mod.rs                     # Module exports (polar_space, transform, collision, etc.)
+│       │   ├── polar_space.rs             # Polar coordinates (r, theta) calculation
+│       │   ├── transform.rs               # Polar <-> Cartesian conversion (nalgebra)
+│       │   └── collision.rs               # Overlap detection and orbital shifting
 │       │
-│       ├── ontology/                 # System entities - domain models
-│       │   ├── mod.rs              # Module exports
-│       │   │   // Exposes: semantic_hash, bindu, monad, constellation
-│       │   │
-│       │   ├── semantic_hash.rs     # Semantic hashing with blake3
-│       │   │   /// pub fn generate_pure_hash(content: &str) -> String
-│       │   │   // Generates AST-based hash ignoring spaces/comments
-│       │   │
-│       │   ├── bindu.rs            # Immutable project center (genesis)
-│       │   │   /// pub struct Bindu { project_name: String, timestamp: u64 }
-│       │   │   /// pub fn genesis(project_name: &str) -> Bindu
-│       │   │   // Creates the center point (Commit 0)
-│       │   │
-│       │   ├── monad.rs            # Minimal functional unit
-│       │   │   /// struct Monad { id: String, coord: PolarCoord, content: String, name: String, ring: u32 }
-│       │   │   /// pub fn spawn(id: String, name: String, coord: PolarCoord, content: String, ring: u32) -> Monad
-│       │   │   // The fundamental version unit (function, struct, docstring)
-│       │   │
-│       │   └── constellation.rs    # Grouping of monads in a ring
-│       │       /// pub struct Constellation { ring_level: u32, monads: Vec<Monad> }
-│       │       /// pub fn validate_harmony(&self) -> Result<(), String>
-│       │       // Groups monads, validates no spatial collisions
+│       ├── ontology/                      # System entities - domain models
+│       │   ├── mod.rs                     # Module exports (monad, bindu, constellation)
+│       │   ├── monad.rs                   # Minimal functional unit (AST-based versioning)
+│       │   └── bindu.rs                   # Immutable project center (Point Zero)
 │       │
-│       ├── weaver/                 # Business Logic - expansion/commit operations
-│       │   ├── mod.rs              # Expansion logic (radial commit)
-│       │   │   /// pub async fn expand_from_source(db: &Surreal<Db>, file_path: &str) -> Result<u32>
-│       │   │   // Main expand: read file -> extract -> detect deltas -> persist
-│       │   │
-│       │   ├── watcher.rs          # File system observer
-│       │   │   /// pub fn spawn_watcher(app_handle: AppHandle, watch_path: impl AsRef<Path>)
-│       │   │   // Emits mandala://file-changed IPC events on local workspace edits
-│       │   │
-│       │   ├── ast_extractor.rs    # Extraction of monads from source code
-│       │   │   /// pub fn extract_raw_monads(source_code: &str, ring: u32) -> Vec<Monad>
-│       │   │   // Parses source into semantic units using ast-grep
-│       │   │
-│       │   ├── threader.rs         # Lineage tracer
-│       │   │   /// pub async fn trace_lineage(db: &Surreal<Db>, monad_id: &str) -> Result<Vec<Monad>>
-│       │   │   // Traces evolutionary lineage toward Bindu
-│       │   │
-│       │   ├── resolver.rs        # Delta resolution
-│       │   │   /// pub fn identify_deltas(base_set: &[Monad], new_set: &[Monad]) -> Vec<Monad>
-│       │   │   /// pub fn has_evolved(base: &Monad, target: &Monad) -> bool
-│       │   │   // Identifies changes between code versions
-│       │   │
-│       │   └── source_compiler.rs  # Source assembler (distillation)
-│       │       /// pub fn distill_source(monads: &[Monad]) -> String
-│       │       /// pub fn validate_source_coherence(monads: &[Monad]) -> Result<(), Vec<IncoherenceReport>>
-│       │       // Assembles monads and validates syntax via syn AST parsing
+│       ├── weaver/                        # Business Logic - expansion/commit operations
+│       │   ├── mod.rs                     # Expansion logic (radial commit)
+│       │   ├── ast_extractor.rs           # Extraction of monads from source (ast-grep)
+│       │   ├── threader.rs                # Lineage tracer (surrealdb graph queries)
+│       │   ├── resolver.rs                # Delta resolution between rings
+│       │   ├── source_compiler.rs         # Source assembler (distillation)
+│       │   ├── auto_imports.rs            # Dependency analyzer for monads
+│       │   └── file_writer.rs             # Disk persistence for distilled sources
 │       │
-│       ├── persistence/             # SurrealDB database layer
-│       │   ├── mod.rs           # Module exports
-│       │   │   // Exposes: schemas, surreal_bridge
-│       │   │
-│       │   ├── schemas.rs        # SurrealQL definitions
-│       │   │   /// pub fn get_initialization_queries() -> Vec<&'static str>
-│       │   │   // DEFINE TABLE monad, evolves_to, INDEX
-│       │   │
-│       │   └── surreal_bridge.rs # Bridge with embedded SurrealDB
-│       │       /// pub async fn connect_embedded() -> Result<Surreal<Db>>
-│       │       /// pub async fn insert_and_link(db: &Surreal<Db>, current: &Monad, parent_id: Option<&str>) -> Result<()>
-│       │       /// pub async fn get_ring(db: &Surreal<Db>, ring: u32) -> Result<Vec<Monad>>
-│       │       /// pub async fn get_all_monads(db: &Surreal<Db>) -> Result<Vec<Monad>>
-│       │       /// pub async fn get_vector_sector(db: &Surreal<Db>, min_theta: f64, max_theta: f64) -> Result<Vec<Monad>>
-│       │       // DB operations: connect, insert with lineage, query rings/sectors
+│       ├── synarchy/                      # Project Orchestration
+│       │   ├── mod.rs                     # Module exports
+│       │   ├── registry.rs                # Project registry (JSON persistence)
+│       │   └── sync.rs                    # Auto-scan and synchronization logic
 │       │
-│       ├── interface/             # Projection and CLI
-│       │   ├── mod.rs           # Module exports
-│       │   │   // Exposes: cli_commands, radial_tui, projection_api
-│       │   │
-│       │   ├── cli_commands.rs # CLI commands (placeholder)
-│       │   │   // Future command-line interface
-│       │   │
-│       │   ├── radial_tui.rs    # TUI rendering (placeholder)
-│       │   │   // Future terminal-based UI
-│       │   │
-│       │   └── projection_api.rs # JSON projection API for Tauri
-│       │       /// #[tauri::command] pub async fn export_mandala_state(db: State<Surreal<Db>>) -> Result<String>
-│       │       /// #[tauri::command] pub async fn expand_ring(db: State<Surreal<Db>>, file_path: String) -> Result<u32>
-│       │       // Tauri IPC handlers for frontend
+│       ├── persistence/                   # SurrealDB database layer
+│       │   ├── schemas.rs                 # SurrealQL definitions (tables, indexes)
+│       │   └── surreal_bridge.rs          # Bridge with embedded SurrealDB
 │       │
-│       └── Cargo.toml            # Rust dependencies
-│           // tauri, tokio, nalgebra, ast-grep-core, surrealdb, blake3, serde, syn, notify
+│       ├── interface/                     # IPC Bridge and CLI API
+│       │   ├── projection_api.rs          # JSON projection API for Tauri (Mandala View)
+│       │   ├── synarchy_api.rs            # IPC handlers for Project Explorer
+│       │   └── cli_api.rs                 # Logic for the 'weave' CLI commands
+│       │
+│       └── Cargo.toml                     # Rust dependencies (tauri 2.0, surrealdb 3.0, ast-grep)
 │
 ├── src/                          # Frontend (Astro + React + D3.js)
 │   ├── pages/
 │   │   ├── index.astro         # Main canvas (Workspace)
-│   │   │   // Mounts: AppLayout, MandalaCanvas, SidebarHistory, MonadInspector
-│   │   │
-│   │   └── settings.astro     # Repository configuration panel
-│   │       // Future settings interface
+│   │   ├── explorer.astro      # Synarchy Explorer (Project list)
+│   │   └── project/[id].astro  # Project detail view
 │   │
 │   ├── layouts/
-│   │   └── AppLayout.astro   # Page wrapper
-│   │       // Sets up shell, global styles, Tauri context
+│   │   └── AppLayout.astro     # Page wrapper with SidebarNav
 │   │
 │   ├── components/
-│   │   ├── mandala/           # Interactive canvas components
-│   │   │   ├── MandalaCanvas.tsx # SVG/Canvas container
-│   │   │   │   // Mounts D3 engine, handles zoom/pan/lasso, click/hover events
-│   │   │   │
-│   │   │   └── TooltipNode.tsx  # Floating monad tooltip
-│   │   │       // Shows monad details on hover
+│   │   ├── mandala/           # Interactive canvas components (D3/React)
+│   │   │   ├── MandalaCanvas.tsx # SVG container & D3 mount
+│   │   │   └── TooltipNode.tsx   # Floating monad details
 │   │   │
-│   │   ├── panels/            # Control and navigation interface
-│   │   │   ├── SidebarNav.tsx      # Sidebar state toggle
-│   │   │   │   // Top navigation mapping to workspace viewMode
-│   │   │   │
-│   │   │   ├── SidebarHistory.tsx  # Vertical ring/operation list
-│   │   │   │   // Displays ring statistics and recent operations
-│   │   │   │
-│   │   │   ├── MonadInspector.tsx # Source code and Hash display
-│   │   │   │   // Shows selected monad content and semantic hash
-│   │   │   │
-│   │   │   └── DistillPanel.tsx   # Sources (Distill) integration
-│   │   │       // UI for compiling selected monads into executables
+│   │   ├── synarchy/          # Project management components
+│   │   │   ├── ProjectList.tsx   # Grid of projects
+│   │   │   ├── ProjectCard.tsx   # SVG mini-mandala preview
+│   │   │   └── AddProject.tsx    # Dialog for new projects
 │   │   │
-│   │   └── ui/              # Dumb components
-│   │       ├── Icon.tsx        # SVG icon wrapper
-│   │       │   // Renders named icons
-│   │       │
-│   │       └── Button.tsx      # Styled button
-│   │           // Primary/secondary button variants
+│   │   ├── panels/            # Control interface
+│   │   │   ├── SidebarNav.tsx    # View mode toggle (Orbit, Sínarc, etc.)
+│   │   │   ├── MonadInspector.tsx# Source code & AST explorer
+│   │   │   ├── DistillPanel.tsx  # Distillation tools
+│   │   │   ├── RingsPanel.tsx    # Radial layers management
+│   │   │   ├── VectorsPanel.tsx  # Domain lineage inspector
+│   │   │   └── TerminalPanel.tsx # Integrated CLI feedback
+│   │   │
+│   │   └── ui/                # Shared atomic components (Button, Icon, etc.)
 │   │
 │   ├── lib/
-│   │   ├── tauri/            # IPC Bridge with Rust
-│   │   │   ├── commands.ts    # Async command invocation
-│   │   │   │   /// export async function fetchMandalaState(): Promise<MandalaState>
-│   │   │   │   /// export async function invokeExpand(filePath: string): Promise<void>
-│   │   │   │   // Invokes Tauri commands
-│   │   │   │
-│   │   │   └── events.ts     # Event listeners
-│   │   │       /// export async function listenForFileChanges(callback: (payload: FileChangeEvent) => void): Promise<UnlistenFn>
-│   │   │       // Subscribes to backend FS watcher hot-reload broadcasts
+│   │   ├── tauri/             # IPC Bridge
+│   │   │   ├── commands.ts     # Workspace commands (export, expand)
+│   │   │   ├── synarchy_api.ts # Synarchy commands (get_projects)
+│   │   │   └── events.ts       # Backend listeners (FS watcher)
 │   │   │
-│   │   ├── d3/             # Visual Mathematical Rendering
-│   │   │   ├── renderer.ts   # Static geometry rendering
-│   │   │   │   /// export function drawPolarGrid(svg: d3.Selection, maxRadius: number): void
-│   │   │   │   /// export function renderMonads(svg: d3.Selection, monads: Monad[]): void
-│   │   │   │   // Renders polar grid and monad nodes
-│   │   │   │
-│   │   │   ├── links.ts     # Edge rendering
-│   │   │   │   /// export function drawEvolutionaryLinks(svg: d3.Selection, edges: Edge[]): void
-│   │   │   │   // Draws Bezier curves for lineage
-│   │   │   │
-│   │   │   └── interactions.ts # Zoom, pan, lasso
-│   │   │       /// export function setupZoom(svg: d3.Selection, config: InteractionConfig): d3.ZoomBehavior
-│   │   │       /// export function enableLassoSelection(svg: d3.Selection, onSelect: (m: Monad[]) => void): void
-│   │   │       // Handles zoom/pan and lasso selection
+│   │   ├── d3/                # Visual Rendering engine
+│   │   │   ├── renderer.ts     # Polar grid and nodes
+│   │   │   ├── links.ts        # Evolutionary Bezier curves
+│   │   │   └── interactions.ts # Zoom, pan, lasso selection
 │   │   │
-│   │   └── state/          # Global State (Zustand)
-│   │       └── workspaceStore.ts  # Application state
-│   │           /// export const useWorkspaceStore = create<WorkspaceState>(...)
-│   │           // State: mandalaState, selectedMonad, hoveredMonad, viewMode
+│   │   └── state/             # Global Store (Zustand)
+│   │       └── workspaceStore.ts # Centralized reactive state
 │   │
-│   ├── types/               # TypeScript contracts (match Rust)
-│   │   ├── geometry.ts      # PolarCoord interface
-│   │   │   /// interface PolarCoord { r: number; theta: number }
-│   │   │
-│   │   └── ontology.ts     # Monad/Mandala interfaces
-│   │       │   /// interface Monad { id: string; name: string; coord: PolarCoord; content: string; ring: number }
-│   │       │   /// interface MandalaState { bindu_name: string; constellations: Constellation[] }
+│   ├── types/                 # TS interfaces (Ontology & Synarchy)
+│   ├── styles/                # Global variables and component styles
+│   └── package.json           # Frontend dependencies (astro, d3, zustand)
 │   │
 │   ├── styles/
 │   │   ├── global.css     # CSS variables and reset
