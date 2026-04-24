@@ -4,12 +4,12 @@ import { invoke } from '@tauri-apps/api/core';
 import '../../styles/panels/panels.css';
 
 const DistillPanel: React.FC = () => {
-    const { selectedForDistill, setSelectedForDistill } = useWorkspaceStore();
+    const { selectedForDistill, setSelectedForDistill, viewMode } = useWorkspaceStore();
     const [isDistilling, setIsDistilling] = useState(false);
     const [distillResult, setDistillResult] = useState<string | null>(null);
 
-    // Only show the panel if selected monads exist and we haven't switched away
-    if (selectedForDistill.length === 0) {
+    // Only show the panel if viewMode is 'distill'
+    if (viewMode !== 'distill') {
         return null;
     }
 

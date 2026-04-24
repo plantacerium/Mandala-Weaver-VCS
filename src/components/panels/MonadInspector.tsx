@@ -3,8 +3,12 @@ import { useWorkspaceStore } from '../../lib/state/workspaceStore';
 import '../../styles/panels/panels.css';
 
 const MonadInspector: React.FC = () => {
-  const { selectedMonad, hoveredMonad } = useWorkspaceStore();
+  const { selectedMonad, hoveredMonad, viewMode } = useWorkspaceStore();
   const monad = selectedMonad || hoveredMonad;
+
+  if (viewMode !== 'orbit') {
+    return null;
+  }
 
   if (!monad) {
     return (
