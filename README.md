@@ -153,6 +153,9 @@ Conflicts are not resolved by reading text lines, but by analyzing geometry. If 
 **4. Distillation (Inward Path):**
 Navigation toward the center allows refactoring by eliminating unnecessary complexity. Traveling to Ring 1 or 2 of any vector will give you the purest and barest version of that functionality.
 
+**5. Synarchy (Project Orchestration):**
+Beyond a single Mandala, projects are organized into a Synarchy. A global registry tracks multiple repositories, allowing the Architect to navigate between different "universes" of code, maintaining cross-project awareness and structural coherence.
+
 ---
 
 # Complete Technical Documentation
@@ -865,34 +868,40 @@ export interface Constellation {
 |  |   |     MandalaCanvas (React Island) client:only=react       |  |  |
 |  |   |                                                           |  |  |
 |  |   |   +-------------------------+    +-----------------------+ |  |  |
-|  |   |   |   SVG Container         |    |   Panels               | |  |  |
-|  |   |   |                        |    |                      | |  |  |
-|  |   |   | +-----------------+   |    | +------------------+  | |  |  |
-|  |   |   | | D3 Renderer    |   |    | |MonadInspector |  | |  |  |
-|  |   |   | | -drawPolarGrid|   |    | |SidebarHistory|  | |  |  |
-|  |   |   | | -renderMonads|    |    +--------+---------+  | |  |  |
-|  |   |   | +-----------------+   |              |          | |  |  |
-|  |   |   | +-----------------+   |    +--------+---------+| |  |  |
-|  |   |   | | D3 Interactions|   |    | Zustand Store  || |  |  |
-|  |   |   | | -setupZoom    |   |    | mandalaState  || |  |  |
-|  |   |   | | -lassoSelect |    |    | selectedMonad || |  |  |
-|  |   |   | +-----------------+   |    | hoveredMonad || |  |  |
-|  |   |   +---------------------+    | setMandalaState()|| |  |  |
-|  |   |                           | selectMonad()    || |  |  |
-|  |   |                           +------------------+  | |  |
-|  |   +-------------------------+    +-----------------------+ |  |
-|  |   +------------------------------------------------------------+  |
+|  |   |   |   SVG Container         |    |   Panels (React)       | |  |  |
+|  |   |   |                        |    |                       | |  |  |
+|  |   |   | +-----------------+   |    | +-------------------+ | |  |  |
+|  |   |   | | D3 Renderer    |   |    | | MonadInspector    | | |  |  |
+|  |   |   | | -drawPolarGrid|   |    | | SidebarHistory    | | |  |  |
+|  |   |   | | -renderMonads |   |    | | DistillPanel      | | |  |  |
+|  |   |   | +-----------------+   |    | | Rings/VectorsPanel| | |  |  |
+|  |   |   | +-----------------+   |    | | TerminalPanel     | | |  |  |
+|  |   |   | | D3 Interactions|   |    | +---------+---------+ | |  |  |
+|  |   |   | | -setupZoom    |   |    |           |           | |  |  |
+|  |   |   | | -lassoSelect  |   |    | +---------+---------+ | |  |  |
+|  |   |   | +-----------------+   |    | |  Zustand Store    | | |  |  |
+|  |   |   +-----------------------+    | - mandalaState      | | |  |  |
+|  |   |                                | - selectedMonad     | | |  |  |
+|  |   |                                | - viewMode (Orbit+) | | |  |  |
+|  |   |                                +---------------------+ | |  |  |
+|  |   +--------------------------------------------------------+ |  |
+|  |   |            explorer.astro (Synarchy Explorer)            |  |
+|  |   |   +-----------------------+    +---------------------+   |  |
+|  |   |   | ProjectList component |    | ProjectCard (SVG)   |   |  |
+|  |   |   +-----------------------+    +---------------------+   |  |
+|  |   +----------------------------------------------------------+  |
 |  +-----------------------------------------------------------------+  |
 |                              |                         |                    |
 |                              V                         |                    |
 |  +---------------------------------------------------+------------------+  |
 |  |                    lib/tauri/commands.ts                          |  |
-|  |   +----------------------+    +------------------------------+ |  |
-|  |   | fetchMandalaState()  |    | invokeExpand(filePath)         | |  |
-|  |   | ---> Promise<State>|    | ---> Promise<ringLevel>       | |  |
-|  |   +--------+-----------+    +---------------+-----------+    |  |
-|  +-----------------+----------------------------+------------------+   |
-+--------------------+--------------------------------+-----------+
+|  |   +--------------------------+    +----------------------------+ |  |
+|  |   | export_mandala_state()   |    | distill_from_selection()   | |  |
+|  |   | expand_ring()            |    | trace_monad_lineage()      | |  |
+|  |   | get_projects()           |    | init_project()             | |  |
+|  |   +------------+-------------+    +-------------+--------------+ |  |
+|  +----------------+--------------------------------+-----------------+  |
++-------------------+--------------------------------+-----------+
                      | Tauri IPC (invoke)                  | Tauri IPC
                      V                                V
 +-----------------------------------------------------------------------+
@@ -927,11 +936,25 @@ export interface Constellation {
 |   |                                                       |  |
 |   |   +-------------+    +-------------+    +------------------+ |  |
 |   |   |ast_extractor|    |  resolver   |    | source_compiler  | |  |
-|   |   |            |    |            |    |                | |  |
-|   |   |extract_raw |    |identify_   |    | distill_source | |  |
-|   |   | _monads() |    | deltas()   |    | (monads[])    | |  |
-|   |   +---------+   | has_evolved |    +------------------+|   |
-|   |               +-----------+                         |   |
+|   |   |extract_raw()|    |identify_    |    | distill_source() | |  |
+|   |   +-------------+    | deltas()    |    +------------------+ |  |
+|   |   +-------------+    +-------------+    +------------------+ |  |
+|   |   |auto_imports |    | file_writer |    |     threader     | |  |
+|   |   |analyzer     |    | (Ring/Vec)  |    | (Lineage Trace)  | |  |
+|   |   +-------------+    +-------------+    +------------------+ |  |
+|   |   +--------------------------------+                     |  |
+|   |   |         semantic_diff          |                     |  |
+|   |   |         (AST Hash Diff)        |                     |  |
+|   |   +--------------------------------+                     |  |
+|   +-----------------------------------------------+-----+    |
+|                                     |                   |
+|   +----------------------------------+------------------+  |
+|   |                  synarchy/ (Registry)               |  |
+|   |                                                       |  |
+|   |   +-------------+    +-------------+                     |  |
+|   |   | registry.rs |    |   sync.rs   |                     |  |
+|   |   | (JSON DB)   |    | (Auto-Scan) |                     |  |
+|   |   +-------------+    +-------------+                     |  |
 |   +-----------------------------------------------+-----+    |
 |                                     |                   |
 |   +----------------------------------+------------------+  |
