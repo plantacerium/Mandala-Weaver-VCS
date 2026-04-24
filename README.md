@@ -25,6 +25,10 @@ This topology enables non-linear code orchestration: the Architect selects preci
   - Macro-Orchestration (Zoom Out): Expanding the perspective reveals the entire ecosystem. Individual nodes yield to the macro-structure, illuminating dependency galaxies, the density of evolutionary rings, and the global health of the synarchy at a single glance.
   - Micro-Immersion (Focused Zoom In): Selecting a Monad and pulling the perspective allows the Architect to traverse the node's membrane. The Monad undergoes a fractal unfolding—revealing its internal universe, its Abstract Syntax Tree (AST), its evolutionary lineage, and its atomic essence. It is a fluid transition from stellar orbit to quantum microsurgery.
 
+---
+
+## Synarchy
+
 ![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-Synarchy-UI.JPG)
 
 ---
