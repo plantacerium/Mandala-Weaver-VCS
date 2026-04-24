@@ -27,6 +27,62 @@
 	--border: #e5e7eb;
 }
 
+[data-theme="love"] {
+	--bg-dark: #1a0a10;
+	--bg-panel: rgba(40, 10, 20, 0.75);
+	--bg-panel-solid: #1f0a12;
+	--accent-primary: #ff2d55; /* Rose red */
+	--accent-secondary: #ff6b9d; /* Soft pink */
+	--text-main: #ffdde5;
+	--text-dim: #aa6677;
+	--glass-border: rgba(255, 45, 85, 0.1);
+	--glass-highlight: rgba(255, 45, 85, 0.15);
+	--border: #3a1520;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(255, 45, 85, 0.08) 0%, rgba(255, 107, 157, 0.03) 40%, transparent 80%);
+}
+
+[data-theme="golden"] {
+	--bg-dark: #1a1708;
+	--bg-panel: rgba(35, 30, 10, 0.75);
+	--bg-panel-solid: #1f1c0a;
+	--accent-primary: #ffd700; /* Gold */
+	--accent-secondary: #ffb700; /* Amber */
+	--text-main: #fff5d0;
+	--text-dim: #aa9a55;
+	--glass-border: rgba(255, 215, 0, 0.1);
+	--glass-highlight: rgba(255, 215, 0, 0.15);
+	--border: #3a3520;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.08) 0%, rgba(255, 183, 0, 0.03) 40%, transparent 80%);
+}
+
+[data-theme="ancient"] {
+	--bg-dark: #0c0a06;
+	--bg-panel: rgba(25, 20, 12, 0.8);
+	--bg-panel-solid: #110d08;
+	--accent-primary: #c9a227; /* Bronze gold */
+	--accent-secondary: #8b6914; /* Aged bronze */
+	--text-main: #d4c4a0;
+	--text-dim: #6b5a3a;
+	--glass-border: rgba(201, 162, 39, 0.08);
+	--glass-highlight: rgba(201, 162, 39, 0.12);
+	--border: #2a2010;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(201, 162, 39, 0.06) 0%, rgba(139, 105, 20, 0.02) 40%, transparent 80%);
+}
+
+[data-theme="futuristic"] {
+	--bg-dark: #020408;
+	--bg-panel: rgba(8, 15, 25, 0.75);
+	--bg-panel-solid: #030810;
+	--accent-primary: #00ffcc; /* Neon mint */
+	--accent-secondary: #ff00aa; /* Hot pink neon */
+	--text-main: #e0f5f0;
+	--text-dim: #4a6a6a;
+	--glass-border: rgba(0, 255, 204, 0.1);
+	--glass-highlight: rgba(0, 255, 204, 0.15);
+	--border: #0a1520;
+	--gradient-radial: radial-gradient(ellipse at center, rgba(0, 255, 204, 0.1) 0%, rgba(255, 0, 170, 0.03) 40%, transparent 80%);
+}
+
 * {
 	box-sizing: border-box;
 }
