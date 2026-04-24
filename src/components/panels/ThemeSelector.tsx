@@ -13,13 +13,15 @@ const themes: { id: Theme; label: string; color: string }[] = [
 
 export default function ThemeSelector() {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<Theme>('dark');
+  const [currentTheme, setCurrentTheme] = useState<Theme>('love');
 
   useEffect(() => {
     const saved = localStorage.getItem('mandala-theme') as Theme;
     if (saved && themes.some(t => t.id === saved)) {
       setCurrentTheme(saved);
       document.documentElement.setAttribute('data-theme', saved);
+    } else {
+      document.documentElement.setAttribute('data-theme', 'love');
     }
   }, []);
 
