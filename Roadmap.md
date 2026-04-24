@@ -154,21 +154,21 @@ Interfaz de línea de comandos y terminal visual para entornos sin GUI.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 7.1 | **CLI Core (`clap`)** | ⬜ | `cli_commands.rs` with `weave` prefix commands — implements all 15 Commands of Cooperation |
-| 7.1.1 | → `weave bindu` — Create Bindu | ⬜ | Instantiates Point Zero (0,0) |
-| 7.1.2 | → `weave seed <source>` — Plant repository | ⬜ | Imports existing Mandala |
-| 7.1.3 | → `weave telemetry` — Scan topology | ⬜ | Returns ecosystem pulse |
-| 7.1.4 | → `weave focus <monad>` — Focus monad | ⬜ | Select into active constellation |
-| 7.1.5 | → `weave crystallize` — Radial commit | ⬜ | Creates new ring |
-| 7.1.6 | → `weave vector <angle>` — New vector | ⬜ | Opens angle of exploration |
-| 7.1.7 | → `weave dormant` — Dormant state | ⬜ | Clears cache to latent space |
-| 7.1.8 | → `weave distill` — Compile Source | ⬜ | Core compilation |
-| 7.1.9 | → `weave spectrum` — Chromatic analysis | ⬜ | HSL semantic diff |
-| 7.1.10 | → `weave lineage` — Query lineage | ⬜ | Evolutionary spiral |
-| 7.1.11 | → `weave echo` — Echo from inner ring | ⬜ | Replays historical logic |
-| 7.1.12 | → `weave absorb` — Network sync | ⬜ | Import from network |
-| 7.1.13 | → `weave synthesize` — Vector synthesis | ⬜ | Merge two vectors |
-| 7.1.14 | → `weave emanate` — Emit to network | ⬜ | Export to network |
+| 7.1 | **CLI Core (`clap`)** | ✅ | `cli_commands.rs` with all 15 Commands of Cooperation fully implemented |
+| 7.1.1 | → `weave bindu` — Create Bindu | ✅ | Instantiates Point Zero (0,0) |
+| 7.1.2 | → `weave seed <source>` — Plant repository | ✅ | Imports existing Mandala |
+| 7.1.3 | → `weave telemetry` — Scan topology | ✅ | Returns ecosystem pulse |
+| 7.1.4 | → `weave focus <monad>` — Focus monad | ✅ | Select into active constellation |
+| 7.1.5 | → `weave crystallize` — Radial commit | ✅ | Creates new ring |
+| 7.1.6 | → `weave vector <angle>` — New vector | ✅ | Opens angle of exploration |
+| 7.1.7 | → `weave dormant` — Dormant state | ✅ | Clears cache to latent space |
+| 7.1.8 | → `weave distill` — Compile Source | ✅ | Core compilation |
+| 7.1.9 | → `weave spectrum` — Chromatic analysis | ✅ | HSL semantic diff |
+| 7.1.10 | → `weave lineage` — Query lineage | ✅ | Evolutionary spiral |
+| 7.1.11 | → `weave echo` — Echo from inner ring | ✅ | Replays historical logic |
+| 7.1.12 | → `weave absorb` — Network sync | ✅ | Import from network |
+| 7.1.13 | → `weave synthesize` — Vector synthesis | ✅ | Merge two vectors |
+| 7.1.14 | → `weave emanate` — Emit to network | ✅ | Export to network |
 | 7.2 | **Persistent Storage (File Backend)** | ⬜ | Switch from `Mem` to `SurrealKV` for CLI persistence |
 | 7.2.1 | → Store DB in `.mandala/db/` inside project root | ⬜ | |
 | 7.2.2 | → Auto-detect `.mandala/` directory walking up from cwd | ⬜ | |
@@ -258,13 +258,13 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 | 4 — El Telar IPC | 12 | 12 | 0 | 0 |
 | 5 — El Mandala UI | 21 | 16 | 0 | 5 |
 | 6 — Templates YAML | 7 | 0 | 0 | 7 |
-| 7 — CLI & TUI | 14 | 0 | 0 | 14 |
+| 7 — CLI & TUI | 14 | 14 | 0 | 0 |
 | 8 — Multi-Language | 6 | 6 | 0 | 0 |
 | 9 — Performance | 5 | 0 | 0 | 5 |
 | 10 — Collaboration | 5 | 0 | 0 | 5 |
 | 11 — Synarchy Explorer | 9 | 5 | 0 | 4 |
 | R — Remaining Tasks | 13 | 0 | 0 | 13 |
-| **TOTAL** | **128** | **66** | **0** | **62** |
+| **TOTAL** | **128** | **80** | **0** | **48** |
 
 ---
 
