@@ -1,0 +1,29 @@
+# Rust
+target/
+cargo-lock.json
+
+# Node
+node_modules/
+dist/
+.astro/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+
+# Cache
+.cache/
+.parcel-cache/
+coverage/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
