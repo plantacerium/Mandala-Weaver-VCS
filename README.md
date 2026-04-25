@@ -110,7 +110,7 @@ Integrates the latest crystallized nodes from the macro-ecosystem into your loca
 Finds the harmonic geometry between two evolving vectors. Because Monads exist in spatial coordinates, they do not collide; the engine weaves them together, resolving any logical dissonance through AST alignment.
 
 **`weave emanate`**: 
-Irradiates your local, crystallized updates outward to the macro-network, allowing other nodes in the Synarchy to observe and absorb your evolutionary rings.
+Irradiates your local, crystallized updates outward, inward to the macro-network, allowing other nodes in the Synarchy to observe and absorb your evolutionary rings.
 
 ---
 
@@ -160,7 +160,9 @@ Unlike a traditional checkout that loads the entire repository at a point in tim
 
 ## Guide for Creators of Spiral Time Lines
 
-For Architects and Weavers of this system, software creation changes from "adding lines of code" to "positioning logic in space."
+For Architects and Weavers of this system, software creation changes from "adding lines of code" to "resonance logic in space."
+**0. Omnidirectional Evolution**
+The Synarchic knowledge flows in all directions inner, outer, present.
 
 **1. Planting the Bindu:**
 Define the semantic structure of your project. Which angles will dominate your space? Divide 360 degrees into your main domains (UI, Core, I/O, Business Logic).
