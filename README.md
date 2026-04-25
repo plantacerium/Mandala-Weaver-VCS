@@ -161,7 +161,8 @@ Unlike a traditional checkout that loads the entire repository at a point in tim
 ## Guide for Creators of Spiral Time Lines
 
 For Architects and Weavers of this system, software creation changes from "adding lines of code" to "resonance logic in space."
-**0. Omnidirectional Evolution**
+
+**0. Omnidirectional (Evolution):**
 The Synarchic knowledge flows in all directions inner, outer, present.
 
 **1. Planting the Bindu:**
