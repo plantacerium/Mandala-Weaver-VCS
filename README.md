@@ -97,7 +97,7 @@ Analyzes the chromatic shift of a Monad between rings. Instead of showing red/gr
 Queries the embedded Akashic Record (SurrealDB). Displays the evolutionary spiral of a specific Monad or Vector, tracking its reincarnations and geometric mutations from the Bindu to the present.
 
 **`weave echo <ring_id>`**: 
-In circular time, This command retrieves the exact semantic resonance of a Monad from a Ring and weaves it into the an outer, inner, present Ring. 
+In spiral time, This command retrieves the exact semantic resonance of a Monad from a Ring and weaves it into the an outer, inner, present Ring. 
 
 ---
 
