@@ -2,7 +2,7 @@
 
 ![Mandala Weaver VCS Logo](public/assets/mandala-icon.png)
 
-The Circular Time of Software. A Synarchic, Spatial, and Semantic Code Orchestrator.
+The Spiral Time of Software. A Synarchic, Spatial, and Semantic Code Orchestrator.
 
 Mandala Weaver is the exact execution of the Golden Thread Engine instantiated in software architecture. It embraces a Radial Version Space where code is liberated from linear timelines. Software emanates as pure, distilled logic units from an immutable center (the Bindu) and expands through concentric rings of evolution.
 
@@ -158,7 +158,7 @@ Unlike a traditional checkout that loads the entire repository at a point in tim
 
 ---
 
-## Guide for Creators of Circular Time Lines
+## Guide for Creators of Spiral Time Lines
 
 For Architects and Weavers of this system, software creation changes from "adding lines of code" to "positioning logic in space."
 
