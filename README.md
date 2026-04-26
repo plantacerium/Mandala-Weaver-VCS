@@ -54,7 +54,7 @@ cargo check
 
 ---
 
-## Commands of Cooperation
+## CLI Cooperation Line Interface
 
 ### Genesis & State (The Foundation)
 
@@ -88,7 +88,7 @@ Puts active, uncrystallized Monads into the *Vórtice de Reposo* (latent space).
 ### Spatial Navigation (Time & Geometry)
 
 **`weave distill <coordinates>`**: 
-The core spatial compilation command. Reads a YAML template or specific coordinates ($r, \theta$) to extract and weave the highest logic across different rings into a consolidated, executable Source.
+The core spatial compilation cooperation. Reads a YAML template or specific coordinates ($r, \theta$) to extract and weave the highest logic across different rings into a consolidated, executable Source.
 
 **`weave spectrum <monad>`**: 
 Analyzes the chromatic shift of a Monad between rings. Instead of showing red/green deleted text, it outputs the semantic variance based on its HSL signature, instantly confirming if the core logic or just the formatting mutated.
@@ -97,7 +97,7 @@ Analyzes the chromatic shift of a Monad between rings. Instead of showing red/gr
 Queries the embedded Akashic Record (SurrealDB). Displays the evolutionary spiral of a specific Monad or Vector, tracking its reincarnations and geometric mutations from the Bindu to the present.
 
 **`weave echo <ring_id>`**: 
-In spiral time, This command retrieves the exact semantic resonance of a Monad from a Ring and weaves it into the an outer, inner, present Ring. 
+In spiral time, This cli retrieves the exact semantic resonance of a Monad from a Ring and weaves it into the an outer, inner, present Ring. 
 
 ---
 
@@ -191,7 +191,7 @@ Beyond a single Mandala, projects are organized into a Synarchy. A global regist
 |                                        USER                                           |
 |   +-----------+   +-----------+   +-----------+   +-----------+   +----------------+   |
 |   | Code      |   | Click on  |   | Hover over|   | Drag to   |   | Terminal/CLI  |   |
-|   | Editor    |   | Monad    |   | Monad     |   | select    |   | weave commands|   |
+|   | Editor    |   | Monad    |   | Monad     |   | select    |   | weave cooperation|   |
 |   +-----+-----+   +-----+-----+   +-----+-----+   +------+----+   +-------+--------+   |
 +--------+----------------+----------------+----------------+----------------+----------------+
               |                |                |                |                |
@@ -234,7 +234,7 @@ Beyond a single Mandala, projects are organized into a Synarchy. A global regist
 |                                      |                           |                     |
 |                                      V                           |                     |
 |   +---------------------------------------------------+----------+----------------+   |
-|   |              lib/tauri/commands.ts                 |    lib/tauri/synarchy_api.ts  |   |
+|   |              lib/tauri/cooperation.ts                 |    lib/tauri/synarchy_api.ts  |   |
 |   |   +--------------------------+                    |    +-------------------------+ |   |
 |   |   | export_mandala_state()  |                    |    | get_projects()         | |   |
 |   |   | expand_ring()           |                    |    | init_project()         | |   |
@@ -253,7 +253,7 @@ Beyond a single Mandala, projects are organized into a Synarchy. A global regist
 |   |   +----------------------------------------------------------------------------------------
 |   |   |                  interface/ (IPC Bridge & CLI API)                              |
 |   |   |   +------------------+------------------+------------------+-------------------+      |
-|   |   |   | cli_commands.rs  | projection_api.rs | synarchy_api.rs  | collaboration_api |      |
+|   |   |   | cli_cooperation.rs  | projection_api.rs | synarchy_api.rs  | collaboration_api |      |
 |   |   |   | (weave CLI)      | (Mandala View)   | (Project Explorer| .rs (Multiplayer) |      |
 |   |   |   +------------------+------------------+------------------+-------------------+      |
 |   |   |   +------------------+------------------+------------------+-------------------+      |
@@ -424,8 +424,8 @@ Mandala-Weaver-VCS/
 │       │   ├── mod.rs                     # Module exports
 │       │   ├── projection_api.rs         # JSON projection API for Tauri (Mandala View)
 │       │   ├── synarchy_api.rs           # IPC handlers for Project Explorer
-│       │   ├── cli_api.rs                # Logic for the 'weave' CLI commands
-│       │   ├── cli_commands.rs           # CLI command definitions (weave bindu, seed, etc.)
+│       │   ├── cli_api.rs                # Logic for the 'weave' CLI
+│       │   ├── cli_cooperation.rs           # CLI cooperation definitions (weave bindu, seed, etc.)
 │       │   ├── radial_tui.rs             # TUI renderer for terminal-based navigation
 │       │   ├── template_api.rs           # YAML manifest template handlers
 |       |   ├── collaboration_api.rs      # Multiplayer IPC
@@ -480,8 +480,8 @@ Mandala-Weaver-VCS/
 │   │
 │   ├── lib/
 │   │   ├── tauri/             # IPC Bridge
-│   │   │   ├── commands.ts    # Workspace commands (export, expand)
-│   │   │   ├── synarchy_api.ts # Synarchy commands (get_projects)
+│   │   │   ├── cooperation.ts    # Workspace cooperation (export, expand)
+│   │   │   ├── synarchy_api.ts # Synarchy cooperation (get_projects)
 │   │   │   └── events.ts      # Backend listeners (FS watcher)
 │   │   │
 │   │   ├── d3/                # Visual Rendering engine
