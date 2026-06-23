@@ -125,6 +125,7 @@ fn extract_with_ast_grep(
     ) {
         let kind_str = node.kind();
         let kind_ref: &str = &kind_str;
+        println!("NODE KIND: {}", kind_ref);
 
         if EXTRACTABLE_KINDS.contains(&kind_ref) {
             let text = node.text().to_string();

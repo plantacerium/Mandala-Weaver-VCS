@@ -6,33 +6,36 @@ use std::path::PathBuf;
 
 #[tauri::command]
 pub async fn export_mandala_archive(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     project_name: String,
     output_path: String,
 ) -> Result<String, String> {
+    let db_conn = db.read().await;
     let path = PathBuf::from(output_path);
-    collaboration::export_mandala(&db, &project_name, &path).await
+    collaboration::export_mandala(&*db_conn, &project_name, &path).await
         .map(|p| p.display().to_string())
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn import_mandala_archive(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     archive_path: String,
 ) -> Result<(), String> {
+    let db_conn = db.read().await;
     let path = PathBuf::from(archive_path);
-    collaboration::import_mandala(&db, &path).await
+    collaboration::import_mandala(&*db_conn, &path).await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn diff_mandala_states(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     remote_path: String,
 ) -> Result<MandalaDiff, String> {
+    let db_conn = db.read().await;
     let path = PathBuf::from(remote_path);
-    collaboration::diff_mandala(&db, &path).await
+    collaboration::diff_mandala(&*db_conn, &path).await
         .map_err(|e| e.to_string())
 }
 

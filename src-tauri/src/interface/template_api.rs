@@ -7,7 +7,7 @@ use tauri::State;
 
 #[tauri::command]
 pub async fn distill_from_template(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     template_path: String,
 ) -> Result<String, String> {
     let template_content = std::fs::read_to_string(&template_path)
@@ -16,7 +16,8 @@ pub async fn distill_from_template(
     let template: DistillationTemplate = serde_yaml::from_str(&template_content)
         .map_err(|e| format!("Failed to parse template: {}", e))?;
 
-    let engine = crate::template::engine::TemplateEngine::new(db.inner().clone());
+    let db_conn = db.read().await;
+    let engine = crate::template::engine::TemplateEngine::new(db_conn.clone());
     let monads = engine
         .resolve(&template)
         .await
@@ -33,13 +34,14 @@ pub async fn distill_from_template(
 
 #[tauri::command]
 pub async fn distill_from_template_content(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     template_content: String,
 ) -> Result<TemplateResult, String> {
     let template: DistillationTemplate = serde_yaml::from_str(&template_content)
         .map_err(|e| format!("Invalid template YAML: {}", e))?;
 
-    let engine = crate::template::engine::TemplateEngine::new(db.inner().clone());
+    let db_conn = db.read().await;
+    let engine = crate::template::engine::TemplateEngine::new(db_conn.clone());
     let monads = engine
         .resolve(&template)
         .await
@@ -115,14 +117,15 @@ pub fn create_template(name: String, version: String) -> Result<String, String> 
 
 #[tauri::command]
 pub async fn distill_and_write(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     template_content: String,
     output_dir: String,
 ) -> Result<WriteResult, String> {
     let template: DistillationTemplate = serde_yaml::from_str(&template_content)
         .map_err(|e| format!("Invalid template YAML: {}", e))?;
 
-    let engine = crate::template::engine::TemplateEngine::new(db.inner().clone());
+    let db_conn = db.read().await;
+    let engine = crate::template::engine::TemplateEngine::new(db_conn.clone());
     let monads = engine
         .resolve(&template)
         .await

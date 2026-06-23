@@ -53,13 +53,14 @@ async fn get_bindu_name(db: &Surreal<Db>) -> String {
 /// Exports the complete spatial state of the Mandala as JSON.
 /// Returns: { bindu_name, constellations, edges, total_monads, max_ring }
 #[tauri::command]
-pub async fn export_mandala_state(db: State<'_, Surreal<Db>>) -> Result<String, String> {
-    let all_monads = get_all_monads(&db).await
+pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_bridge::SharedDb>) -> Result<String, String> {
+    let db_conn = db.read().await;
+    let all_monads = get_all_monads(&*db_conn).await
         .map_err(|e| e.to_string())?;
         
-    let edges = get_all_edges(&db).await.unwrap_or_default();
+    let edges = get_all_edges(&*db_conn).await.unwrap_or_default();
 
-    let bindu_name = get_bindu_name(&db).await;
+    let bindu_name = get_bindu_name(&*db_conn).await;
     let total_monads = all_monads.len();
     let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
 
@@ -91,24 +92,37 @@ pub async fn export_mandala_state(db: State<'_, Surreal<Db>>) -> Result<String, 
 /// Expands a new ring from a source file.
 #[tauri::command]
 pub async fn expand_ring(
-    db: State<'_, Surreal<Db>>, 
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>, 
     file_path: String
 ) -> Result<u32, String> {
-    crate::weaver::expand_from_source(&db, &file_path).await
+    let db_conn = db.read().await;
+    crate::weaver::expand_from_source(&*db_conn, &file_path).await
         .map_err(|e| e.to_string())
 }
 
 /// Initializes a new project by creating the Bindu (center point).
 #[tauri::command]
 pub async fn init_project(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     project_name: String,
+    project_path: Option<String>,
 ) -> Result<String, String> {
+    if let Some(path_str) = &project_path {
+        let path = std::path::PathBuf::from(path_str);
+        let new_db = crate::persistence::surreal_bridge::connect_db(Some(&path))
+            .await
+            .map_err(|e| e.to_string())?;
+        
+        let mut db_write = db.write().await;
+        *db_write = new_db;
+    }
+
+    let db_conn = db.read().await;
     let bindu = Bindu::genesis(&project_name);
     let json_value = serde_json::to_value(&bindu)
         .map_err(|e| e.to_string())?;
 
-    let _: Option<JsonValue> = db.create(("bindu", "genesis"))
+    let _: Option<serde_json::Value> = db_conn.create(("bindu", "genesis"))
         .content(json_value)
         .await
         .map_err(|e| e.to_string())?;
@@ -116,14 +130,31 @@ pub async fn init_project(
     Ok(format!("Project '{}' initialized at the Bindu.", project_name))
 }
 
+#[tauri::command]
+pub async fn open_project(
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    project_path: String,
+) -> Result<String, String> {
+    let path = std::path::PathBuf::from(project_path);
+    let new_db = crate::persistence::surreal_bridge::connect_db(Some(&path))
+        .await
+        .map_err(|e| e.to_string())?;
+        
+    let mut db_write = db.write().await;
+    *db_write = new_db;
+    
+    Ok("Project successfully opened.".to_string())
+}
+
 /// Distills a Source from a selection of monad IDs.
 /// Validates coherence before assembling.
 #[tauri::command]
 pub async fn distill_from_selection(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     monad_ids: Vec<String>,
 ) -> Result<String, String> {
-    let all_monads = get_all_monads(&db).await
+    let db_conn = db.read().await;
+    let all_monads = get_all_monads(&*db_conn).await
         .map_err(|e| e.to_string())?;
 
     let selected: Vec<Monad> = all_monads.into_iter()
@@ -158,10 +189,11 @@ pub async fn distill_from_selection(
 /// Traces the evolutionary lineage of a monad toward the Bindu.
 #[tauri::command]
 pub async fn trace_monad_lineage(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     monad_id: String,
 ) -> Result<String, String> {
-    let chain = threader::trace_full_chain(&db, &monad_id).await
+    let db_conn = db.read().await;
+    let chain = threader::trace_full_chain(&*db_conn, &monad_id).await
         .map_err(|e| e.to_string())?;
 
     let result = LineageResult {
@@ -176,10 +208,11 @@ pub async fn trace_monad_lineage(
 /// Retrieves detailed information about a specific monad.
 #[tauri::command]
 pub async fn get_monad_detail(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     monad_id: String,
 ) -> Result<String, String> {
-    let all_monads = get_all_monads(&db).await
+    let db_conn = db.read().await;
+    let all_monads = get_all_monads(&*db_conn).await
         .map_err(|e| e.to_string())?;
 
     let monad = all_monads.into_iter()
@@ -193,11 +226,12 @@ pub async fn get_monad_detail(
 /// Writes distilled monads to disk using a specific structure.
 #[tauri::command]
 pub async fn write_distilled_to_disk(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     monad_ids: Vec<String>,
     output_path: String,
 ) -> Result<Vec<String>, String> {
-    let all_monads = get_all_monads(&db).await
+    let db_conn = db.read().await;
+    let all_monads = get_all_monads(&*db_conn).await
         .map_err(|e| e.to_string())?;
 
     let selected: Vec<Monad> = all_monads.into_iter()
@@ -220,45 +254,50 @@ pub async fn write_distilled_to_disk(
 /// Contracts the outermost ring.
 #[tauri::command]
 pub async fn contract_outer_ring(
-    db: State<'_, Surreal<Db>>
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>
 ) -> Result<u32, String> {
-    crate::weaver::contract::contract_ring(&db).await
+    let db_conn = db.read().await;
+    crate::weaver::contract::contract_ring(&*db_conn).await
         .map_err(|e| e.to_string())
 }
 
 /// Reverts the system state to a specific ring level.
 #[tauri::command]
 pub async fn revert_to_level(
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     ring: u32,
 ) -> Result<(), String> {
-    crate::weaver::contract::revert_to_ring(&db, ring).await
+    let db_conn = db.read().await;
+    crate::weaver::contract::revert_to_ring(&*db_conn, ring).await
         .map_err(|e| e.to_string())
 }
 
 /// Gets the count of archived monads.
 #[tauri::command]
 pub async fn get_archived_monads_count(
-    db: State<'_, Surreal<Db>>
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>
 ) -> Result<usize, String> {
-    crate::weaver::contract::get_archived_count(&db).await
+    let db_conn = db.read().await;
+    crate::weaver::contract::get_archived_count(&*db_conn).await
         .map_err(|e| e.to_string())
 }
 
 /// Permanently deletes archived monads.
 #[tauri::command]
 pub async fn purge_archived_monads(
-    db: State<'_, Surreal<Db>>
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>
 ) -> Result<u32, String> {
-    crate::weaver::contract::purge_archived(&db).await
+    let db_conn = db.read().await;
+    crate::weaver::contract::purge_archived(&*db_conn).await
         .map_err(|e| e.to_string())
 }
 #[tauri::command]
 pub async fn search_monads(
     query: String,
-    db: State<'_, Surreal<Db>>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
 ) -> Result<Vec<crate::persistence::search::SearchResult>, String> {
-    crate::persistence::search::SearchEngine::search(&db, &query)
+    let db_conn = db.read().await;
+    crate::persistence::search::SearchEngine::search(&*db_conn, &query)
         .await
         .map_err(|e| e.to_string())
 }

@@ -1,14 +1,42 @@
-use surrealdb::engine::local::Mem;
+use surrealdb::engine::local::{Mem, SurrealKv};
+use std::path::Path;
 use surrealdb::Surreal;
 use serde_json::Value as JsonValue;
 use crate::ontology::monad::Monad;
 use crate::persistence::schemas::get_initialization_queries;
 
-pub type Db = surrealdb::engine::local::Db;
+use std::env;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
-/// Conecta a la base de datos Mem (temporal)
-pub async fn connect_embedded() -> anyhow::Result<Surreal<Db>> {
-    let db = Surreal::new::<Mem>(()).await?;
+pub type Db = surrealdb::engine::local::Db;
+pub type SharedDb = Arc<RwLock<Surreal<Db>>>;
+
+/// Busca el directorio raíz del proyecto (.mandala) subiendo desde el directorio actual
+pub fn find_project_root() -> Option<std::path::PathBuf> {
+    let mut current = env::current_dir().ok()?;
+    loop {
+        if current.join(".mandala").is_dir() {
+            return Some(current);
+        }
+        if !current.pop() {
+            break;
+        }
+    }
+    None
+}
+
+/// Conecta a la base de datos persistente (SurrealKV) o Memoria
+pub async fn connect_db(project_path: Option<&Path>) -> anyhow::Result<Surreal<Db>> {
+    let db = match project_path {
+        Some(path) => {
+            let db_path = path.join(".mandala").join("db");
+            std::fs::create_dir_all(&db_path).ok();
+            Surreal::new::<SurrealKv>(db_path.to_string_lossy().to_string()).await?
+        }
+        None => Surreal::new::<Mem>(()).await?,
+    };
+
     db.use_ns("mandala").use_db("weaver").await?;
     
     // Ejecutar inicialización
@@ -17,6 +45,11 @@ pub async fn connect_embedded() -> anyhow::Result<Surreal<Db>> {
     }
     
     Ok(db)
+}
+
+/// Conecta a la base de datos Mem (temporal) - wrapper para tests y compatibilidad
+pub async fn connect_embedded() -> anyhow::Result<Surreal<Db>> {
+    connect_db(None).await
 }
 
 /// Persiste una mónada en el espacio y crea la arista evolutiva desde su versión anterior.

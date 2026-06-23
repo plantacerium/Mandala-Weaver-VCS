@@ -149,7 +149,7 @@ fn print_result<T: serde::Serialize>(result: T, json: bool) {
 use crate::ontology::bindu::Bindu;
 use crate::ontology::monad::Monad;
 use crate::persistence::surreal_bridge::{
-    connect_embedded, get_all_monads, get_ring, insert_and_link,
+    connect_db, get_all_monads, get_ring, insert_and_link,
 };
 use crate::weaver::ast_extractor::extract_raw_monads;
 use crate::weaver::source_compiler::distill_source;
@@ -165,7 +165,8 @@ struct BinduOutput {
 async fn cmd_bindu(json: bool) -> Result<(), CliError> {
     println!("🌑 Initializing Bindu (Point Zero)...");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let current_dir = std::env::current_dir().map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(Some(&current_dir)).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let bindu = Bindu::genesis("mandala-project");
     let content = serde_json::to_value(&bindu).map_err(|e| CliError::Parse(e.to_string()))?;
@@ -202,7 +203,7 @@ async fn cmd_seed(source: &str, path: Option<PathBuf>, json: bool) -> Result<(),
     
     println!("🌱 Planting Bindu from: {}", target_path.display());
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
@@ -239,7 +240,7 @@ struct RingStatOutput {
 async fn cmd_telemetry(verbose: bool, json: bool) -> Result<(), CliError> {
     println!("📡 Scanning topology...");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let mut ring_map: std::collections::HashMap<u32, Vec<&Monad>> = std::collections::HashMap::new();
@@ -289,7 +290,7 @@ struct FocusOutput {
 async fn cmd_focus(monad_pattern: &str, json: bool) -> Result<(), CliError> {
     println!("🎯 Focusing: {}", monad_pattern);
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let pattern = monad_pattern.replace('*', "");
@@ -335,7 +336,7 @@ async fn cmd_crystallize(message: &str, file: &str, json: bool) -> Result<(), Cl
     let source_code = std::fs::read_to_string(&source_path)
         .map_err(|e| CliError::Io(e))?;
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     let current_max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
     let next_ring = current_max_ring + 1;
@@ -462,7 +463,7 @@ async fn cmd_distill(
 ) -> Result<(), CliError> {
     println!("🔮 Distilling...");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let selected: Vec<Monad> = if let Some(r) = ring {
@@ -535,7 +536,7 @@ struct SpectrumOutput2 {
 async fn cmd_spectrum(monad: &str, json: bool) -> Result<(), CliError> {
     println!("🌈 Analyzing spectrum: {}", monad);
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let found: Vec<_> = monads.iter().filter(|m| m.name.contains(monad)).collect();
@@ -600,7 +601,7 @@ async fn cmd_lineage(monad: Option<String>, _limit: Option<usize>, json: bool) -
     
     println!("🧬 Querying lineage...");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let mut entries = Vec::new();
     
@@ -657,7 +658,7 @@ struct EchoOutput2 {
 async fn cmd_echo(ring_id: u32, monad: Option<String>, json: bool) -> Result<(), CliError> {
     println!("🔄 Echoing from Ring {}...", ring_id);
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let source_monads: Vec<_> = if let Some(name) = monad {
@@ -718,7 +719,7 @@ struct SynthesizeOutput2 {
 async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -> Result<(), CliError> {
     println!("⚛ Synthesizing {} with {:?}...", vector, with_vector);
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let angle_a = match vector {
@@ -773,7 +774,7 @@ async fn cmd_emanate(remote: Option<String>, json: bool) -> Result<(), CliError>
     let target = remote.as_ref().cloned().unwrap_or_else(|| "network".to_string());
     println!("📡 Emanating to: {}", target);
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     if all.is_empty() {
@@ -807,7 +808,7 @@ async fn cmd_status(verbose: bool, json: bool) -> Result<(), CliError> {
     println!("📊 Mandala Status");
     println!("══════════════");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
@@ -857,7 +858,7 @@ struct InspectOutput {
 }
 
 async fn cmd_inspect(monad_id: &str, full: bool, json: bool) -> Result<(), CliError> {
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let found = all.iter().find(|m| m.id == monad_id || m.name.contains(monad_id));
@@ -939,7 +940,7 @@ async fn cmd_plugins(json: bool) -> Result<(), CliError> {
 async fn cmd_audit(json: bool) -> Result<(), CliError> {
     println!("🔍 Auditing Mandala ecosystem...");
     
-    let db = connect_embedded().await.map_err(|e| CliError::Database(e.to_string()))?;
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let result = crate::weaver::source_compiler::validate_source_coherence(&all);

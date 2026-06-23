@@ -24,7 +24,7 @@ pub struct VariableDef {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "value")]
+#[serde(tag = "type")]
 pub enum RingSelector {
     Level(u32),
     Latest,
@@ -83,7 +83,7 @@ pub struct OutputConfig {
 fn default_true() -> bool { true }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "value")]
+#[serde(tag = "type")]
 pub enum OutputStructure {
     Flat,
     VectorDirs,
@@ -113,7 +113,8 @@ exclude: []
 adapters: []
 output:
   filename: "test.rs"
-  structure: Flat
+  structure:
+    type: Flat
 "#;
         let template: DistillationTemplate = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(template.name, "test");
@@ -134,7 +135,8 @@ exclude: []
 adapters: []
 output:
   filename: "out.rs"
-  structure: Flat
+  structure:
+    type: Flat
 "#;
         let template: DistillationTemplate = serde_yaml::from_str(yaml).unwrap();
         if let RingSelector::Range { min, max } = template.rings {

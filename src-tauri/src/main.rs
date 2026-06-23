@@ -17,6 +17,7 @@ use interface::projection_api::{
     export_mandala_state, 
     expand_ring,
     init_project,
+    open_project,
     distill_from_selection,
     trace_monad_lineage,
     get_monad_detail,
@@ -108,7 +109,7 @@ fn main() {
                 }
                 db_conn
             });
-            handle.manage(db);
+            handle.manage(std::sync::Arc::new(tokio::sync::RwLock::new(db)));
 
             let synarchy_state = SynarchyState::new(
                 app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."))
@@ -137,6 +138,7 @@ fn main() {
             export_mandala_state, 
             expand_ring,
             init_project,
+            open_project,
             distill_from_selection,
             trace_monad_lineage,
             get_monad_detail,

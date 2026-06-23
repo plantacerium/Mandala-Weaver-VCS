@@ -115,8 +115,8 @@ mod tests {
     fn test_group_by_ring() {
         let monads = vec![
             Monad::spawn("1".to_string(), "a".to_string(), PolarCoord::new(1.0, 0.0), "fn a() {}".to_string(), 1),
-            Monad::spawn("2".to_string(), "b".to_string(), PolarCoord::new(1.0, 90.0), "fn b() {}", 2),
-            Monad::spawn("3".to_string(), "c".to_string(), PolarCoord::new(1.0, 180.0), "fn c() {}", 1),
+            Monad::spawn("2".to_string(), "b".to_string(), PolarCoord::new(1.0, 90.0), "fn b() {}".to_string(), 2),
+            Monad::spawn("3".to_string(), "c".to_string(), PolarCoord::new(1.0, 180.0), "fn c() {}".to_string(), 1),
         ];
         
         let groups = FileWriter::group_by_ring(&monads);

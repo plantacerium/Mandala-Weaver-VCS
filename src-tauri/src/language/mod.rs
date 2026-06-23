@@ -13,10 +13,10 @@ pub enum Language {
 impl Language {
     pub fn from_extension(ext: &str) -> Self {
         match ext.to_lowercase().as_str() {
-            "rs" => Language::Rust,
-            "ts" | "tsx" => Language::TypeScript,
-            "js" | "jsx" => Language::JavaScript,
-            "py" => Language::Python,
+            "rs" | "rust" => Language::Rust,
+            "ts" | "tsx" | "typescript" => Language::TypeScript,
+            "js" | "jsx" | "javascript" => Language::JavaScript,
+            "py" | "python" => Language::Python,
             "go" => Language::Go,
             _ => Language::Unknown,
         }

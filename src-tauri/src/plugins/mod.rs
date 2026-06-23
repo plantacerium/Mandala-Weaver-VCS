@@ -79,7 +79,7 @@ impl Default for PluginRegistry {
 }
 
 /// Built-in language plugins
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum LanguagePlugin {
     Rust,
     TypeScript,
