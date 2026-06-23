@@ -144,3 +144,108 @@ code, pre {
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--accent-primary);
 }
+
+/* ─── Responsive Layout ────────────────────────────────────────────────────── */
+
+/* Tablet: ≤ 1024px */
+@media (max-width: 1024px) {
+	main {
+		flex-direction: column;
+		height: auto;
+		min-height: 100vh;
+		overflow: auto;
+	}
+
+	/* Sidebar nav collapses to a horizontal strip */
+	.sidebar-nav {
+		flex-direction: row;
+		width: 100% !important;
+		height: auto;
+		padding: 0.5rem 1rem;
+		overflow-x: auto;
+		border-right: none;
+		border-bottom: 1px solid var(--border);
+	}
+
+	/* Canvas fills available width */
+	.mandala-canvas-wrapper,
+	.canvas-container {
+		width: 100% !important;
+		height: 60vh;
+		min-height: 320px;
+	}
+
+	/* Side panels move below the canvas */
+	.side-panel,
+	.monad-inspector,
+	.sidebar-history,
+	.distill-panel,
+	.rings-panel,
+	.vectors-panel {
+		width: 100% !important;
+		max-height: 40vh;
+		overflow-y: auto;
+		border-left: none;
+		border-top: 1px solid var(--border);
+	}
+}
+
+/* Mobile: ≤ 768px */
+@media (max-width: 768px) {
+	html {
+		font-size: 14px;
+	}
+
+	/* Canvas takes 50vh on mobile */
+	.mandala-canvas-wrapper,
+	.canvas-container {
+		height: 50vh;
+		min-height: 260px;
+	}
+
+	/* Panels full width and scrollable */
+	.side-panel,
+	.monad-inspector,
+	.sidebar-history,
+	.distill-panel,
+	.rings-panel,
+	.vectors-panel,
+	.terminal-panel {
+		width: 100% !important;
+		max-height: 45vh;
+		padding: 0.75rem;
+		font-size: 0.85rem;
+	}
+
+	/* Smaller stat labels */
+	.stat-label {
+		font-size: 9px;
+	}
+	.stat-value {
+		font-size: 14px;
+	}
+
+	/* Tooltip node repositioning */
+	.tooltip-node {
+		font-size: 11px;
+		padding: 6px 10px;
+	}
+
+	/* Compact header on mobile */
+	.app-header {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.85rem;
+	}
+}
+
+/* Very small screens: ≤ 480px */
+@media (max-width: 480px) {
+	.mandala-canvas-wrapper,
+	.canvas-container {
+		height: 45vh;
+	}
+
+	.sidebar-nav .nav-icon-label {
+		display: none; /* Icon-only on very small screens */
+	}
+}
