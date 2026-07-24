@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
+import { fetchLineageEdges } from '../../lib/tauri/commands';
 import '../../styles/panels/panels.css';
 
 const MonadInspector: React.FC = () => {
-  const { selectedMonad, hoveredMonad, viewMode } = useWorkspaceStore();
+  const { selectedMonad, hoveredMonad, viewMode, lineageCache, setLineageCache } = useWorkspaceStore();
   const monad = selectedMonad || hoveredMonad;
+
+  useEffect(() => {
+    if (monad && !lineageCache.has(monad.id)) {
+      fetchLineageEdges(monad.id).then((data) => {
+        setLineageCache(monad.id, data);
+      }).catch(() => {});
+    }
+  }, [monad, lineageCache, setLineageCache]);
 
   if (viewMode !== 'orbit') {
     return null;
@@ -22,6 +31,8 @@ const MonadInspector: React.FC = () => {
       </div>
     );
   }
+
+  const lineage = lineageCache.get(monad.id);
 
   return (
     <div className="inspector">
@@ -44,6 +55,30 @@ const MonadInspector: React.FC = () => {
       <div className="code-viewer">
         <pre><code>{monad.content || '// Sin contenido'}</code></pre>
       </div>
+      {lineage && lineage.monads.length > 0 && (
+        <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
+          <h3 style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Linaje ({lineage.depth} niveles)
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {lineage.monads.slice(0, 10).map((ancestor) => (
+              <div key={ancestor.id} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                background: ancestor.id === monad.id ? 'var(--accent-primary-dim, rgba(232,93,4,0.15))' : 'transparent',
+                fontSize: '0.7rem',
+                fontFamily: 'monospace',
+              }}>
+                <span style={{ color: 'var(--text-main, #fff)' }}>{ancestor.name}</span>
+                <span style={{ color: 'var(--text-dim, #666)' }}>R{ancestor.ring}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

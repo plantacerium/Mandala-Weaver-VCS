@@ -160,27 +160,27 @@ export function breatheAnimation(
 export function shimmerEffect(
   node: d3.Selection<SVGCircleElement, unknown, null, undefined>
 ): void {
-  const gradient = defs.select('#shimmer-gradient');
-  
-  if (gradient.empty()) {
-    const defs = d3.select(node.node()?.ownerSVGElement).select('defs');
-    const grad = defs.append('linearGradient')
+  const existingGradient = defs.select('#shimmer-gradient');
+
+  if (existingGradient.empty()) {
+    const svgDefs = d3.select(node.node()?.ownerSVGElement).select('defs');
+    const grad = svgDefs.append('linearGradient')
       .attr('id', 'shimmer-gradient')
       .attr('gradientUnits', 'userSpaceOnUse');
-    
+
     grad.append('stop')
       .attr('offset', '0%')
       .attr('stop-color', 'rgba(255,255,255,0)');
-    
+
     grad.append('stop')
       .attr('offset', '50%')
       .attr('stop-color', 'rgba(255,255,255,0.8)');
-    
+
     grad.append('stop')
       .attr('offset', '100%')
       .attr('stop-color', 'rgba(255,255,255,0)');
   }
-  
+
   node
     .attr('stroke', 'url(#shimmer-gradient)')
     .attr('stroke-width', 3)

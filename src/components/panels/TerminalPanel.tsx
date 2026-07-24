@@ -29,14 +29,14 @@ const AVAILABLE_COMMANDS = [
   { cmd: 'synthesize <vec> [with]', desc: 'Synthesize from vectors' },
   { cmd: 'absorb [remote]', desc: 'Absorb from remote' },
   { cmd: 'emanate [remote]', desc: 'Emanate to remote' },
-  { cmd: 'help', desc: 'Show this help' },
+  { cmd: 'guidance', desc: 'Show this guidance' },
   { cmd: 'clear', desc: 'Clear terminal' },
 ];
 
 const TerminalPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [lines, setLines] = useState<TerminalLine[]>([
-    { type: 'info', content: 'Mandala CLI v1.0.0 - Type "help" for available commands', timestamp: new Date() }
+    { type: 'info', content: 'Mandala CLI v1.0.0 - Type "guidance" for available commands', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -74,7 +74,7 @@ const TerminalPanel: React.FC = () => {
 
     setLines(prev => [...prev, { type: 'input', content: `> ${cmdStr}`, timestamp: new Date() }]);
 
-    if (command === 'help') {
+    if (command === 'guidance') {
       const helpText = AVAILABLE_COMMANDS.map(c => `  ${c.cmd.padEnd(24)} ${c.desc}`).join('\n');
       setLines(prev => [...prev, { type: 'output', content: helpText, timestamp: new Date() }]);
       return;
@@ -197,7 +197,7 @@ const TerminalPanel: React.FC = () => {
         default:
           setLines(prev => [...prev, { 
             type: 'error', 
-            content: `Unknown command: ${command}. Type "help" for available commands.`, 
+            content: `Unknown command: ${command}. Type "guidance" for available commands.`, 
             timestamp: new Date() 
           }]);
           setIsProcessing(false);
@@ -292,7 +292,7 @@ const TerminalPanel: React.FC = () => {
             }}
           >
             <span style={{ color: '#e85d04', fontWeight: 'bold' }}>MANDALA CLI</span>
-            <span style={{ color: '#666', fontSize: '11px' }}>Type 'help' for commands</span>
+            <span style={{ color: '#666', fontSize: '11px' }}>Type 'guidance' for commands</span>
           </div>
 
           <div 

@@ -1,0 +1,8 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import ProjectDetail from '../../components/project/ProjectDetail';
+---
+
+<AppLayout title="Project Detail">
+  <ProjectDetail client:only="react" />
+</AppLayout>

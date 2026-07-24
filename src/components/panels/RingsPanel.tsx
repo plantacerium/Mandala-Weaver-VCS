@@ -1,4 +1,5 @@
 import React from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
 import '../../styles/panels/panels.css';
 

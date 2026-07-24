@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import * as d3 from 'd3';
 import { drawMandalaGrid, drawBindu, renderMonads, highlightMonad, renderEdges } from '../../lib/d3/renderer';
 import { setupZoom, enableLassoSelection } from '../../lib/d3/interactions';
-import { fetchMandalaState } from '../../lib/tauri/commands';
+import { fetchMandalaState, invokeExpand } from '../../lib/tauri/commands';
 import { listenForFileChanges } from '../../lib/tauri/events';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
+import { setupSemanticZoom, getZoomMode, setMacroZoom, setMicroZoom } from '../../lib/d3/zoom';
+import { fetchLineageEdges } from '../../lib/tauri/commands';
 import type { Monad } from '../../types/ontology';
 
 interface CommitDialogProps {
@@ -48,7 +50,7 @@ const CommitDialog: React.FC<CommitDialogProps> = ({ isOpen, onClose, onCommit }
 const MandalaCanvas: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setMandalaState, selectMonad, hoverMonad, setSelectedForDistill } = useWorkspaceStore();
+  const { setMandalaState, selectMonad, hoverMonad, setSelectedForDistill, setZoomMode } = useWorkspaceStore();
   const [showCommitDialog, setShowCommitDialog] = useState(false);
   const svgGroupRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
 
@@ -57,9 +59,17 @@ const MandalaCanvas: React.FC = () => {
   }, [setSelectedForDistill]);
 
   const handleCommit = useCallback(async (filePath: string) => {
-    console.log('Expanding with file:', filePath);
-    setShowCommitDialog(false);
-  }, []);
+    try {
+      const ringLevel = await invokeExpand(filePath);
+      console.log(`Expanded to ring ${ringLevel}`);
+      setShowCommitDialog(false);
+      const state = await fetchMandalaState();
+      setMandalaState(state);
+    } catch (error) {
+      console.error('Expand failed:', error);
+      alert('Expand failed: ' + String(error));
+    }
+  }, [setMandalaState]);
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
@@ -95,6 +105,12 @@ const MandalaCanvas: React.FC = () => {
 
     setupZoom(svg, { minZoom: 0.3, maxZoom: 5 });
     enableLassoSelection(svg, handleSelect);
+
+    setupSemanticZoom(svg, contentGroup).on('zoom', (event) => {
+      const scale = event.transform.k;
+      const mode = getZoomMode(scale);
+      setZoomMode(mode);
+    });
 
     async function loadData() {
       try {

@@ -63,7 +63,7 @@ const ProjectList: React.FC = () => {
   };
 
   const handleSelectProject = (id: string) => {
-    window.location.href = `/project/${id}`;
+    window.location.href = `/project?id=${id}`;
   };
 
   const handleRescan = async (id: string) => {

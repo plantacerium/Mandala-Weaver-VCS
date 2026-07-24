@@ -38,28 +38,42 @@ export function enableLassoSelection(
   svgSelection: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   onSelect: (monads: Monad[]) => void
 ): void {
-  const lassoGroup = svgSelection.append('g').attr('class', 'lasso-group');
+  // Insert lasso-group INSIDE mandala-content so it shares the same
+  // coordinate space as monad nodes (inheriting zoom/pan transform).
+  const contentGroup = svgSelection.select<SVGGElement>('g.mandala-content');
+  const lassoGroup = contentGroup.append('g').attr('class', 'lasso-group');
+
   let lassoPath: d3.Selection<SVGPathElement, unknown, null, undefined>;
   let isDrawing = false;
   const points: [number, number][] = [];
-  
+
   const svgNode = svgSelection.node() as SVGSVGElement;
+
+  // Convert screen (clientX/Y) → mandala-content local coordinates.
+  // Using getScreenCTM() on the content group accounts for both the
+  // SVG viewBox scaling and the d3 zoom/pan transform.
   const getMousePos = (event: MouseEvent): [number, number] => {
-    const rect = svgNode.getBoundingClientRect();
-    const transform = d3.zoomTransform(svgNode);
-    return [
-      (event.clientX - rect.left - transform.x) / transform.k,
-      (event.clientY - rect.top - transform.y) / transform.k
-    ];
+    const contentNode = contentGroup.node();
+    if (!contentNode) return [0, 0];
+    const ctm = contentNode.getScreenCTM();
+    if (!ctm) return [0, 0];
+    const pt = svgNode.createSVGPoint();
+    pt.x = event.clientX;
+    pt.y = event.clientY;
+    const local = pt.matrixTransform(ctm.inverse());
+    return [local.x, local.y];
   };
-  
+
   svgSelection.on('mousedown.lasso', function(event) {
     if (event.button !== 0 || event.ctrlKey || event.shiftKey) return;
-    
+
+    const target = event.target as SVGElement;
+    if (target.closest('.monad') || target.closest('.bindu-group')) return;
+
     isDrawing = true;
     points.length = 0;
     points.push(getMousePos(event));
-    
+
     lassoPath = lassoGroup.append('path')
       .attr('class', 'lasso-path')
       .attr('fill', 'rgba(136, 58, 234, 0.1)')
@@ -67,38 +81,26 @@ export function enableLassoSelection(
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '5,5');
   });
-  
+
   svgSelection.on('mousemove.lasso', function(event) {
     if (!isDrawing) return;
-    
+
     points.push(getMousePos(event));
-    
-    const lineGenerator = d3.lineRadial<[number, number]>()
-      .angle(d => d[0])
-      .radius(d => d[1])
-      .curve(d3.curveLinearClosed);
-    
-    const center = d3.polygonCentroid(points);
-    const polarPoints = points.map(p => {
-      const dx = p[0] - center[0];
-      const dy = p[1] - center[1];
-      return [Math.atan2(dy, dx), Math.sqrt(dx * dx + dy * dy)];
-    });
-    
+
     const pathData = `M ${points.map(p => `${p[0]},${p[1]}`).join(' L ')} Z`;
     lassoPath?.attr('d', pathData);
   });
-  
+
   svgSelection.on('mouseup.lasso', function() {
     if (!isDrawing) return;
     isDrawing = false;
-    
-    const monadNodes = svgSelection.selectAll('.monad-node');
+
+    // Select monads whose cx/cy (in content-group space) fall inside the polygon.
+    const monadNodes = svgSelection.selectAll('.monad');
     const selectedMonads: Monad[] = [];
-    
+
     if (lassoPath) {
-      const pathNode = lassoPath.node();
-      if (pathNode) {
+      if (points.length > 2) {
         const polygon = points;
         monadNodes.each(function(d: any) {
           const cx = parseFloat(d3.select(this).attr('cx'));
@@ -110,7 +112,7 @@ export function enableLassoSelection(
       }
       lassoPath.remove();
     }
-    
+
     if (selectedMonads.length > 0) {
       onSelect(selectedMonads);
     }
