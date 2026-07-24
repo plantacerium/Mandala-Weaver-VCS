@@ -1,7 +1,5 @@
 use tauri::State;
-use crate::persistence::surreal_bridge::Db;
 use crate::collaboration::{self, MandalaDiff, MergeResult};
-use surrealdb::Surreal;
 use std::path::PathBuf;
 
 #[tauri::command]

@@ -11,6 +11,7 @@ mod language;
 mod collaboration;
 mod plugins;
 mod template;
+mod network;
 
 use persistence::surreal_bridge::connect_embedded;
 use interface::projection_api::{
@@ -102,7 +103,17 @@ fn main() {
             let handle = app.handle().clone();
             
             let db = tauri::async_runtime::block_on(async {
-                let db_conn = connect_embedded().await.expect("Failed to initialize SurrealDB");
+                let db_path = crate::persistence::surreal_bridge::find_project_root();
+                let db_conn = if let Some(ref path) = db_path {
+                    crate::persistence::surreal_bridge::connect_db(Some(path))
+                        .await
+                        .unwrap_or_else(|_| {
+                            eprintln!("⚠ Failed to connect with project root, falling back to embedded");
+                            tauri::async_runtime::block_on(connect_embedded()).expect("Failed to initialize SurrealDB")
+                        })
+                } else {
+                    connect_embedded().await.expect("Failed to initialize SurrealDB")
+                };
                 let queries = crate::persistence::schemas::get_initialization_queries();
                 for q in queries {
                     let _ = db_conn.query(q).await;

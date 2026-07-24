@@ -10,7 +10,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use crate::ontology::monad::Monad;
+use crate::ontology::monad::{Monad, MonadKind};
 use crate::persistence::surreal_bridge::{Db, get_all_monads, get_all_edges, insert_and_link, EdgeDto};
 use crate::geometry::polar_space::PolarCoord;
 
@@ -271,22 +271,77 @@ pub async fn merge_mandala(
 }
 
 /// Imports git history as initial rings (read-only bridge)
-/// Each commit becomes a ring with its files as monads
+/// Each commit becomes a ring with its changed files as monads
 pub async fn import_git_history(
-    _db: &Surreal<Db>,
+    db: &Surreal<Db>,
     repo_path: &PathBuf,
 ) -> anyhow::Result<u32> {
     use std::process::Command;
 
     let git_log = Command::new("git")
-        .args(["log", "--oneline", "--all"])
+        .args(["log", "--oneline", "--all", "--format=%H %s"])
         .current_dir(repo_path)
         .output()?;
 
-    let commits = String::from_utf8_lossy(&git_log.stdout);
-    let commit_count = commits.lines().count() as u32;
+    if !git_log.status.success() {
+        anyhow::bail!("Failed to read git history: {}", String::from_utf8_lossy(&git_log.stderr));
+    }
 
-    Ok(commit_count)
+    let commits = String::from_utf8_lossy(&git_log.stdout);
+    let commit_lines: Vec<&str> = commits.lines().collect();
+    let total_commits = commit_lines.len() as u32;
+
+    if total_commits == 0 {
+        return Ok(0);
+    }
+
+    let mut ring = 0u32;
+
+    for line in commit_lines.iter().take(20) {
+        let parts: Vec<&str> = line.splitn(2, ' ').collect();
+        if parts.len() < 2 {
+            continue;
+        }
+        let commit_hash = parts[0];
+        let commit_msg = parts[1];
+
+        let diff_output = Command::new("git")
+            .args(["diff-tree", "--no-commit-id", "-r", "--name-only", commit_hash])
+            .current_dir(repo_path)
+            .output()?;
+
+        let diff_stdout = String::from_utf8_lossy(&diff_output.stdout);
+        let files: Vec<&str> = diff_stdout.lines().filter(|l| !l.is_empty()).collect();
+
+        if files.is_empty() {
+            ring += 1;
+            continue;
+        }
+
+        let max_files = files.len().min(50);
+        for (i, file) in files.iter().take(max_files).enumerate() {
+            let theta = (i as f64 / max_files as f64) * 360.0;
+            let monad = Monad {
+                id: format!("git_{}_{}", &commit_hash[..8.min(commit_hash.len())], i),
+                coord: PolarCoord { r: ring as f64, theta },
+                content: format!("commit: {}\nfile: {}", commit_msg, file),
+                name: file.split('/').last().unwrap_or(file).to_string(),
+                ring,
+                kind: MonadKind::Unknown,
+                semantic_hash: crate::ontology::semantic_hash::generate_pure_hash(file),
+                line_start: 0,
+                line_end: 0,
+                language: file.rsplit('.').next().unwrap_or("txt").to_string(),
+                is_archived: false,
+            };
+
+            let _ = insert_and_link(db, &monad, None).await;
+        }
+
+        ring += 1;
+    }
+
+    Ok(ring)
 }
 
 use surrealdb::Surreal;

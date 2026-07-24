@@ -405,14 +405,14 @@ async fn cmd_vector(angle: f64, json: bool) -> Result<(), CliError> {
     println!("📐 Opening vector at {:.1}°", angle);
     
     let normalized = angle % 360.0;
-    let domain = if normalized < 90.0 {
+    let domain = if normalized < 45.0 || normalized >= 315.0 {
         "CORE"
-    } else if normalized < 180.0 {
-        "IO"
-    } else if normalized < 270.0 {
+    } else if normalized < 135.0 {
         "UI"
+    } else if normalized < 225.0 {
+        "PERSISTENCE"
     } else {
-        "DATA"
+        "NETWORK"
     };
     
     println!("✓ Vector opened: {} ({})", domain, normalized);
@@ -435,14 +435,33 @@ struct DormantOutput {
 
 async fn cmd_dormant(json: bool) -> Result<(), CliError> {
     println!("🌙 Entering dormant state...");
-    println!("✓ Active monads moved to latent space");
+
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref())
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+
+    let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
+    let mut archived = 0u32;
+
+    for monad in &all {
+        if !monad.is_archived {
+            let _: Option<serde_json::Value> = db
+                .update(("monad", monad.id.as_str()))
+                .merge(serde_json::json!({ "is_archived": true }))
+                .await
+                .map_err(|e| CliError::Database(e.to_string()))?;
+            archived += 1;
+        }
+    }
+
+    println!("✓ {} monads moved to latent space", archived);
     println!("✓ Cache cleared");
-    
+
     print_result(DormantOutput {
-        monads_dormant: 0,
+        monads_dormant: archived as usize,
         cache_cleared: true,
     }, json);
-    
+
     Ok(())
 }
 
@@ -470,10 +489,10 @@ async fn cmd_distill(
         all_monads.iter().filter(|m| m.ring == r).cloned().collect()
     } else if let Some(ref v) = vector {
         let angle_range = match v.as_str() {
-            "CORE" => (0.0, 90.0),
-            "IO" => (90.0, 180.0),
-            "UI" => (180.0, 270.0),
-            "DATA" => (270.0, 360.0),
+            "CORE" => (0.0, 45.0),
+            "UI" => (45.0, 135.0),
+            "PERSISTENCE" => (135.0, 225.0),
+            "NETWORK" => (225.0, 315.0),
             _ => (0.0, 360.0),
         };
         all_monads.iter()
@@ -657,31 +676,57 @@ struct EchoOutput2 {
 
 async fn cmd_echo(ring_id: u32, monad: Option<String>, json: bool) -> Result<(), CliError> {
     println!("🔄 Echoing from Ring {}...", ring_id);
-    
+
     let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
-    
+
     let source_monads: Vec<_> = if let Some(name) = monad {
         all.iter().filter(|m| m.ring == ring_id && m.name.contains(&name)).collect()
     } else {
         all.iter().filter(|m| m.ring == ring_id).collect()
     };
-    
+
     let max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
-    
+    let target_ring = max_ring + 1;
+
     if source_monads.is_empty() {
         return Err(CliError::MonadNotFound(format!("No monads in ring {}", ring_id)));
     }
-    
-    println!("✓ Echoed {} monads to current ring", source_monads.len());
-    println!("  From: Ring {} → Ring {}", ring_id, max_ring);
-    
+
+    let mut echoed = 0;
+    for source in &source_monads {
+        let echoed_monad = crate::ontology::monad::Monad {
+            id: format!("{}_echo_{}", source.id, target_ring),
+            coord: crate::geometry::polar_space::PolarCoord {
+                r: target_ring as f64,
+                theta: source.coord.theta,
+            },
+            content: source.content.clone(),
+            name: source.name.clone(),
+            ring: target_ring,
+            kind: source.kind.clone(),
+            semantic_hash: source.semantic_hash.clone(),
+            line_start: source.line_start,
+            line_end: source.line_end,
+            language: source.language.clone(),
+            is_archived: false,
+        };
+
+        insert_and_link(&db, &echoed_monad, Some(&source.id))
+            .await
+            .map_err(|e| CliError::Database(e.to_string()))?;
+        echoed += 1;
+    }
+
+    println!("✓ Echoed {} monads to current ring", echoed);
+    println!("  From: Ring {} → Ring {}", ring_id, target_ring);
+
     print_result(EchoOutput2 {
         source_ring: ring_id,
-        current_ring: max_ring,
+        current_ring: target_ring,
         monads_echoed: source_monads.iter().map(|m| m.name.clone()).collect(),
     }, json);
-    
+
     Ok(())
 }
 
@@ -723,10 +768,10 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let angle_a = match vector {
-        "CORE" => (0.0, 90.0),
-        "IO" => (90.0, 180.0),
-        "UI" => (180.0, 270.0),
-        "DATA" => (270.0, 360.0),
+        "CORE" => (0.0, 45.0),
+        "UI" => (45.0, 135.0),
+        "PERSISTENCE" => (135.0, 225.0),
+        "NETWORK" => (225.0, 315.0),
         _ => return Err(CliError::Parse("Unknown vector".to_string())),
     };
     
@@ -739,10 +784,10 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
     let synthesized_monads = Vec::new();
     if let Some(b) = with_vector.clone() {
         let angle_b = match b.as_str() {
-            "CORE" => (0.0, 90.0),
-            "IO" => (90.0, 180.0),
-            "UI" => (180.0, 270.0),
-            "DATA" => (270.0, 360.0),
+            "CORE" => (0.0, 45.0),
+            "UI" => (45.0, 135.0),
+            "PERSISTENCE" => (135.0, 225.0),
+            "NETWORK" => (225.0, 315.0),
             _ => return Err(CliError::Parse("Unknown vector".to_string())),
         };
         

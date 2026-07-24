@@ -1,8 +1,6 @@
-use crate::persistence::surreal_bridge::Db;
 use crate::template::DistillationTemplate;
 use crate::weaver::source_compiler;
 use serde::{Deserialize, Serialize};
-use surrealdb::Surreal;
 use tauri::State;
 
 #[tauri::command]

@@ -24,10 +24,18 @@ pub fn get_initialization_queries() -> Vec<&'static str> {
         "DEFINE TABLE bindu SCHEMAFULL;",
         "DEFINE FIELD project_name ON TABLE bindu TYPE string;",
         "DEFINE FIELD timestamp ON TABLE bindu TYPE int;",
+
+        // Operation log for sync tracking
+        "DEFINE TABLE operation_log SCHEMAFULL;",
+        "DEFINE FIELD op_type ON TABLE operation_log TYPE string;",
+        "DEFINE FIELD monad_id ON TABLE operation_log TYPE string;",
+        "DEFINE FIELD timestamp ON TABLE operation_log TYPE int;",
+        "DEFINE FIELD payload ON TABLE operation_log TYPE object;",
         
         // Índices para búsqueda rápida radial
         "DEFINE INDEX idx_monad_ring ON TABLE monad COLUMNS ring;",
         "DEFINE INDEX idx_monad_name ON TABLE monad COLUMNS name;",
         "DEFINE INDEX idx_monad_hash ON TABLE monad COLUMNS semantic_hash;",
+        "DEFINE INDEX idx_oplog_ts ON TABLE operation_log COLUMNS timestamp;",
     ]
 }
