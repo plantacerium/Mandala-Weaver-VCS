@@ -44,8 +44,10 @@ Mandala Weaver VCS fundamenta el desarrollo, navegación y síntesis del softwar
 - **Trazabilidad Evolutiva Completa:** Mapeo de relaciones (`evolves_to`), indexación compuesta multidimensional, inserciones masivas en lote (`insert_batch`) y recuperación paginada de alto rendimiento para miles de nodos.
 
 ### 7. Escaneo Automático y Registro de Ecosistemas (Synarchy)
-- **Catalogación Instantánea:** El motor de escaneo de proyectos analiza recursivamente estructuras de directorios, clasifica componentes según su lenguaje y los proyecta automáticamente en el lienzo radial.
-- **Ingesta Cronológica:** Capacidad de procesar secuencias históricas existentes, traduciéndolas a Mónadas semánticas y asignándolas a sus correspondientes coordenadas espaciales.
+- **Flujo Dual de Ingesta:**
+  - **🌀 Mandala Scan (Nativo):** Escaneo directo y políglota de árboles de archivos (soporte para más de 30 formatos: `rs, ts, tsx, js, jsx, py, go, java, c, cpp, cs, html, css, scss, vue, svelte, astro, json, yaml, md`). Opera de forma independiente sobre cualquier carpeta **sin requerir Git**, sintetizando automáticamente Mónadas de tipo `Module` para archivos estructurales y asegurando que ningún proyecto quede con 0 nodos.
+  - **🐙 Git Scan:** Importación directa de repositorios Git, traduciendo árboles de trabajo y secuencias históricas a anillos concéntricos evolutivos.
+- **Filotaxis Áurea y Bandas Galácticas Multi-Carril:** Distribución angular basada en el Ángulo Áureo ($137.5^\circ$) y micro-órbitas concéntricas escalonadas en anillos de alta densidad (>60 nodos), garantizando separación perfecta, legibilidad visual y cero colisiones incluso con cientos o miles de mónadas.
 
 ### 8. Experiencia Dual: Lienzo Visual Acelerado y Suite Terminal CLI/TUI
 - **Navegación Visual Fractal:** Interfaz gráfica interactiva con aceleración por hardware (Tauri + React + D3.js) con respiración semántica (macro-orquestación de galaxias de código y micro-inmersión en el AST de cada nodo).
@@ -188,6 +190,7 @@ Mandala Weaver provides the `weave` command-line tool for terminal-based workflo
 ### Cultivation & Expansion
 - **`weave focus <monad>`**: Brings specified monads into the active constellation for inspection and preparation.
 - **`weave crystallize [-m "<intent>"] [file]`**: Locks the AST and generates the `blake3` semantic hash. Expands the radius ($r + 1$) to immortalize the current logic in a new evolutionary Ring.
+- **`weave scan [path]`**: Recursively scans and indexes a codebase into radial rings with phyllotaxis dispersion.
 - **`weave vector <angle>`**: Opens a new Angle ($\theta$) of exploration for domain development.
 - **`weave dormant`**: Puts active uncrystallized Monads into the latent space (*Vórtice de Reposo*).
 - **`weave inspect <monad_id> [--full]`**: Deep terminal inspection of a monad's AST, raw logic, and spatial coordinates.
