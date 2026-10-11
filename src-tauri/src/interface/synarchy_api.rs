@@ -12,6 +12,7 @@ pub struct SynarchyState {
 
 impl SynarchyState {
     pub fn new(data_dir: PathBuf) -> Self {
+        let _ = std::fs::create_dir_all(&data_dir);
         let registry_path = data_dir.join("synarchy_registry.json");
         
         let registry = if registry_path.exists() {
@@ -44,6 +45,7 @@ pub async fn get_projects(state: State<'_, SynarchyState>) -> Result<Vec<Project
 pub async fn add_project(
     path: String,
     name: String,
+    scan_mode: Option<String>,
     state: State<'_, SynarchyState>,
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
@@ -63,13 +65,15 @@ pub async fn add_project(
         }
     };
 
+    let mode_str = scan_mode.as_deref();
+
     let entry = if is_active {
         let db_conn = db.read().await;
-        ProjectScanner::scan_and_index_with_db(&*db_conn, &path_buf)
+        ProjectScanner::scan_and_index_with_db_mode(&*db_conn, &path_buf, mode_str)
             .await
             .map_err(|e| e.to_string())?
     } else {
-        ProjectScanner::scan(&path_buf)
+        ProjectScanner::scan_with_mode(&path_buf, mode_str)
             .await
             .map_err(|e| e.to_string())?
     };
@@ -81,8 +85,11 @@ pub async fn add_project(
     
     let mut registry = state.registry.write().await;
     
-    if registry.find(&final_entry.id).is_some() {
-        return Err("Project already exists".to_string());
+    if let Some(existing) = registry.find_mut(&final_entry.id) {
+        *existing = final_entry.clone();
+        drop(registry);
+        state.save().await?;
+        return Ok(final_entry);
     }
     
     registry.add(final_entry.clone());

@@ -22,7 +22,6 @@ pub enum ProjectType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", content = "message")]
 pub enum ProjectStatus {
     Active,
     Dormant,
@@ -68,6 +67,9 @@ impl ProjectRegistry {
     }
     
     pub fn save(&self, path: &PathBuf) -> std::io::Result<()> {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(path, json)?;
         Ok(())
@@ -84,17 +86,29 @@ pub struct ProjectScanner;
 
 impl ProjectScanner {
     pub async fn scan(path: &PathBuf) -> anyhow::Result<ProjectEntry> {
-        Self::scan_and_index(path).await
+        Self::scan_with_mode(path, None).await
+    }
+
+    pub async fn scan_with_mode(path: &PathBuf, mode: Option<&str>) -> anyhow::Result<ProjectEntry> {
+        let db = crate::persistence::surreal_bridge::connect_db(Some(path)).await?;
+        Self::scan_and_index_with_db_mode(&db, path, mode).await
     }
 
     pub async fn scan_and_index(path: &PathBuf) -> anyhow::Result<ProjectEntry> {
-        let db = crate::persistence::surreal_bridge::connect_db(Some(path)).await?;
-        Self::scan_and_index_with_db(&db, path).await
+        Self::scan_with_mode(path, None).await
     }
 
     pub async fn scan_and_index_with_db(
         db: &surrealdb::Surreal<crate::persistence::surreal_bridge::Db>,
-        path: &PathBuf
+        path: &PathBuf,
+    ) -> anyhow::Result<ProjectEntry> {
+        Self::scan_and_index_with_db_mode(db, path, None).await
+    }
+
+    pub async fn scan_and_index_with_db_mode(
+        db: &surrealdb::Surreal<crate::persistence::surreal_bridge::Db>,
+        path: &PathBuf,
+        scan_mode: Option<&str>,
     ) -> anyhow::Result<ProjectEntry> {
         let canonical = path.canonicalize().unwrap_or(path.clone());
         let name = canonical.file_name()
@@ -107,15 +121,27 @@ impl ProjectScanner {
             .to_string()[..8]
             .to_string();
 
+        let is_git = path.join(".git").exists();
         let mandala_dir = path.join(".mandala");
         let has_mandala = mandala_dir.exists();
-        let is_git = path.join(".git").exists();
-        let project_type = if is_git {
-            ProjectType::Git
-        } else if has_mandala {
-            ProjectType::Weaver
-        } else {
-            ProjectType::Local
+
+        let project_type = match scan_mode {
+            Some("git") => {
+                if !is_git {
+                    anyhow::bail!("No se encontró un repositorio Git (.git) en: {}. Selecciona 'Mandala Scan' para escanearlo de forma nativa sin Git.", path.display());
+                }
+                ProjectType::Git
+            }
+            Some("mandala") => ProjectType::Weaver,
+            _ => {
+                if is_git {
+                    ProjectType::Git
+                } else if has_mandala {
+                    ProjectType::Weaver
+                } else {
+                    ProjectType::Weaver
+                }
+            }
         };
 
         let mut all_monads = crate::persistence::surreal_bridge::get_all_monads(db).await.unwrap_or_default();
@@ -126,14 +152,19 @@ impl ProjectScanner {
             let _: Option<serde_json::Value> = db.create(("bindu", "genesis")).content(val).await?;
 
             let mut files = Vec::new();
-            let extensions = ["rs", "ts", "tsx", "js", "jsx", "py", "go"];
+            let extensions = [
+                "rs", "ts", "tsx", "js", "jsx", "py", "go",
+                "java", "kt", "c", "cpp", "cc", "cxx", "h", "hpp", "cs",
+                "html", "css", "scss", "vue", "svelte", "astro",
+                "json", "yaml", "yml", "toml", "md", "txt", "sh", "sql"
+            ];
             Self::collect_files_recursive(path, &extensions, &mut files, 0)?;
 
             files.sort_by_key(|(depth, p)| (*depth, p.clone()));
 
             let mut ring_counters: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
 
-            for (depth, file_path) in files.iter().take(120) {
+            for (depth, file_path) in files.iter().take(150) {
                 if let Ok(content) = std::fs::read_to_string(file_path) {
                     let ring = ((*depth as u32) + 1).min(10);
                     let lang = crate::language::detect_language(file_path);
@@ -142,11 +173,33 @@ impl ProjectScanner {
                         ring,
                         lang.tree_sitter_name(),
                     );
-                    for mut m in monads {
+                    if monads.is_empty() && !content.trim().is_empty() {
+                        let filename = file_path.file_name()
+                            .and_then(|n| n.to_str())
+                            .unwrap_or("module");
+                        let hash = crate::ontology::semantic_hash::generate_pure_hash(&content);
                         let count = ring_counters.entry(ring).or_insert(0);
-                        m.coord.theta = ((*count as f64) * 137.50776405) % 360.0;
+                        let angle = ((*count as f64) * 137.50776405) % 360.0;
                         *count += 1;
+                        let m = crate::ontology::monad::Monad::spawn_typed(
+                            hash,
+                            filename.to_string(),
+                            crate::geometry::polar_space::PolarCoord::new((ring as f64) * 100.0, angle),
+                            content.clone(),
+                            ring,
+                            crate::ontology::monad::MonadKind::Module,
+                            1,
+                            content.lines().count() as u32,
+                            lang.tree_sitter_name(),
+                        );
                         let _ = crate::persistence::surreal_bridge::insert_and_link(db, &m, None).await;
+                    } else {
+                        for mut m in monads {
+                            let count = ring_counters.entry(ring).or_insert(0);
+                            m.coord.theta = ((*count as f64) * 137.50776405) % 360.0;
+                            *count += 1;
+                            let _ = crate::persistence::surreal_bridge::insert_and_link(db, &m, None).await;
+                        }
                     }
                 }
             }
