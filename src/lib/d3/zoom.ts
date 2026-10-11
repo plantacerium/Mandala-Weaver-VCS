@@ -358,9 +358,15 @@ export function setupSemanticZoom(
     .scaleExtent([0.1, 10])
     .filter((event) => {
       if (event.type === 'wheel') {
-        return event.ctrlKey || event.metaKey;
+        return true;
       }
-      return true;
+      if (event.type === 'mousedown') {
+        const target = event.target as SVGElement;
+        if (target && target.closest && (target.closest('.monad') || target.closest('.bindu-group'))) {
+          return false;
+        }
+      }
+      return !event.button || event.button === 0 || event.button === 1;
     })
     .on('zoom', (event) => {
       container.attr('transform', event.transform);

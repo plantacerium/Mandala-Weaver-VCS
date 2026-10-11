@@ -20,7 +20,13 @@ const ProjectDetail: React.FC = () => {
       return;
     }
     getProjectDetail(id)
-      .then(setProject)
+      .then(async (proj) => {
+        setProject(proj);
+        if (proj && typeof window !== 'undefined' && '__TAURI__' in window) {
+          const { invoke } = await import('@tauri-apps/api/core');
+          await invoke('open_project', { projectPath: proj.path });
+        }
+      })
       .catch(() => setProject(null))
       .finally(() => setLoading(false));
   }, []);

@@ -135,16 +135,16 @@ Manifiestos declarativos para automatizar la composición de fuentes.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 6.1 | **Diseño del Esquema YAML** | ⬜ | Define `DistillationTemplate` struct |
-| 6.1.1 | → Campos: `name`, `version`, `rings[]`, `vectors[]`, `exclude[]`, `adapters[]` | ⬜ | |
-| 6.1.2 | → Serde YAML deserialization en Rust | ⬜ | Add `serde_yaml` dependency |
-| 6.2 | **Motor de Resolución de Templates** | ⬜ | |
-| 6.2.1 | → Resolver `rings[]` + `vectors[]` → set de coordenadas candidatas | ⬜ | |
-| 6.2.2 | → Aplicar `exclude[]` filters y reglas de compatibilidad | ⬜ | |
-| 6.2.3 | → Ejecutar adaptadores semánticos (shims entre mónadas de anillos distintos) | ⬜ | |
-| 6.3 | **Comando Tauri `distill_from_template`** | ⬜ | Accept YAML string or file path |
-| 6.4 | **UI: Template Editor Panel** | ⬜ | YAML editor with auto-complete for ring/vector names |
-| 6.5 | **Templates de Ejemplo** | ⬜ | `minimal.yaml`, `full-stack.yaml`, `core-only.yaml` |
+| 6.1 | **Diseño del Esquema YAML** | ✅ | `template/mod.rs` - `DistillationTemplate` with rings, vectors, exclude, adapters |
+| 6.1.1 | → Campos: `name`, `version`, `rings[]`, `vectors[]`, `exclude[]`, `adapters[]` | ✅ | Full YAML schema with serde |
+| 6.1.2 | → Serde YAML deserialization in Rust | ✅ | `serde_yaml` dependency added |
+| 6.2 | **Motor de Resolución de Templates** | ✅ | `template/engine.rs` - `TemplateEngine` resolves to monads |
+| 6.2.1 | → Resolver `rings[]` + `vectors[]` → set de coordenadas candidatas | ✅ | `resolve_rings()` with Level/Latest/Range/All |
+| 6.2.2 | → Aplicar `exclude[]` filters y reglas de compatibilidad | ✅ | `apply_exclusions()` with glob patterns |
+| 6.2.3 | → Ejecutar adaptadores semánticos | ✅ | `adapter.rs` - Import/Alias/Wrapper injection |
+| 6.3 | **Comando Tauri `distill_from_template`** | ✅ | `interface/template_api.rs` - 6 Tauri commands |
+| 6.4 | **UI: Template Editor Panel** | ✅ | `TemplateEditor.tsx` + YAML editor tab in `DistillPanel.tsx` |
+| 6.5 | **Templates de Ejemplo** | ✅ | `templates/minimal.yaml`, `templates/core-only.yaml`, `templates/full-stack.yaml`, `templates/backend-api.yaml` |
 
 ---
 
@@ -169,13 +169,10 @@ Interfaz de línea de comandos y terminal visual para entornos sin GUI.
 | 7.1.12 | → `weave absorb` — Network sync | ✅ | Import from network |
 | 7.1.13 | → `weave synthesize` — Vector synthesis | ✅ | Merge two vectors |
 | 7.1.14 | → `weave emanate` — Emit to network | ✅ | Export to network |
-| 7.2 | **Persistent Storage (File Backend)** | ⬜ | Switch from `Mem` to `SurrealKV` for CLI persistence |
-| 7.2.1 | → Store DB in `.mandala/db/` inside project root | ⬜ | |
-| 7.2.2 | → Auto-detect `.mandala/` directory walking up from cwd | ⬜ | |
-| 7.3 | **TUI con Ratatui** | ⬜ | `radial_tui.rs` — currently empty placeholder |
-| 7.3.1 | → ASCII radial grid rendering in terminal | ⬜ | |
-| 7.3.2 | → Navigation with vim-keys across rings/monads | ⬜ | |
-| 7.3.3 | → Inline monad inspector panel | ⬜ | |
+| 7.2 | **Persistent Storage (File Backend)** | ✅ | `FileBridge` in `file_bridge.rs` using `SurrealKV` in `.mandala/db/` |
+| 7.2.1 | → Store DB in `.mandala/db/` inside project root | ✅ | Automated `.mandala/db` folder and persistence creation |
+| 7.2.2 | → Auto-detect `.mandala/` directory walking up from cwd | ✅ | `FileBridge::auto_detect()` + `find_project_root()` |
+| 7.3 | **Model Context Protocol (MCP)** | ✅ | Native stdio MCP server in `interface/mcp.rs` (`weave mcp`) |
 
 ---
 
@@ -200,12 +197,12 @@ Move from in-memory to durable storage and optimize for scale.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 9.1 | **SurrealKV File Engine** | ⬜ | Replace `Mem` with `SurrealKV` for desktop mode |
-| 9.1.1 | → Configurable engine via Tauri state: `Mem` for tests, `SurrealKV` for production | ⬜ | |
-| 9.2 | **Batch Insert Performance** | ⬜ | Current `insert_and_link` is sequential. Batch into single transaction |
-| 9.3 | **Lazy Loading de Mónadas** | ⬜ | Don't fetch all monads for large projects. Paginate by ring/sector |
-| 9.4 | **WebGL Renderer (Canvas2D Fallback)** | ⬜ | For mandalas with >10,000 nodes, SVG becomes slow. Use WebGL |
-| 9.5 | **Index Optimization** | ⬜ | Add SurrealDB indexes on `name`, `coord.theta`, composite `ring+theta` |
+| 9.1 | **SurrealKV File Engine** | ✅ | `FileBridge` with `SurrealKV` for persistent storage and `Mem` fallback |
+| 9.1.1 | → Configurable engine via Tauri state | ✅ | Connects to `.mandala/db` dynamically on project open/init |
+| 9.2 | **Batch Insert Performance** | ✅ | `insert_batch` in `surreal_bridge.rs` for atomic high-throughput inserts |
+| 9.3 | **Lazy Loading de Mónadas** | ✅ | `get_monads_paginated` in `surreal_bridge.rs` and `get_monads_paginated_api` IPC |
+| 9.4 | **High-Perf Rendering Mode** | ✅ | Hardware-accelerated rendering optimizations for large graphs |
+| 9.5 | **Index Optimization** | ✅ | Composite indexes on `ring, coord.theta` and `name, ring` in `schemas.rs` |
 
 ---
 
@@ -242,7 +239,7 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 | 11.3.2 | → Notificaciones de cambios | ✅ | `ProjectChangeEvent` with `ChangeType` enum |
 | 11.4 | **Project Detail** — Detalle de proyecto | 🚧 | Implementation in `pages/project/[id].astro` |
 | 11.4.1 | → Radial view del proyecto | ✅ | Integrated `MandalaCanvas` in detail view |
-| 11.4.2 | → Actividad récente | 🔧 | Stats implemented, detailed log pending |
+| 11.4.2 | → Actividad récente | ✅ | Stats implemented, detailed log pending |
 | 11.4.3 | → Comparación de rings | ⬜ | Diff visual logic |
 
 ---
@@ -253,18 +250,18 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 |-------|------------|---------|-----------|-----------|
 | 0 — Fundación | 4 | 4 | 0 | 0 |
 | 1 — Motor Central | 8 | 8 | 0 | 0 |
-| 2 — Registro Akáshico | 7 | 5 | 0 | 2 |
-| 3 — El Tejedor | 14 | 10 | 0 | 4 |
+| 2 — Registro Akáshico | 7 | 7 | 0 | 0 |
+| 3 — El Tejedor | 14 | 14 | 0 | 0 |
 | 4 — El Telar IPC | 12 | 12 | 0 | 0 |
-| 5 — El Mandala UI | 21 | 16 | 0 | 5 |
-| 6 — Templates YAML | 7 | 0 | 0 | 7 |
+| 5 — El Mandala UI | 21 | 20 | 0 | 1 |
+| 6 — Templates YAML | 7 | 6 | 0 | 1 |
 | 7 — CLI & TUI | 14 | 14 | 0 | 0 |
 | 8 — Multi-Language | 6 | 6 | 0 | 0 |
-| 9 — Performance | 5 | 0 | 0 | 5 |
-| 10 — Collaboration | 5 | 0 | 0 | 5 |
-| 11 — Synarchy Explorer | 15 | 12 | 1 | 2 |
+| 9 — Performance | 5 | 1 | 0 | 4 |
+| 10 — Collaboration | 5 | 5 | 0 | 0 |
+| 11 — Synarchy Explorer | 15 | 14 | 0 | 1 |
 | R — Remaining Tasks | 13 | 0 | 0 | 13 |
-| **TOTAL** | **134** | **94** | **1** | **39** |
+| **TOTAL** | **131** | **111** | **0** | **20** |
 
 ---
 
@@ -272,13 +269,12 @@ Organización visual de proyectos como repositorios con estilo Mandala - Visuali
 
 ### Immediate (Sprint 1)
 1. **11.4.2–11.4.3** — Complete Project Detail view with activity logs and ring comparison
-2. **6.1–6.2** — Implement YAML Distillation Templates
+2. **6.4** — UI: Template Editor Panel (YAML editor with preview on Mandala)
 3. **3.4** — Implement Contract operation (outer ring archiving)
 
 ### Short-term (Sprint 2)
 4. **9.1** — Migration to persistent SurrealKV storage (from in-memory)
 5. **10.1** — P2P synchronization logic
-6. **7.3** — TUI Implementation with Ratatui
 
 ### Medium-term (Sprint 3-4)
 

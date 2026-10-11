@@ -1,118 +1,203 @@
-# Mandala Weaver Versions Cooperation System
+# Mandala Weaver: Versions Cooperation System
+> **The Circular Time of Software.** A Synarchic, Spatial, and Semantic Code Orchestrator.
 
-![Mandala Weaver VCS Logo](public/assets/mandala-icon.png)
+Mandala Weaver is the exact execution of the Golden Thread Engine instantiated in software architecture. It embraces a **Radial Version Space** where code is organized in living, circular geometry. Software emanates as pure, distilled logic units from an immutable center (the **Bindu**) and expands through concentric rings of evolution.
 
-The Spiral Time of Software. A Synarchic, Spatial, and Semantic Code Orchestrator.
+This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the **Distillation** of a unique Source—an infinite spiral of innovation where code expands outward with mathematical purity and structural harmony.
 
-Mandala Weaver is the exact execution of the Golden Thread Engine instantiated in software architecture. It embraces a Radial Version Space where code is liberated from linear timelines. Software emanates as pure, distilled logic units from an immutable center (the Bindu) and expands through concentric rings of evolution.
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V2.png)
 
-This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the Distillation of a unique Source an infinite spiral of innovation where the code expands endlessly outward without ever executing the exact same entropy twice.
+---
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V3.png)
-![Mandala Weaver VCS CLI](public/assets/Mandala-Weaver-VCS-UI-V4.png)
+## 🌟 Propuesta de Valor (Value Proposition)
+
+Mandala Weaver VCS fundamenta el desarrollo, navegación y síntesis del software sobre principios de geometría radial, análisis sintáctico profundo y persistencia en grafo. Sus fortalezas y capacidades distintivas son:
+
+### 1. Granularidad Atómica y Pureza Semántica (Mónadas AST)
+- **Aislamiento de Lógica Pura:** El sistema descompone el código fuente en unidades atómicas funcionales (funciones, estructuras, enumeraciones, traits, métodos) mediante análisis sintáctico profundo con [`ast-grep`](https://ast-grep.github.io/).
+- **Invarianza Estilística:** Variaciones cosméticas de espaciado, formateo, comentarios o indentación son transparentes. La identidad de cada Mónada está ligada a su verdadera estructura sintáctica, garantizando un registro limpio y libre de ruido.
+
+### 2. Sinestesia Cromática Inmediata (blake3 $\to$ HSL)
+- **Frecuencia Visual Determinista:** Cada Mónada proyecta su hash criptográfico semántico (`blake3`) directamente al espacio de color HSL (Hue, Saturation, Lightness).
+- **Validación Cognitiva Instantánea:** La percepción humana valida la estabilidad del código en microsegundos: si la lógica se mantiene invariante, su color permanece matemáticamente idéntico; si la lógica muta, su frecuencia cromática se desplaza de forma visible.
+
+### 3. Topología Espacial Radial y Tiempo Circular ($r, \theta$)
+- **Geometría Viviente del Software:** Los dominios funcionales (Núcleo, Interfaz, E/S, Datos, Red) se proyectan como Ángulos ($\theta$), mientras que las iteraciones y grados de madurez se expanden hacia afuera como Radios ($r$).
+- **Tiempo Acumulativo No Destructivo:** La historia del código reside intacta en los anillos concéntricos interiores. El pasado no desaparece ni se degrada: permanece accesible, analizable y reutilizable en cualquier momento para alimentar nuevas creaciones.
+
+### 4. Destilación Declarativa y Ensamblado Modular (Manifiestos YAML)
+- **Composición de Fuentes a la Carta:** Posibilidad de compilar ejecutables y árboles de código seleccionando coordenadas y rangos específicos de Mónadas a lo largo de diversos anillos y vectores.
+- **Recetas de Ensamblaje Reproducibles:** Manifiestos declarativos YAML que gestionan selección por rangos, exclusión selectiva, sustitución de variables y adaptadores semánticos automáticos para enlazar componentes entre anillos.
+
+### 5. Simbiosis Nativa con Inteligencia Artificial (Model Context Protocol - MCP)
+- **Servidor MCP de Primera Clase:** Servidor integrado (`weave mcp`) sobre `stdio` / JSON-RPC con 10 herramientas semánticas y recursos en vivo (`mandala://topology`, `mandala://rings`).
+- **Comprensión Holística para Modelos:** Permite a agentes autónomos (Claude, Cursor, Antigravity, Cline) consultar topología, inspeccionar árboles de sintaxis, trazar linajes evolutivos y destilar código sin sobrecargar su ventana de contexto.
+
+### 6. Registro Akáshico en Grafo Local y Robusto (SurrealDB + SurrealKV)
+- **Memoria Histórica Embebida:** Base de datos de grafos embebida con almacenamiento persistente en disco en `.mandala/db/` (motor SurrealKV) y modo en memoria ultrarrápido para entornos de prueba.
+- **Trazabilidad Evolutiva Completa:** Mapeo de relaciones (`evolves_to`), indexación compuesta multidimensional, inserciones masivas en lote (`insert_batch`) y recuperación paginada de alto rendimiento para miles de nodos.
+
+### 7. Escaneo Automático y Registro de Ecosistemas (Synarchy)
+- **Catalogación Instantánea:** El motor de escaneo de proyectos analiza recursivamente estructuras de directorios, clasifica componentes según su lenguaje y los proyecta automáticamente en el lienzo radial.
+- **Ingesta Cronológica:** Capacidad de procesar secuencias históricas existentes, traduciéndolas a Mónadas semánticas y asignándolas a sus correspondientes coordenadas espaciales.
+
+### 8. Experiencia Dual: Lienzo Visual Acelerado y Suite Terminal CLI/TUI
+- **Navegación Visual Fractal:** Interfaz gráfica interactiva con aceleración por hardware (Tauri + React + D3.js) con respiración semántica (macro-orquestación de galaxias de código y micro-inmersión en el AST de cada nodo).
+- **Control Total por Consola:** Suite completa de comandos de terminal (`weave`) e interfaz interactiva TUI para flujos de trabajo ágiles en entornos de servidor y consola.
 
 ---
 
 ## Core Concepts
+
 **The Golden Thread of Code**
-- Monads (Pure Logic Units): Mandala Weaver isolates and versions atomic logic (functions, structs) using Abstract Syntax Tree analysis (ast-grep). It captures the absolute essence of the code by filtering out formatting and whitespace, ensuring semantic purity.
-- Code QR Polar Chromatic Synesthesia: Every Monad possesses a unique visual frequency, rendered not as a static node, but as a procedural radial data matrix. Its geometry and color are a direct projection of its blake3 semantic hash mapped to the HSL color space. This allows the Architect to read the macro-ecosystem of the Mandala intuitively, instantly understanding the weight and function of the code without needing to click or parse raw text. The visual cortex instantly validates the truth of the logic: if the atomic logic mutates, the geometry and hue shift; if the structure remains invariant, the polar signature is immutable.
-  - Feeling the concept:
-![Mandala_Weaver_VCS_with_Monads_Code_QR_Polar](public/assets/Mandala_Weaver_VCS_with_Monads_Code_QR_Polar.png)
-- Vectors and Rings (Spatial Topology): Software is organized as living geometry. Logical domains (e.g., UI, Network, Core Logic) are assigned specific Angles ($\theta$), while temporal iterations and evolutionary stages expand outward as Radii ($r$).
-- Synarchic Weaving: Features and logical units coexist in perfect geometric space. Collaboration is a harmonious weaving of nodes drawn together by gravity and resonance. The architecture allows simultaneous evolution of components in complete synarchy, ensuring the network operates without interference.
-- Distillation (Spatial Consolidation): The architectural process of compiling an executable version. The Architect selects exact coordinates across various rings and vectors, consolidating a unique Source by weaving independent functional capabilities into a unified structure.
-- Manifests of Cooperation (YAML): Declarative templates that define assembly recipes. These manifests automate node selection, establish resonant compatibility, and inject semantic adapters to ensure absolute harmony between components operating in different rings.
-- The Breathing of the Mandala (Semantic Zoom and Fractality): Navigation in radial space is an act of biological respiration alongside the system. The system breathes with the Architect in two directions:
-  - Macro-Orchestration (Zoom Out): Expanding the perspective reveals the entire ecosystem. Individual nodes yield to the macro-structure, illuminating dependency galaxies, the density of evolutionary rings, and the global health of the synarchy at a single glance.
-  - Micro-Immersion (Focused Zoom In): Selecting a Monad and pulling the perspective allows the Architect to traverse the node's membrane. The Monad undergoes a fractal unfolding—revealing its internal universe, its Abstract Syntax Tree (AST), its evolutionary lineage, and its atomic essence. It is a fluid transition from stellar orbit to quantum microsurgery.
+- **Monads (Pure Logic Units):** Mandala Weaver isolates and versions atomic logic (functions, structs, traits) using Abstract Syntax Tree analysis ([`ast-grep`](https://ast-grep.github.io/)). It captures the absolute essence of the code by filtering out formatting and whitespace, ensuring semantic purity.
+- **Chromatic Synesthesia:** Every Monad possesses a unique visual frequency. Its color is a direct projection of its `blake3` semantic hash mapped to the HSL color space. The visual cortex instantly validates the truth of the logic: if the atomic logic mutates, the hue shifts; if the structure remains invariant, the color is immutable.
+- **Vectors and Rings (Spatial Topology):** Software is organized as living geometry. Logical domains (e.g., UI, Network, Core Logic, Data) are assigned specific Angles ($\theta$), while temporal iterations and evolutionary stages expand outward as Radii ($r$).
+- **Synarchic Weaving:** Features and logical units coexist in geometric space. Collaboration is a harmonious weaving of nodes drawn together by gravity and resonance. The architecture allows simultaneous evolution of components in complete synarchy, ensuring the network operates without interference.
+- **Distillation (Spatial Consolidation):** The architectural process of compiling an executable version. The Architect selects exact coordinates across various rings and vectors, consolidating a unique Source by weaving independent functional capabilities into a unified structure.
+- **Manifests of Cooperation (YAML):** Declarative templates that define assembly recipes. These manifests automate node selection, establish resonant compatibility, and inject semantic adapters to ensure absolute harmony between components operating in different rings.
+- **The Breathing of the Mandala (Semantic Zoom and Fractality):** Navigation in radial space is an act of biological respiration alongside the system. The system breathes with the Architect in two directions:
+  - **Macro-Orchestration (Zoom Out):** Expanding the perspective reveals the entire ecosystem. Individual nodes yield to the macro-structure, illuminating dependency galaxies, the density of evolutionary rings, and the global health of the synarchy at a single glance.
+  - **Micro-Immersion (Focused Zoom In):** Selecting a Monad and pulling the perspective allows the Architect to traverse the node's membrane. The Monad undergoes a fractal unfolding—revealing its internal universe, its Abstract Syntax Tree (AST), its evolutionary lineage, and its atomic essence. It is a fluid transition from stellar orbit to quantum microsurgery.
 
 ---
 
-## Synarchy
+## Model Context Protocol (MCP) Integration
 
-![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-UI-V5.png)
+Mandala Weaver VCS includes a built-in, first-class **Model Context Protocol (MCP)** server over standard input/output (`stdio`), designed for AI coding agents and developer environments (such as Claude Desktop, Cursor, Antigravity, and Cline).
 
----
-## Essential Commands
-
-*Note: The first time you run this, Cargo will take several minutes to download and compile `surrealdb` and `tauri`. Subsequent runs will be almost instant.*
-### Play
-
+### Starting the MCP Server
 ```bash
-pnpm run dev
-pnpm run tauri-dev
+# Using the weave CLI
+weave mcp
+
+# Or directly through cargo
+cargo run --manifest-path src-tauri/Cargo.toml -- mcp
 ```
 
-### Testing the Core Engine (Backend Rust)
+### Exposed Tools
 
-```bash
-# Navigate to backend directory
-cd src-tauri
+| Tool | Parameters | Description |
+|---|---|---|
+| `mandala_telemetry` | `verbose?: bool` | Scans project topology, ring counts, active and invariant monads. |
+| `mandala_bindu` | `project_name?: string` | Instantiates Point Zero (0, 0) / project genesis. |
+| `mandala_crystallize` | `file?: string, message?: string` | Radial commit: extracts AST monads from source code and expands a new ring. |
+| `mandala_distill` | `monad_ids?: string[], template_path?: string, output_path?: string` | Compiles executable source code from selected monads or a YAML template. |
+| `mandala_focus` | `monad_id: string` | Deep inspection of a monad's AST, raw logic, line coordinates, and hash. |
+| `mandala_lineage` | `monad_id?: string, limit?: number` | Traces bidirectional evolutionary lineage through inner and outer rings. |
+| `mandala_spectrum` | `monad_id: string` | Chromatic analysis of semantic mutations using BLAKE3 and HSL projection. |
+| `mandala_scan_project` | `path: string` | Recursively scans and indexes a polyglot codebase into radial rings. |
+| `mandala_git_import` | `repo_path: string` | Chronologically imports repository commit history into concentric rings. |
+| `mandala_validate_template` | `content: string` | Validates declarative YAML distillation templates and checks syntax. |
 
-# Check if code compiles without generating binary (fast)
-cargo check
+### Live Resources & Prompts
+- **`mandala://topology`**: Dynamic JSON graph of the entire mandala state (rings, monads, constellations, and edges).
+- **`mandala://rings`**: Detailed breakdown of concentric rings, radius tiers, and monad distribution.
+- **`architect_guidance` Prompt**: Interactive architectural instructions for AI assistants guiding circular software evolution.
+
+### AI Agent Configuration (`claude_desktop_config.json` / Cursor)
+
+```json
+{
+  "mcpServers": {
+    "mandala-weaver": {
+      "command": "cargo",
+      "args": [
+        "run",
+        "--manifest-path",
+        "Mandala-Weaver-VCS/src-tauri/Cargo.toml",
+        "--",
+        "mcp"
+      ]
+    }
+  }
+}
 ```
 
----
-
-## CLI Cooperation Line Interface
-
-### Genesis & State (The Foundation)
-
-**`weave bindu`**: 
-Instantiates the absolute Point Zero (0, 0). Creates the core geometric seed from which all future rings and vectors will emanate.
-
-**`weave seed <source>`**: 
-Plants the *Bindu* of an existing repository into your local hardware to begin a new fractal expansion in your own environment.
-
-**`weave telemetry`**: 
-Scans the current topology. Returns the pulse of your local ecosystem, showing which Monads are actively mutating and which are invariant, without generating "untracked file" noise.
+For more details, see [mcp/README.md](file:///Mandala-Weaver-VCS/mcp/README.md).
 
 ---
 
-### Cultivation & Expansion (Local Workflow)
+## Declarative Distillation Manifests (YAML Templates)
 
-**`weave focus <monad>`**: 
-Selects active Monads from the latent space and brings them into the Architect's active constellation, preparing them for crystallization.
+Mandala Weaver allows assembling customized source trees using declarative YAML manifests. The distillation engine traverses selected rings and vectors, filters excluded components, applies semantic adapters, and writes the assembled code to disk.
 
-**`weave crystallize -m "<intent>"`**: 
-Locks the AST and generates the `blake3` semantic hash. Expands the radius ($r + 1$) to immortalize the current logic in a new evolutionary Ring.
+### Sample Manifest: `templates/full-stack.yaml`
 
-**`weave vector <angle>`**: 
-Opens a new Angle ($\theta$) of exploration. You do not branch off into a separate, blind timeline; you simply begin weaving on a different spatial coordinate of the Mandala.
+```yaml
+name: "full-stack"
+version: "0.1.0"
 
-**`weave dormant`**: 
-Puts active, uncrystallized Monads into the *Vórtice de Reposo* (latent space). Clears the current visual and processing cache without destroying the raw code.
+rings:
+  type: "Range"
+  min: 1
+  max: 10
+
+vectors:
+  - name: "CORE"
+  - name: "UI"
+  - name: "IO"
+  - name: "DATA"
+
+exclude:
+  - kind: "test"
+  - name: "benchmark_*"
+
+adapters:
+  - name: "std_import"
+    from: "std::*"
+    to: "std"
+    adapter_type:
+      Import:
+        module: "std"
+
+output:
+  filename: "src"
+  structure:
+    type: "Nested"
+    rings: false
+    vectors: true
+  generate_modules: true
+```
+
+### Template Features
+- **Flexible Ring Selectors:** `All`, `Exact(u32)`, `Range { min, max }`, `UpTo(u32)`.
+- **Vector Filtering:** Specific domain inclusion (`CORE`, `UI`, `IO`, `DATA`, `NETWORK`).
+- **Semantic Adapters:** Automated `Import`, `Reexport`, `Wrap`, and `Custom` transformations.
+- **Variable Substitution:** Dynamic interpolation of `{{variable}}` placeholders at compilation time.
+- **Interactive UI Editor:** Integrated [`TemplateEditor.tsx`](file:///Mandala-Weaver-VCS/src/components/panels/TemplateEditor.tsx) in the desktop interface for creating and testing templates.
 
 ---
 
-### Spatial Navigation (Time & Geometry)
+## Commands of Cooperation (CLI Suite)
 
-**`weave distill <coordinates>`**: 
-The core spatial compilation cooperation. Reads a YAML template or specific coordinates ($r, \theta$) to extract and weave the highest logic across different rings into a consolidated, executable Source.
+Mandala Weaver provides the `weave` command-line tool for terminal-based workflows:
 
-**`weave spectrum <monad>`**: 
-Analyzes the chromatic shift of a Monad between rings. Instead of showing red/green deleted text, it outputs the semantic variance based on its HSL signature, instantly confirming if the core logic or just the formatting mutated.
+### Genesis & State
+- **`weave bindu`**: Instantiates Point Zero (0, 0). Creates the core geometric seed from which all future rings and vectors will emanate.
+- **`weave seed <source>`**: Plants the *Bindu* of an existing repository to begin a new fractal expansion in your local environment.
+- **`weave telemetry [--verbose]`**: Scans the current topology. Returns the pulse of the local ecosystem, displaying active and invariant monads.
+- **`weave status [--verbose]`**: Displays project status, active ring count, indexed monads, and storage engine health.
 
-**`weave lineage`**: 
-Queries the embedded Akashic Record (SurrealDB). Displays the evolutionary spiral of a specific Monad or Vector, tracking its reincarnations and geometric mutations from the Bindu to the present.
+### Cultivation & Expansion
+- **`weave focus <monad>`**: Brings specified monads into the active constellation for inspection and preparation.
+- **`weave crystallize [-m "<intent>"] [file]`**: Locks the AST and generates the `blake3` semantic hash. Expands the radius ($r + 1$) to immortalize the current logic in a new evolutionary Ring.
+- **`weave vector <angle>`**: Opens a new Angle ($\theta$) of exploration for domain development.
+- **`weave dormant`**: Puts active uncrystallized Monads into the latent space (*Vórtice de Reposo*).
+- **`weave inspect <monad_id> [--full]`**: Deep terminal inspection of a monad's AST, raw logic, and spatial coordinates.
 
-**`weave echo <ring_id>`**: 
-In spiral time, This cli retrieves the exact semantic resonance of a Monad from a Ring and weaves it into the an outer, inner, present Ring. 
+### Spatial Navigation & Assembly
+- **`weave distill [coordinates] [-r <ring>] [-v <vector>] [-t <template.yaml>] [-o <output_path>]`**: Compiles an executable source by harvesting monads across rings and vectors.
+- **`weave spectrum <monad>`**: Analyzes chromatic shift between rings, displaying semantic variance based on HSL signatures.
+- **`weave lineage [-m <monad>] [-l <limit>]`**: Queries the embedded Akashic Record to trace the evolutionary lineage of a Monad or Vector.
+- **`weave echo <ring_id> [-m <monad>]`**: Retrieves the semantic resonance of a Monad from an inner Ring and weaves it into the current Ring.
 
----
-
-### Synarchy & Propagation (The Network)
-
-**`weave absorb`**: 
-Integrates the latest crystallized nodes from the macro-ecosystem into your local environment, expanding your rings with the collective intelligence of the network.
-
-**`weave synthesize <vector>`**: 
-Finds the harmonic geometry between two evolving vectors. Because Monads exist in spatial coordinates, they do not collide; the engine weaves them together, resolving any logical dissonance through AST alignment.
-
-**`weave emanate`**: 
-Irradiates your local, crystallized updates outward, inward to the macro-network, allowing other nodes in the Synarchy to observe and absorb your evolutionary rings.
+### AI & Synarchy Network
+- **`weave mcp`**: Runs the Model Context Protocol stdio server for AI coding assistants.
+- **`weave absorb [--remote <url>]`**: Integrates crystallized nodes from the macro-ecosystem into the local environment.
+- **`weave synthesize <vector> [--with-vector <vector>]`**: Finds harmonic geometry between two evolving vectors and reconciles AST alignments.
+- **`weave emanate [--remote <url>]`**: Propagates local crystallized updates outward to the synarchy network.
+- **`weave audit`**: Runs topological validation, verifying integrity, invariants, and collision boundaries.
 
 ---
 
@@ -120,427 +205,319 @@ Irradiates your local, crystallized updates outward, inward to the macro-network
 
 The Loom is built on three high-performance engineering pillars:
 
-- The Core (Engine): Rust + nalgebra (Orbital and Spatial Calculation) + ast-grep (Semantic Parsing).
-- The Akashic Record: SurrealDB embedded (Graph database to trace the evolutionary lineage of code).
-- The Canvas (UI): Tauri + Astro + React + D3.js (Massive interactive hardware-accelerated rendering). Features a dark neo-metric glassmorphism aesthetic with glowing monads, geometric polar grids, dynamic stat panels (Bindu, Rings, Monads), and an integrated real-time code inspector.
-
-*Software is cultivated from the center outward.*
-
-In this paradigm, software does not "advance" in a straight line from which branches branch, but **emanates** from a central seed (the *Bindu*) and expands in integration cycles. By tracing vectors through different rings, you create *Sources* (personalized executables) as if weaving constellations of pure logic.
+- **The Engine (Backend):** Rust + [`nalgebra`](https://crates.io/crates/nalgebra) (Orbital and spatial math) + [`ast-grep`](https://ast-grep.github.io/) (Semantic AST parsing) + [`tokio`](https://tokio.rs/) (Async runtime) + [`blake3`](https://crates.io/crates/blake3) (Cryptographic hashing).
+- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Operates with local persistent disk storage in `.mandala/db/` via SurrealKV ([`FileBridge`](file:///Mandala-Weaver-VCS/src-tauri/src/persistence/file_bridge.rs)) or in-memory mode for unit tests. Includes composite indexing, batch insertions (`insert_batch`), and paginated retrieval (`get_monads_paginated`).
+- **The Canvas (UI):** Tauri 2.0 + Astro + React + D3.js (Hardware-accelerated radial visualization). Features a neo-metric dark glassmorphism aesthetic with glowing monads, polar grids, dynamic stats panels, and an integrated real-time code inspector.
 
 ---
 
 ## Architectural Philosophy
 
-In traditional systems, a repository blindly advances forward. Branches separate and merge, creating a historical labyrinth that is difficult to navigate semantically.
+Mandala Weaver organizes software around sacred, radial geometry:
 
-Mandala Weaver proposes that perfect software possesses sacred geometry:
-
-1. **The Bindu (The Center):** Every project originates from a central idea, a pure purpose. This is point (0, 0).
-2. **The Vectors (Angles - θ):** Represent functionality domains. For example, the vector at 90° could be the user interface, and the vector at 180° the database engine.
-3. **The Rings (Radii - r):** Represent temporal iterations, refactorizations, or abstraction levels. As you move away from the center, code becomes more complex, more integrated, or simply a more recent version in time.
-
----
-
-## Logical Structure
+1. **The Bindu (The Center):** Every project originates from a central seed, a pure purpose at coordinate (0, 0).
+2. **The Vectors (Angles - $\theta$):** Represent functional domains. For example, 0° is Core, 90° is UI, 180° is I/O, and 270° is Network.
+3. **The Rings (Radii - $r$):** Represent temporal iterations, refactorings, and abstraction layers. As radius increases, code expands outward into higher maturity and integration.
 
 ### The Monad (The Functional Unit)
-
-Instead of registering "entire files" that change, Mandala registers **Unit Logical Units** (a specific function, a data structure, a docstring). Each Monad is located at an exact coordinate on the circumference of a temporal ring.
+Mandala isolates and registers **Pure Logical Units (Monads)**: specific functions, structs, traits, and types, each positioned at an exact spatial coordinate on the circumference of a temporal ring.
 
 ### The Constellation (The Environment)
-
-Monads in the same Ring that interact with each other form a Constellation. This represents a stable and harmonious state of the system at that degree of expansion.
+Monads residing in the same Ring that interact with each other form a Constellation, representing a stable and harmonious state of the system at that degree of expansion.
 
 ### The Source (The Consolidated Executable)
+Compiling a **Source** means tracing a geometric polygon that selectively harvests Monads from across different Rings and Vectors. For example, a high-throughput network engine from Ring 2 can be harmoniously woven with modern UI components from Ring 5, synthesizing a custom, cohesive executable.
 
-Unlike a traditional checkout that loads the entire repository at a point in time, compiling a **Source** means tracing a line (or polygon) that selects Monads from different Rings and Vectors.
-
-- *Example:* You can take the network engine from Ring 2 (because it was faster and simpler) and weave it with the User Interface from Ring 5 (which has the modern design), consolidating them into a single coherent Executable Unit.
-
----
-
-## Guide for Creators of Spiral Time Lines
-
-For Architects and Weavers of this system, software creation changes from "adding lines of code" to "resonance logic in space."
-
-**0. Omnidirectional (Evolution):**
-The Synarchic knowledge flows in all directions inner, outer, present.
-
-**1. Planting the Bindu:**
-Define the semantic structure of your project. Which angles will dominate your space? Divide 360 degrees into your main domains (UI, Core, I/O, Business Logic).
-
-**2. Expansion (Radial Commit):**
-When improving a functional unit, you do not overwrite the previous one. You create a new Ring that expands the radius of that unit. The previous history remains intact in the inner rings. The visual history of your software will look like the cross-section of a thousand-year-old tree.
-
-**3. Spatial Weaving (Merging):**
-Conflicts are not resolved by reading text lines, but by analyzing geometry. If two functional units occupy the same space in a new Ring, the Weaver must decide whether to merge them into a new node or shift one by a few degrees to coexist.
-
-**4. Distillation (Inward Path):**
-Navigation toward the center allows refactoring by eliminating unnecessary complexity. Traveling to Ring 1 or 2 of any vector will give you the purest and barest version of that functionality.
-
-**5. Synarchy (Project Orchestration):**
-Beyond a single Mandala, projects are organized into a Synarchy. A global registry tracks multiple repositories, allowing the Architect to navigate between different "universes" of code, maintaining cross-project awareness and structural coherence.
-
----
-
-# Complete Technical Documentation
-
-## Complete Data Flow Diagram
-
-```
-+-------------------------------------------------------------------------------------+
-|                                        USER                                           |
-|   +-----------+   +-----------+   +-----------+   +-----------+   +----------------+   |
-|   | Code      |   | Click on  |   | Hover over|   | Drag to   |   | Terminal/CLI  |   |
-|   | Editor    |   | Monad    |   | Monad     |   | select    |   | weave cooperation|   |
-|   +-----+-----+   +-----+-----+   +-----+-----+   +------+----+   +-------+--------+   |
-+--------+----------------+----------------+----------------+----------------+----------------+
-              |                |                |                |                |
-              V                V                V                V                V
-+-------------------------------------------------------------------------------------+
-|                                FRONTEND (Browser)                                     |
-|                                                                                       |
-|   +-------------------------------------------------------------------------------+   |
-|   |                    index.astro (Main Workspace)                               |   |
-|   |   +-------------------------------------------------------------------------+ |   |
-|   |   |     MandalaCanvas (React Island) client:only=react                    | |   |
-|   |   |                                                                         | |   |
-|   |   |   +-----------------------------+   +----------------------------------+ | |   |
-|   |   |   |   SVG Container              |   |   Panels (React)                | | |   |
-|   |   |   |                              |   |                                  | | |   |
-|   |   |   | +-------------------------+ |   | +------------------------------+ | | |   |
-|   |   |   | | D3 Renderer           | |   | | MonadInspector               | | | |   |
-|   |   |   | | - renderer.ts         | |   | | SidebarHistory               | | | |   |
-|   |   |   | | - zoom.ts             | |   | | DistillPanel                 | | | |   |
-|   |   |   | | - interactions.ts     | |   | | RingsPanel                   | | | |   |
-|   |   |   | | - animations.ts       | |   | | VectorsPanel                 | | | |   |
-|   |   |   | +-------------------------+ |   | | TerminalPanel                | | | |   |
-|   |   |   | +-------------------------+ |   | | ThemeSelector                | | | |   |
-|   |   |   | | SidebarNav (ViewMode)  | |   | +------------------------------+ | | |   |
-|   |   |   | +-------------------------+ |   |              |                   | | |   |
-|   |   |   +-----------------------------+   | +------------+-------------+     | | |   |
-|   |   |                                    | | Zustand Store             | | | |   |
-|   |   |                                    | | - mandalaState             | | | |   |
-|   |   |                                    | | - selectedMonad            | | | |   |
-|   |   |                                    | | - viewMode (Orbit+)        | | | |   |
-|   |   |                                    | +----------------------------+ | | |   |
-|   |   +------------------------------------+----------------------------------+ |   |
-|   |   |            explorer.astro (Synarchy Explorer)                     |   |
-|   |   |   +----------------------------+    +-----------------------------+     |   |
-|   |   |   | ProjectList component     |    | ProjectCard (SVG mini-mandala)|    |   |
-|   |   |   | AddProjectDialog           |    |                             |    |   |
-|   |   |   +----------------------------+    +-----------------------------+     |   |
-|   |   +-------------------------------------------------------------------------+   |
-|   +-------------------------------------------------------------------------------+   |
-|                                      |                           |                     |
-|                                      V                           |                     |
-|   +---------------------------------------------------+----------+----------------+   |
-|   |              lib/tauri/cooperation.ts                 |    lib/tauri/synarchy_api.ts  |   |
-|   |   +--------------------------+                    |    +-------------------------+ |   |
-|   |   | export_mandala_state()  |                    |    | get_projects()         | |   |
-|   |   | expand_ring()           |                    |    | init_project()         | |   |
-|   |   | trace_monad_lineage()   |                    |    +-------------------------+ |   |
-|   |   +-------------------------+                    +-----------------------------+   |
-|   +--------------------------------+--------------------------------+----------------+   |
-|                                    | Tauri IPC (invoke)                                    |
-+------------------------------------+----------------------------------------------------+
-                                     |
-                                     V
-+-------------------------------------------------------------------------------------+
-|                                BACKEND (Rust / Tauri)                                 |
-|                                                                                       |
-|   +------------------------------------------------------------------------------------
-|   |                                 main.rs (Entry Point)                               |
-|   |   +----------------------------------------------------------------------------------------
-|   |   |                  interface/ (IPC Bridge & CLI API)                              |
-|   |   |   +------------------+------------------+------------------+-------------------+      |
-|   |   |   | cli_cooperation.rs  | projection_api.rs | synarchy_api.rs  | collaboration_api |      |
-|   |   |   | (weave CLI)      | (Mandala View)   | (Project Explorer| .rs (Multiplayer) |      |
-|   |   |   +------------------+------------------+------------------+-------------------+      |
-|   |   |   +------------------+------------------+------------------+-------------------+      |
-|   |   |   | cli_api.rs       | radial_tui.rs    | template_api.rs  |                   |      |
-|   |   |   | (IPC handlers)   | (TUI Renderer)   | (YAML Templates) |                   |      |
-|   |   |   +------------------+------------------+------------------+-------------------+      |
-|   |   +----------------------------------------------------------------------------------------
-|   |                                     |                                                   |
-|   |   +----------------------------------+--------------------------------------------------+   |
-|   |   |                                   |                                                  |   |
-|   |   |   +-------------------------------+---------------------------------------------------+  |
-|   |   |   |                        weaver/ (Business Logic)                                  |  |
-|   |   |   |                                                                                   |  |
-|   |   |   |   +-------------+    +-------------+    +------------------+    +-----------+   |  |
-|   |   |   |   |ast_extractor|    |  resolver   |    | source_compiler  |    | threader  |   |  |
-|   |   |   |   | .rs         |    | .rs         |    | .rs              |    | .rs       |   |  |
-|   |   |   |   |extract_raw()|    |identify_    |    | distill_source() |    | lineage   |   |  |
-|   |   |   |   |             |    | deltas()    |    |                  |    | trace     |   |  |
-|   |   |   |   +-------------+    +-------------+    +------------------+    +-----------+   |  |
-|   |   |   |   +-------------+    +-------------+    +------------------+    +-----------+   |  |
-|   |   |   |   | auto_imports|    | file_writer |    | semantic_diff    |    | watcher   |   |  |
-|   |   |   |   | .rs         |    | .rs         |    | .rs              |    | .rs       |   |  |
-|   |   |   |   | dep_analyzer|    | (Ring/Vec)  |    | AST Hash Diff    |    | FS watcher|   |  |
-|   |   |   |   +-------------+    +-------------+    +------------------+    +-----------+   |  |
-|   |   |   |   +----------------------------------------+                                   |  |
-|   |   |   |   |           contract.rs                  |                                   |  |
-|   |   |   |   |      (Manifest adapter resolution)    |                                   |  |
-|   |   |   |   +----------------------------------------+                                   |  |
-|   |   |   +------------------------------------------------------------------------------------
-|   |                                     |                                                        |
-|   |   +----------------------------------+--------------------------------------------------------+   |
-|   |   |                           language/ (Language Detection)                              |   |
-|   |   |   +----------------------------------------------------------------------------------------+   |
-|   |   |   | mod.rs        | detect_language(path) -> Language enum (Rust, JS, Python, etc.)    |   |
-|   |   |   +----------------------------------------------------------------------------------------+   |
-|   |   +------------------------------------+--------------------------------------------------------+
-|   |                                     |                                                        |
-|   |   +-----------------------------------+--------------------------------------------------------+
-|   |   |                           template/ (Manifest System)                                 |
-|   |   |   +---------------------------+    +---------------------------------------------------+
-|   |   |   | engine.rs                 |    | adapter.rs                                        |
-|   |   |   | (YAML template parser)   |    | (Semantic adapter resolver)                      |
-|   |   |   +---------------------------+    +---------------------------------------------------+
-|   |   +-----------------------------------+----------------------------------------------------
-|   |                                     |                                                        |
-|   |   +-----------------------------------+----------------------------------------------------+
-|   |   |                         synarchy/ (Registry)                                        |
-|   |   |   +---------------------------+    +---------------------------------------------------+    |
-|   |   |   | registry.rs              |    | sync.rs                                          |    |
-|   |   |   | (JSON Project DB)        |    | (Auto-Scan & Sync)                               |    |
-|   |   |   +---------------------------+    +---------------------------------------------------+    |
-|   |   +-----------------------------------+----------------------------------------------------+
-|   |                                     |                                                        |
-|   |   +-----------------------------------+----------------------------------------------------+
-|   |   |                       ontology/ (Entities)                                           |
-|   |   |   +----------+  +------------+  +----------+  +------------------+  +---------------+  |
-|   |   |   | monad.rs |  | semantic_  |  | bindu.rs |  | constellation.rs|  |                 |  |
-|   |   |   |          |  | hash.rs   |  |          |  |                  |  |                 |  |
-|   |   |   | struct   |  |            |  | struct   |  | struct          |  |                 |  |
-|   |   |   | Monad {  |  | blake3     |  | Bindu {  |  | Constellation   |  |                 |  |
-|   |   |   |  id,     |  | pure_hash()|  | project_ |  | ring_level,     |  |                 |  |
-|   |   |   |  coord,  |  |            |  | name,    |  | monads:Vec,     |  |                 |  |
-|   |   |   |  content,|  |            |  | timestamp|  | vectors:Vec     |  |                 |  |
-|   |   |   |  name,   |  |            |  | }        |  | }               |  |                 |  |
-|   |   |   |  ring,   |  |            |  |          |  |                 |  |                 |  |
-|   |   |   |  lang    |  |            |  |          |  |                 |  |                 |  |
-|   |   |   | }        |  |            |  |          |  |                 |  |                 |  |
-|   |   |   +----------+  +------------+  +----------+  +------------------+                  |
-|   |   +----------------------------------+--------------------------------------------------------
-|   |                                     |                                                        |
-|   |   +----------------------------------+--------------------------------------------------------+
-|   |   |                       geometry/ (Mathematics)                                      |
-|   |   |   +----------+  +-----------+  +-----------+  +----------+  +----------------------+  |
-|   |   |   |polar_    |  |transform.|  |collision.|  | vector.rs|  | ring.rs              |  |
-|   |   |   |space.rs  |  | rs       |  | rs       |  |          |  |                      |  |
-|   |   |   |          |  |           |  |           |  |          |  | Ring struct         |  |
-|   |   |   |PolarCoord|  |to_cartesi|  | detect_   |  | snap_to_ |  | ring_level           |  |
-|   |   |   | r,theta  |  | an()     |  | overlap() |  | nearest_ |  | monads_at_level()   |  |
-|   |   |   | }        |  |from_cart |  | resolve_  |  | domain() |  | expand_ring()       |  |
-|   |   |   |dist_to() |  |()        |  | orbital_  |  |          |  |                      |  |
-|   |   |   +----------+  +----------+  +-----------+  +----------+  +----------------------+  |
-|   |   +----------------------------------+--------------------------------------------------------
-|   |                                     |                                                        |
-|   |   +----------------------------------+--------------------------------------------------------+
-|   |   |                     persistence/ (SurrealDB)                                       |
-|   |   |   +-----------------------------+    +------------------------+  +------------------+  |
-|   |   |   | surreal_bridge.rs           |    | schemas.rs             |  | search.rs        |  |
-|   |   |   |                             |    |                        |  |                  |  |
-|   |   |   | connect_embedded()           |    | DEFINE TABLE monad     |  | semantic_query()|  |
-|   |   |   | insert_and_link()            |    | DEFINE TABLE evolves_to|  | fuzzy_search()  |  |
-|   |   |   | get_ring()                  |    | DEFINE INDEX ring       |  |                  |  |
-|   |   |   | get_all_monads()            |    | DEFINE INDEX vector     |  |                  |  |
-|   |   |   | get_vector_sector()         |    +------------------------+  +------------------+  |
-|   |   |   +-----------------------------+                         |                              |
-|   |   |                             +------------------------------+                              |
-|   |   |                             | SurrealDB (Embedded/In-Memory)                              |
-|   |   |                             | Namespace: mandala | Database: weaver                       |
-|   |   |                             +----------------------------------------------------------+
-|   |   +-----------------------------------------------------------------------------------------+
-|   |                                     |                                                        |
-|   |   +----------------------------------+--------------------------------------------------------+
-|   |   |                          collaboration/ (Multiplayer)                                  |
-|   |   |   +----------------------------------------------------------------------------------------+
-|   |   |   | mod.rs         | WebSocket events, presence, real-time monad locking              |
-|   |   |   +----------------------------------------------------------------------------------------+
-|   |   +-----------------------------------------------------------------------------------------+
-|   |                                     |                                                        |
-|   |   +----------------------------------+--------------------------------------------------------+
-|   |   |                              plugins/ (Extensibility)                                   |
-|   |   |   +----------------------------------------------------------------------------------------+
-|   |   |   | mod.rs         | Plugin registry and lifecycle hooks                             |
-|   |   |   +----------------------------------------------------------------------------------------+
-|   |   +-----------------------------------------------------------------------------------------+
-+-----------------------------------------------------------------------------------------+
-```
 ---
 
 ## Project Structure Overview
 
 ```
 Mandala-Weaver-VCS/
-├── src-tauri/                              # Rust Backend (Tauri Desktop Application)
+├── src-tauri/                              # Rust Backend (Tauri & Core Engine)
 │   └── src/
-│       ├── main.rs                        # Application entry point - initializes Tauri, maps DB state, mounts FS watcher
-│       ├── lib.rs                         # Library root - module declarations
-│       │   // Exposes: geometry, ontology, weaver, persistence, synarchy, language,
-│       │   //         interface, collaboration, plugins, template
+│       ├── main.rs                        # Entry point: Tauri app setup & CLI router
+│       ├── lib.rs                         # Library exports & module definitions
 │       │
-│       ├── geometry/                      # Topological engine - polar coordinate math
-│       │   ├── mod.rs                     # Module exports (polar_space, transform, collision, ring, vector)
+│       ├── geometry/                      # Topological Engine (Polar Coordinates)
+│       │   ├── mod.rs                     # Module exports
 │       │   ├── polar_space.rs             # Polar coordinates (r, theta) calculation
 │       │   ├── transform.rs               # Polar <-> Cartesian conversion (nalgebra)
-│       │   ├── collision.rs               # Overlap detection and orbital shifting
-│       │   ├── ring.rs                    # Ring struct and ring-level operations
-│       │   └── vector.rs                  # Vector domain snapping and sector calculations
+│       │   ├── collision.rs               # Overlap detection & orbital shifting
+│       │   ├── ring.rs                    # Concentric ring boundaries & scaling
+│       │   └── vector.rs                  # Angular domain mapping & snap logic
 │       │
-│       ├── ontology/                      # System entities - domain models
-│       │   ├── mod.rs                     # Module exports (monad, bindu, constellation, semantic_hash)
-│       │   ├── monad.rs                   # Minimal functional unit (AST-based versioning)
+│       ├── ontology/                      # System Entities & Domain Models
+│       │   ├── mod.rs                     # Module exports
+│       │   ├── monad.rs                   # Pure functional unit (AST-based)
 │       │   ├── bindu.rs                   # Immutable project center (Point Zero)
-│       │   ├── constellation.rs           # Stable group of monads at a ring level
-│       │   └── semantic_hash.rs           # blake3 semantic hash generation
+│       │   ├── constellation.rs           # Group of harmonic monads in a ring
+│       │   └── semantic_hash.rs           # Deterministic AST hashing (blake3)
 │       │
-│       ├── weaver/                        # Business Logic - expansion/commit operations
-│       │   ├── mod.rs                     # Expansion logic (radial commit)
-│       │   ├── ast_extractor.rs           # Extraction of monads from source (tree-sitter)
-│       │   ├── threader.rs               # Lineage tracer (surrealdb graph queries)
-│       │   ├── resolver.rs                # Delta resolution between rings
-│       │   ├── source_compiler.rs         # Source assembler (distillation)
-│       │   ├── auto_imports.rs            # Dependency analyzer for monads
-│       │   ├── file_writer.rs            # Disk persistence for distilled sources
-│       │   ├── semantic_diff.rs          # AST hash diff for telemetry
-│       │   ├── watcher.rs                # Filesystem watcher for telemetry
-│       │   └── contract.rs               # Manifest adapter resolution
+│       ├── weaver/                        # The Loom (Expansion & Assembly Engine)
+│       │   ├── mod.rs                     # Radial expansion (commit) logic
+│       │   ├── ast_extractor.rs           # Polyglot AST extraction (ast-grep)
+│       │   ├── threader.rs                # Evolutionary graph lineage queries
+│       │   ├── resolver.rs                # Delta detection between rings
+│       │   ├── source_compiler.rs         # Source assembler & distillation
+│       │   ├── auto_imports.rs            # Dependency analyzer
+│       │   ├── file_writer.rs             # Disk writing for distilled sources
+│       │   └── watcher.rs                 # Live filesystem watcher
 │       │
-│       ├── synarchy/                      # Project Orchestration
-│       │   ├── mod.rs                     # Module exports (registry, sync, ProjectRegistry)
-│       │   ├── registry.rs               # Project registry (JSON persistence)
-│       │   └── sync.rs                   # Auto-scan and synchronization logic
+│       ├── template/                      # Declarative Distillation System
+│       │   ├── mod.rs                     # Module exports & serde deserializers
+│       │   ├── engine.rs                  # Distillation execution & variable substitution
+│       │   ├── schema.rs                  # YAML template definitions & selectors
+│       │   ├── loader.rs                  # File-system template loading & caching
+│       │   ├── validator.rs               # Template syntax & reference validation
+│       │   └── ast_adapter.rs             # Code transformations & module synthesis
 │       │
-│       ├── persistence/                   # SurrealDB database layer
-│       │   ├── mod.rs                     # Module exports (schemas, surreal_bridge, search)
-│       │   ├── schemas.rs                # SurrealQL definitions (tables, indexes)
-│       │   ├── surreal_bridge.rs         # Bridge with embedded SurrealDB
-│       │   └── search.rs                 # Semantic and fuzzy search queries
-│       │
-│       ├── interface/                     # IPC Bridge and CLI API
+│       ├── persistence/                   # The Akashic Record (SurrealDB Engine)
 │       │   ├── mod.rs                     # Module exports
-│       │   ├── projection_api.rs         # JSON projection API for Tauri (Mandala View)
-│       │   ├── synarchy_api.rs           # IPC handlers for Project Explorer
-│       │   ├── cli_api.rs                # Logic for the 'weave' CLI
-│       │   ├── cli_cooperation.rs           # CLI cooperation definitions (weave bindu, seed, etc.)
-│       │   ├── radial_tui.rs             # TUI renderer for terminal-based navigation
-│       │   ├── template_api.rs           # YAML manifest template handlers
-|       |   ├── collaboration_api.rs      # Multiplayer IPC
+│       │   ├── schemas.rs                 # SurrealQL schemas & composite indexes
+│       │   ├── surreal_bridge.rs          # Embedded SurrealDB bridge & queries
+│       │   ├── file_bridge.rs             # Persistent storage (.mandala/db/ SurrealKV)
+│       │   └── migration.rs               # Database migrations & upgrades
 │       │
-│       ├── language/                      # Language Detection
-│       │   └── mod.rs                    # Language enum and detect_language()
-│       │
-│       ├── collaboration/                  # Multiplayer System
-│       │   └── mod.rs                    # WebSocket events, presence, real-time locking
-│       │
-│       ├── plugins/                        # Extensibility System
-│       │   └── mod.rs                    # Plugin registry and lifecycle hooks
-│       │
-│       ├── template/                       # Manifest System
+│       ├── synarchy/                      # Multi-Project Management & Ecosystem
 │       │   ├── mod.rs                     # Module exports
-│       │   ├── engine.rs                 # YAML template parser
-│       │   └── adapter.rs                # Semantic adapter resolver
+│       │   ├── registry.rs                # Project registry & automated scanner
+│       │   └── sync.rs                    # Auto-scan & background synchronizer
 │       │
-│       └── Cargo.toml                     # Rust dependencies (tauri 2.0, surrealdb 3.0, tree-sitter)
+│       ├── collaboration/                 # Historical Ingestion & Distributed Sync
+│       │   ├── mod.rs                     # Module exports & Git history import
+│       │   ├── git_bridge.rs              # Non-destructive Git history extraction
+│       │   └── sync.rs                    # Archive export & import
+│       │
+│       ├── interface/                     # IPC Handlers, CLI & Protocols
+│       │   ├── mod.rs                     # Module exports
+│       │   ├── projection_api.rs          # Tauri commands for Mandala workspace
+│       │   ├── synarchy_api.rs            # Tauri commands for Project Explorer
+│       │   ├── template_api.rs            # Tauri commands for YAML templates
+│       │   ├── collaboration_api.rs       # Tauri commands for Git & archives
+│       │   ├── cli_api.rs                 # IPC bridge for CLI commands
+│       │   ├── cli_commands.rs            # Clap CLI parser & command implementations
+│       │   ├── mcp.rs                     # Model Context Protocol (stdio JSON-RPC)
+│       │   └── radial_tui.rs              # Terminal User Interface
+│       │
+│       └── Cargo.toml                     # Rust dependencies
 │
-├── src/                          # Frontend (Astro + React + D3.js)
+├── src/                                   # Frontend (Astro + React + D3.js)
 │   ├── pages/
-│   │   ├── index.astro          # Main canvas (Workspace)
-│   │   ├── explorer.astro      # Synarchy Explorer (Project list)
-│   │   └── project/
-│   │       └── [id].astro      # Project detail view
+│   │   ├── index.astro                    # Main Mandala Canvas workspace
+│   │   ├── explorer.astro                 # Synarchy Explorer (Project list)
+│   │   └── project/index.astro            # Project detail view & inspector
 │   │
 │   ├── layouts/
-│   │   └── AppLayout.astro     # Page wrapper with SidebarNav
+│   │   └── AppLayout.astro                # Common layout wrapper & navigation
 │   │
 │   ├── components/
-│   │   ├── mandala/           # Interactive canvas components (D3/React)
-│   │   │   ├── MandalaCanvas.tsx  # SVG container & D3 mount
-│   │   │   └── TooltipNode.tsx    # Floating monad details
+│   │   ├── mandala/                       # Interactive Canvas (D3 + React)
+│   │   │   ├── MandalaCanvas.tsx          # Radial SVG rendering & zoom engine
+│   │   │   └── TooltipNode.tsx            # Floating monad details & inspector
 │   │   │
-│   │   ├── synarchy/          # Project management components
-│   │   │   ├── ProjectList.tsx    # Grid of projects
-│   │   │   ├── ProjectCard.tsx   # SVG mini-mandala preview
-│   │   │   └── AddProjectDialog.tsx  # Dialog for new projects
+│   │   ├── synarchy/                      # Project Management Components
+│   │   │   ├── ProjectList.tsx            # Grid of active projects
+│   │   │   ├── ProjectCard.tsx            # Mini-mandala SVG preview
+│   │   │   ├── AddProject.tsx             # New project creation dialog
+│   │   │   └── ProjectDetail.tsx          # Project statistics & scanner view
 │   │   │
-│   │   ├── panels/            # Cooperation interface
-│   │   │   ├── SidebarNav.tsx     # View mode toggle (Orbit, Sínarc, etc.)
-│   │   │   ├── SidebarHistory.tsx # Lineage history panel
-│   │   │   ├── MonadInspector.tsx # Source code & AST explorer
-│   │   │   ├── DistillPanel.tsx   # Distillation tools
-│   │   │   ├── RingsPanel.tsx     # Radial layers management
-│   │   │   ├── VectorsPanel.tsx   # Domain lineage inspector
-│   │   │   ├── TerminalPanel.tsx  # Integrated CLI feedback
-│   │   │   └── ThemeSelector.tsx  # Visual theme switcher
+│   │   ├── panels/                        # Cooperation Control Panels
+│   │   │   ├── SidebarNav.tsx             # Navigation & view mode switcher
+│   │   │   ├── MonadInspector.tsx         # AST inspection & source viewer
+│   │   │   ├── DistillPanel.tsx           # Tabbed Distill & Template Editor panel
+│   │   │   ├── TemplateEditor.tsx         # YAML template builder & validator
+│   │   │   ├── RingsPanel.tsx             # Concentric ring management & controls
+│   │   │   ├── VectorsPanel.tsx           # Domain vector & angular inspection
+│   │   │   └── TerminalPanel.tsx          # Integrated interactive CLI terminal
 │   │   │
-│   │   └── ui/                # Shared atomic components (Button, Icon, etc.)
+│   │   └── ui/                            # Reusable UI primitives
 │   │
 │   ├── lib/
-│   │   ├── tauri/             # IPC Bridge
-│   │   │   ├── cooperation.ts    # Workspace cooperation (export, expand)
-│   │   │   ├── synarchy_api.ts # Synarchy cooperation (get_projects)
-│   │   │   └── events.ts      # Backend listeners (FS watcher)
+│   │   ├── tauri/                         # Backend Communication
+│   │   │   ├── commands.ts                # Workspace & Distill IPC commands
+│   │   │   ├── synarchy_api.ts            # Synarchy project management IPC
+│   │   │   └── events.ts                  # Real-time event listeners
 │   │   │
-│   │   ├── d3/                # Visual Rendering engine
-│   │   │   ├── renderer.ts    # Polar grid and nodes
-│   │   │   ├── links.ts       # Evolutionary Bezier curves
-│   │   │   ├── interactions.ts # Zoom, pan, lasso selection
-│   │   │   ├── zoom.ts        # D3 zoom behavior
-│   │   │   └── animations.ts  # Transition animations
+│   │   ├── d3/                            # Visualization Algorithms
+│   │   │   ├── renderer.ts                # Polar grid & monad node rendering
+│   │   │   ├── links.ts                   # Evolutionary bezier curves
+│   │   │   ├── interactions.ts            # Zoom, pan, lasso selection
+│   │   │   └── animations.ts              # Kinetic breathing animations
 │   │   │
-│   │   └── state/             # Global Store (Zustand)
-│   │       └── workspaceStore.ts  # Centralized reactive state
+│   │   └── state/                         # Reactive State (Zustand)
+│   │       └── workspaceStore.ts          # Centralized store for topology & selections
 │   │
-│   ├── types/                 # TS interfaces
-│   │   ├── geometry.ts        # PolarCoord, Ring, Vector types
-│   │   ├── ontology.ts        # Monad, Bindu, Constellation types
-│   │   └── synarchy.ts        # Project, ProjectRegistry types
-│   │
-│   ├── styles/
-│   │   ├── global.css          # CSS variables and reset
-│   │   ├── synarchy.css       # Synarchy explorer styles
-│   │   ├── components/
-│   │   │   ├── sidebar.css    # Side panel
-│   │   │   ├── workspace.css  # Canvas area
-│   │   │   └── theme-selector.css
-│   │   └── panels/
-│   │       └── panels.css     # Inspector and tooltips
-│   │
-│   ├── env.d.ts               # Astro environment type declarations
-│   │
-│   └── package.json           # Frontend dependencies (astro, react, d3, zustand)
+│   ├── types/                             # TypeScript definitions
+│   └── styles/                            # Neo-metric glassmorphism styles
 │
-├── public/
-│   └── assets/
-│       └── Mandala-Weaver-VCS-UI-V2.png
+├── templates/                             # Pre-packaged YAML Distillation Manifests
+│   ├── full-stack.yaml                    # Full-stack multi-vector assembly template
+│   └── backend-api.yaml                   # Core + IO backend service assembly template
 │
-├── README.md                # Core
-├── Roadmap.md               # Project roadmap
-├── package.json             # Project root dependencies (pnpm)
-├── pnpm-lock.yaml           # Locked dependencies
-└── astro.config.mjs         # Astro configuration
+├── mcp/                                   # MCP Documentation & Manifests
+│   └── README.md                          # MCP configuration & integration guide
+│
+├── Roadmap.md                             # 10-Phase Engineering Roadmap
+├── Architecture.md                        # Architectural specification
+└── package.json                           # Root dependencies
 ```
 
 ---
 
-## Integration Philosophy (Astro + React + D3 + Zustand)
+## Complete Tauri IPC Command Reference
 
-1. **Astro (The Shell):** `.astro` files (like `index.astro`) serve the initial HTML page. They are ultra-lightweight.
-2. **React (The Interactive Island):** Components like `<MandalaCanvas client:only="react" />` hydrate on the client. React manages global state (which node the user clicked) but **DOES NOT** render the thousands of visual nodes, because React would collapse calculating the virtual DOM for a massive graph.
-3. **D3.js (The Painter):** React hands the `<svg ref={canvasRef}>` container to D3.js. From there, `lib/d3/renderer.ts` takes total cooperation of the DOM within that SVG, injecting nodes with hardware acceleration.
-4. **Zustand (The State):** Manages the reactive state of the application. The store centralizes `mandalaState`, `selectedMonad`, `hoveredMonad`, and `viewMode`. Any component can subscribe to these changes without prop drilling.
+The Tauri backend provides comprehensive IPC commands accessible from the frontend:
+
+| Category | Command | Description | Return Type |
+|---|---|---|---|
+| **Workspace & Topology** | [`export_mandala_state`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns full mandala state (bindu, constellations, edges) as JSON | `Promise<string>` |
+| | [`export_mandala_state_paginated`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns paginated mandala state for large-scale graphs | `Promise<string>` |
+| | [`expand_ring`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Expands a new ring by extracting monads from a source file | `Promise<u32>` |
+| | [`init_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Initializes a new project Point Zero (Bindu) | `Promise<string>` |
+| | [`open_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Switches database context to specified project path | `Promise<string>` |
+| | [`distill_from_selection`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Compiles source code from a list of selected monad IDs | `Promise<string>` |
+| | [`write_distilled_to_disk`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Writes compiled distillation output to filesystem | `Promise<string>` |
+| | [`trace_monad_lineage`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns evolutionary graph lineage of a monad | `Promise<string>` |
+| | [`get_monad_detail`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Retrieves full AST, code content, and coordinates of a monad | `Promise<string>` |
+| | [`contract_outer_ring`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Rolls back the outermost ring and archives its monads | `Promise<u32>` |
+| | [`revert_to_level`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Reverts project topology to a specified ring level | `Promise<u32>` |
+| | [`search_monads`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Searches monads by name, kind, or content substring | `Promise<string>` |
+| | [`get_monads_paginated_api`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Paginated monad retrieval for efficient high-volume rendering | `Promise<string>` |
+| **YAML Templates** | [`list_templates`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Lists all available YAML templates in `.mandala/templates` & defaults | `Promise<string>` |
+| | [`distill_from_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Executes distillation based on a template file path | `Promise<string>` |
+| | [`distill_from_template_content`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Executes distillation directly from raw YAML content | `Promise<string>` |
+| | [`validate_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Validates a template file on disk | `Promise<string>` |
+| | [`validate_template_content`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Validates raw YAML template syntax in memory | `Promise<string>` |
+| | [`create_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Saves a new YAML template to the project template library | `Promise<string>` |
+| | [`distill_and_write`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Distills from template and writes directly to target directory | `Promise<string>` |
+| **Synarchy Ecosystem** | [`get_projects`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Retrieves list of all registered projects in the synarchy registry | `Promise<string>` |
+| | [`add_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Registers and scans a new project path | `Promise<string>` |
+| | [`remove_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Unregisters a project from the synarchy registry | `Promise<string>` |
+| | [`get_project_detail`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Retrieves detailed metadata, rings, and stats for a project | `Promise<string>` |
+| | [`rescan_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Triggers automated re-scan and AST indexing for a project | `Promise<string>` |
+| | [`get_project_mandala`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Fetches the full mandala state of a specific project | `Promise<string>` |
+| **Ingestion & Sync** | [`import_git_repository`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Imports sequential commit history into concentric rings | `Promise<string>` |
+| | [`export_mandala_archive`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Exports a portable compressed archive of the project mandala | `Promise<string>` |
+| | [`import_mandala_archive`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Imports a project archive into local storage | `Promise<string>` |
+| | [`sync_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Synchronizes project with remote synarchy peers | `Promise<string>` |
+| **CLI Proxies** | `cli_bindu`, `cli_telemetry`, `cli_status`, `cli_crystallize`, `cli_distill`, `cli_lineage`, `cli_spectrum`, `cli_inspect`, `cli_echo`, `cli_vector`, `cli_focus`, `cli_dormant`, `cli_synthesize`, `cli_absorb`, `cli_emanate`, `cli_seed` | Direct terminal execution proxies for the integrated GUI terminal panel | `Promise<string>` |
 
 ---
 
-## Implementation Roadmap
+## Data Flow Architecture
 
-For the full development roadmap — from the completed foundations through Distillation Templates, CLI/TUI, Multi-Language AST, Performance Optimization, and Collaborative Mandala Networks — see **[Roadmap.md](./Roadmap.md)**.
+```
++-----------------------------------------------------------------------------------------+
+|                                    ARCHITECT / USER                                     |
+|    +--------------------+    +--------------------+    +---------------------------+    |
+|    | Visual Canvas (D3) |    | Terminal CLI / TUI |    | AI Agent (MCP via stdio)  |    |
+|    +---------+----------+    +---------+----------+    +-------------+-------------+    |
++--------------|-------------------------|-----------------------------|------------------+
+               |                         |                             |
+               V                         V                             V
++-----------------------------------------------------------------------------------------+
+|                                 APPLICATION INTERFACE                                   |
+|                                                                                         |
+|  +-----------------------------------+        +--------------------------------------+  |
+|  |     Tauri 2.0 IPC Layer           |        |      Model Context Protocol (MCP)    |  |
+|  |  (30+ Commands & Event Streams)   |        |   (10 Tools, Resources & Prompts)    |  |
+|  +-----------------+-----------------+        +------------------+-------------------+  |
++--------------------|---------------------------------------------|----------------------+
+                     |                                             |
+                     +----------------------+----------------------+
+                                            |
+                                            V
++-----------------------------------------------------------------------------------------+
+|                                  MANDALA CORE ENGINE                                    |
+|                                                                                         |
+|  +-----------------------------------+        +--------------------------------------+  |
+|  |     Geometry & Polar Space        |        |      Weaver & AST Parser             |  |
+|  |  - PolarCoord (r, theta)          |        |  - ast-grep Polyglot Parser          |  |
+|  |  - Collision resolution           |        |  - blake3 Semantic Hashing           |  |
+|  |  - nalgebra orbital projection    |        |  - Delta Resolver & Source Compiler  |  |
+|  +-----------------+-----------------+        +------------------+-------------------+  |
+|                    |                                             |                      |
+|                    +----------------------+----------------------+                      |
+|                                           |                                             |
+|  +----------------------------------------+------------------------------------------+  |
+|  |     Declarative Distillation Engine (YAML Manifests)                              |  |
+|  |  - Range/Exact Ring Selectors  - Semantic Adapters  - Variable Substitution        |  |
+|  +----------------------------------------+------------------------------------------+  |
++-------------------------------------------|---------------------------------------------+
+                                            |
+                                            V
++-----------------------------------------------------------------------------------------+
+|                         THE AKASHIC RECORD (Persistence Layer)                          |
+|                                                                                         |
+|  +-----------------------------------------------------------------------------------+  |
+|  |     Embedded SurrealDB 3.0 (Graph & Relational Engine)                            |  |
+|  |                                                                                   |  |
+|  |  Storage Modes:                                                                   |  |
+|  |  • Persistent: .mandala/db/ (SurrealKV Engine via FileBridge)                     |  |
+|  |  • Ephemeral:  surrealdb://mem (In-Memory for unit tests)                         |  |
+|  |                                                                                   |  |
+|  |  Tables & Lineage:                                                                |  |
+|  |  • monad (id, name, content, ring, coord {r, theta}, kind, semantic_hash)        |  |
+|  |  • evolves_to (Graph Relation: monad -> monad)                                    |  |
+|  |  • bindu (project_name, timestamp)                                                |  |
+|  |  • operation_log (op_type, monad_id, timestamp, payload)                          |  |
+|  |                                                                                   |  |
+|  |  Optimization & Performance:                                                      |  |
+|  |  • Composite Indexes: (ring, theta), (name, ring), (semantic_hash)                |  |
+|  |  • High-Throughput Batch Ingestion: insert_batch()                                |  |
+|  |  • Scalable Pagination: get_monads_paginated()                                     |  |
+|  +-----------------------------------------------------------------------------------+  |
++-----------------------------------------------------------------------------------------+
+```
 
+---
+
+## Essential Commands
+
+### Development (Desktop Application)
+Starts the Vite dev server and compiles the Rust backend, opening the native Tauri window with Hot Module Replacement (HMR):
+```bash
+pnpm run tauri dev
+```
+
+### Core Engine Tests (Backend Rust)
+Runs all unit and integration tests for geometric math, AST parsing, YAML distillation, persistence, and MCP tools:
+```bash
+cd src-tauri
+cargo test
+cargo check
+```
+
+### Running the MCP Server
+Launches the stdio JSON-RPC server for integration with AI coding assistants:
+```bash
+cargo run --manifest-path src-tauri/Cargo.toml -- mcp
+```
+
+### Web Frontend Preview
+Runs the Astro frontend independently in a standard browser (for visual CSS and layout tuning):
+```bash
+pnpm run dev
+```
+
+### Production Build
+Generates optimized, self-contained binaries and installers (`.exe` on Windows, `.app` on macOS, `.AppImage` on Linux):
+```bash
+pnpm run tauri build
+```
+
+---
+
+## Tutorial & Walkthrough
+
+For a step-by-step interactive guide on getting started, navigating the canvas, creating your first radial commit, harvesting with the lasso tool, using YAML templates, and connecting AI agents via MCP, read **[TUTORIAL.md](file:///Mandala-Weaver-VCS/TUTORIAL.md)**.
+
+---
+
+## Roadmap
+
+For the detailed 10-phase engineering roadmap—including completed core engines, YAML templates, MCP server, performance scaling, and distributed synarchy networks—see **[Roadmap.md](file:///Mandala-Weaver-VCS/Roadmap.md)**.
 
 ---
 

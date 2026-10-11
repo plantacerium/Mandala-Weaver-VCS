@@ -116,3 +116,43 @@ export async function invokeExpand(filePath: string): Promise<number> {
         return 6;
     }
 }
+
+/**
+ * Opens a project by pointing the database to its persistent `.mandala/db`.
+ */
+export async function openProject(projectPath: string): Promise<string> {
+    if (!isTauri()) {
+        console.log(`[DEV] Mock openProject: ${projectPath}`);
+        return 'Project opened (mock)';
+    }
+    return await invoke<string>('open_project', { projectPath });
+}
+
+/**
+ * Imports Git history as evolutionary concentric rings.
+ */
+export async function importGitRepository(repoPath: string): Promise<number> {
+    if (!isTauri()) {
+        console.log(`[DEV] Mock importGitRepository: ${repoPath}`);
+        return 3;
+    }
+    return await invoke<number>('import_git_repository', { repoPath });
+}
+
+/**
+ * Fetches monads using optimized database pagination (Phase 9.3).
+ */
+export async function getMonadsPaginated(
+    page: number,
+    pageSize: number = 50,
+    ringFilter?: number
+): Promise<Monad[]> {
+    if (!isTauri()) {
+        return [];
+    }
+    return await invoke<Monad[]>('get_monads_paginated_api', {
+        page,
+        pageSize,
+        ringFilter: ringFilter ?? null,
+    });
+}

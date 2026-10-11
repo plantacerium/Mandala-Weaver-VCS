@@ -1,0 +1,27 @@
+# Backend API: Core + Data layers
+name: "backend-api"
+version: "0.1.0"
+
+rings:
+  type: "Latest"
+
+vectors:
+  - name: "CORE"
+  - name: "DATA"
+  - name: "IO"
+
+exclude:
+  - kind: "test"
+
+adapters:
+  - name: "db_connect"
+    from: "DB_*"
+    to: "db"
+    adapter_type:
+      Import:
+        module: "crate::db"
+
+output:
+  filename: "src/bin/api.rs"
+  structure: "Flat"
+  generate_modules: false

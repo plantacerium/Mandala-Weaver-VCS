@@ -1,0 +1,34 @@
+# Full-stack: All vectors, nested structure
+name: "full-stack"
+version: "0.1.0"
+
+rings:
+  type: "Range"
+  min: 1
+  max: 10
+
+vectors:
+  - name: "CORE"
+  - name: "UI"
+  - name: "IO"
+  - name: "DATA"
+
+exclude:
+  - kind: "test"
+  - name: "benchmark_*"
+
+adapters:
+  - name: "std_import"
+    from: "std::*"
+    to: "std"
+    adapter_type:
+      Import:
+        module: "std"
+
+output:
+  filename: "src"
+  structure:
+    type: "Nested"
+    rings: false
+    vectors: true
+  generate_modules: true

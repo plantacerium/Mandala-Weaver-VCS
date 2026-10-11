@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import * as d3 from 'd3';
 import { drawMandalaGrid, drawBindu, renderMonads, highlightMonad, renderEdges } from '../../lib/d3/renderer';
-import { setupZoom, enableLassoSelection } from '../../lib/d3/interactions';
+import { enableLassoSelection, disableLassoSelection } from '../../lib/d3/interactions';
 import { fetchMandalaState, invokeExpand } from '../../lib/tauri/commands';
 import { listenForFileChanges } from '../../lib/tauri/events';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
@@ -50,7 +50,7 @@ const CommitDialog: React.FC<CommitDialogProps> = ({ isOpen, onClose, onCommit }
 const MandalaCanvas: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setMandalaState, selectMonad, hoverMonad, setSelectedForDistill, setZoomMode } = useWorkspaceStore();
+  const { setMandalaState, selectMonad, hoverMonad, setSelectedForDistill, setZoomMode, viewMode } = useWorkspaceStore();
   const [showCommitDialog, setShowCommitDialog] = useState(false);
   const svgGroupRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
 
@@ -70,6 +70,18 @@ const MandalaCanvas: React.FC = () => {
       alert('Expand failed: ' + String(error));
     }
   }, [setMandalaState]);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const svg = d3.select(svgRef.current);
+
+    if (viewMode === 'distill') {
+      const cleanup = enableLassoSelection(svg, handleSelect);
+      return cleanup;
+    } else {
+      disableLassoSelection(svg);
+    }
+  }, [viewMode, handleSelect]);
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
@@ -103,13 +115,22 @@ const MandalaCanvas: React.FC = () => {
     const binduGroup = contentGroup.append('g').attr('class', 'bindu-layer');
     drawBindu(binduGroup);
 
-    setupZoom(svg, { minZoom: 0.3, maxZoom: 5 });
-    enableLassoSelection(svg, handleSelect);
-
-    setupSemanticZoom(svg, contentGroup).on('zoom', (event) => {
+    const zoomBehavior = setupSemanticZoom(svg, contentGroup);
+    zoomBehavior.on('zoom', (event) => {
+      contentGroup.attr('transform', event.transform);
       const scale = event.transform.k;
       const mode = getZoomMode(scale);
       setZoomMode(mode);
+    });
+
+    svg.on('click.bg', function(event: MouseEvent) {
+      const target = event.target as SVGElement;
+      if (target && target.closest && !target.closest('.monad') && !target.closest('.bindu-group')) {
+        selectMonad(null);
+        if (svgGroupRef.current) {
+          highlightMonad(svgGroupRef.current as any, null);
+        }
+      }
     });
 
     async function loadData() {
