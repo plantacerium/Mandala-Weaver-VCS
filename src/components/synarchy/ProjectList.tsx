@@ -3,6 +3,7 @@ import { ProjectCard } from './ProjectCard';
 import { AddProjectDialog } from './AddProjectDialog';
 import { getProjects, addProject, removeProject, rescanProject } from '../../lib/tauri/synarchy_api';
 import type { ProjectEntry } from '../../types/synarchy';
+import { isTauri } from '../../lib/tauri/isTauri';
 
 const ProjectList: React.FC = () => {
   const [projects, setProjects] = useState<ProjectEntry[]>([]);
@@ -62,8 +63,17 @@ const ProjectList: React.FC = () => {
     }
   };
 
-  const handleSelectProject = (id: string) => {
-    window.location.href = `/project?id=${id}`;
+  const handleSelectProject = async (id: string) => {
+    const project = projects.find(p => p.id === id);
+    if (project && isTauri()) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('open_project', { projectPath: project.path });
+      } catch (err) {
+        console.error('Failed to open project in backend:', err);
+      }
+    }
+    window.location.href = `/?project=${encodeURIComponent(id)}`;
   };
 
   const handleRescan = async (id: string) => {

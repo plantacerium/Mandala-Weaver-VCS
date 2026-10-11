@@ -8,7 +8,7 @@ import DistillPanel from '../components/panels/DistillPanel';
 import RingsPanel from '../components/panels/RingsPanel';
 import VectorsPanel from '../components/panels/VectorsPanel';
 import TerminalPanel from '../components/panels/TerminalPanel';
-import ThemeSelector from '../components/panels/ThemeSelector';
+import WorkspaceHeader from '../components/panels/WorkspaceHeader';
 import '../styles/components/sidebar.css';
 import '../styles/components/workspace.css';
 import '../styles/panels/panels.css';
@@ -48,16 +48,7 @@ import '../styles/components/theme-selector.css';
 		</nav>
 
 		<section class="workspace">
-			<header class="workspace-header">
-				<div class="project-info">
-					<h1>Mandala Weaver Versions Cooperation System</h1>
-					<span class="path">~/mandala-weaver-vcs</span>
-				</div>
-				<div class="actions">
-					<ThemeSelector client:load />
-					<button class="btn-expand">EXPAND (Commit)</button>
-				</div>
-			</header>
+			<WorkspaceHeader client:load />
 
 			<div class="canvas-wrapper">
 				<MandalaCanvas client:only="react" />

@@ -1,9 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { MandalaState, Monad, EdgeDto } from '../../types/ontology';
 
-function isTauri(): boolean {
-    return typeof window !== 'undefined' && '__TAURI__' in window;
-}
+import { isTauri } from './isTauri';
 
 // ─── Browser-only dev mock ────────────────────────────────────────────────────
 // Used ONLY when running outside Tauri (e.g. `astro dev` in browser).
@@ -64,18 +62,36 @@ function getMockState(): MandalaState {
  * In browser: returns dev mock with positional edge approximations.
  */
 export async function fetchMandalaState(): Promise<MandalaState> {
-    if (!isTauri()) {
-        console.log('[DEV] Running outside Tauri — using mock Mandala state with approximate edges');
-        return getMockState();
+    if (isTauri()) {
+        try {
+            const stateStr = await invoke<string>('export_mandala_state');
+            const parsed = JSON.parse(stateStr) as MandalaState;
+            if (parsed && parsed.total_monads > 0) {
+                return parsed;
+            }
+        } catch (error) {
+            console.warn('[WARN] Failed to fetch from Tauri IPC:', error);
+        }
     }
 
+    // Attempt to load the real exported project state from /mandala_state.json
+    // This allows both regular browser preview (Chrome/Edge) and Tauri fallback
+    // to render the REAL repository monads (336 nodes) instead of the 26-node mock!
     try {
-        const stateStr = await invoke<string>('export_mandala_state');
-        return JSON.parse(stateStr) as MandalaState;
-    } catch (error) {
-        console.warn('[WARN] Failed to fetch from Tauri, falling back to mock:', error);
-        return getMockState();
+        const res = await fetch('/mandala_state.json');
+        if (res.ok) {
+            const staticState = await res.json() as MandalaState;
+            if (staticState && staticState.constellations && staticState.constellations.length > 0) {
+                console.log(`[INFO] Loaded real Mandala state (${staticState.total_monads} monads) from mandala_state.json`);
+                return staticState;
+            }
+        }
+    } catch (e) {
+        console.warn('[WARN] Failed to load static mandala_state.json:', e);
     }
+
+    console.log('[DEV] Running outside Tauri with no static state — using fallback mock');
+    return getMockState();
 }
 
 /**

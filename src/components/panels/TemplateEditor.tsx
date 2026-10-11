@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { isTauri } from '../../lib/tauri/isTauri';
 
 interface TemplateInfo {
   name: string;
@@ -37,7 +38,7 @@ export const TemplateEditor: React.FC = () => {
 
   const loadTemplates = async () => {
     try {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      if (isTauri()) {
         const list = await invoke<TemplateInfo[]>('list_templates');
         setTemplates(list);
         if (list.length > 0) {
@@ -81,7 +82,7 @@ export const TemplateEditor: React.FC = () => {
   const handleValidate = async () => {
     setError(null);
     try {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      if (isTauri()) {
         const res = await invoke<ValidationResult>('validate_template_content', {
           templateContent: yamlContent,
         });
@@ -104,7 +105,7 @@ export const TemplateEditor: React.FC = () => {
     setIsProcessing(true);
     setError(null);
     try {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      if (isTauri()) {
         const res = await invoke<TemplateResult>('distill_from_template_content', {
           templateContent: yamlContent,
         });

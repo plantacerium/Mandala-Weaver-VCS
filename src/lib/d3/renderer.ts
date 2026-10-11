@@ -159,7 +159,7 @@ export function renderMonads(
         .transition()
         .duration(600)
         .ease(d3.easeBackOut)
-        .attr('r', 6);
+        .attr('r', (d: any) => d.radius || (data.length > 150 ? 3.5 : 6));
 
     node.exit()
         .transition()
@@ -175,7 +175,10 @@ export function highlightMonad(
     svg.selectAll('.monad')
         .transition()
         .duration(200)
-        .attr('r', (d: any) => d.id === monadId ? 10 : 6)
+        .attr('r', (d: any) => {
+            const baseR = d.radius || (svg.selectAll('.monad').size() > 150 ? 3.5 : 6);
+            return d.id === monadId ? baseR * 2.2 : baseR;
+        })
         .attr('stroke-width', (d: any) => d.id === monadId ? 3 : 1.5)
         .style('filter', (d: any) => {
             if (d.id === monadId) {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import MandalaCanvas from '../mandala/MandalaCanvas';
 import { getProjectDetail, rescanProject } from '../../lib/tauri/synarchy_api';
 import type { ProjectEntry } from '../../types/synarchy';
+import { isTauri } from '../../lib/tauri/isTauri';
 
 function getProjectIdFromUrl(): string | null {
   if (typeof window === 'undefined') return null;
@@ -22,7 +23,7 @@ const ProjectDetail: React.FC = () => {
     getProjectDetail(id)
       .then(async (proj) => {
         setProject(proj);
-        if (proj && typeof window !== 'undefined' && '__TAURI__' in window) {
+        if (proj && isTauri()) {
           const { invoke } = await import('@tauri-apps/api/core');
           await invoke('open_project', { projectPath: proj.path });
         }

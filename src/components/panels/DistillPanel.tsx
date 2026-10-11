@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
 import { invoke } from '@tauri-apps/api/core';
+import { isTauri } from '../../lib/tauri/isTauri';
 import TemplateEditor from './TemplateEditor';
 import '../../styles/panels/panels.css';
 
@@ -29,7 +30,7 @@ const DistillPanel: React.FC = () => {
         setIsDistilling(true);
         try {
             const monad_ids = selectedForDistill.map(m => m.id);
-            if (typeof window !== 'undefined' && '__TAURI__' in window) {
+            if (isTauri()) {
                 const source = await invoke<string>('distill_from_selection', { monadIds: monad_ids });
                 setDistillResult(source);
             } else {
@@ -45,7 +46,7 @@ const DistillPanel: React.FC = () => {
 
     const handleExport = async () => {
         try {
-            if (typeof window !== 'undefined' && '__TAURI__' in window) {
+            if (isTauri()) {
                 await invoke('export_mandala_archive', { projectName: 'mandala-project', outputPath: '.' });
                 alert('Mandala emanated to current directory (mandala.json)');
             }
@@ -56,7 +57,7 @@ const DistillPanel: React.FC = () => {
 
     const handleImport = async () => {
         try {
-            if (typeof window !== 'undefined' && '__TAURI__' in window) {
+            if (isTauri()) {
                 await invoke('import_mandala_archive', { archivePath: './mandala.json' });
                 window.location.reload();
             }

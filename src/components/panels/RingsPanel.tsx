@@ -1,6 +1,7 @@
 import React from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
+import { isTauri } from '../../lib/tauri/isTauri';
 import '../../styles/panels/panels.css';
 
 const RingsPanel: React.FC = () => {
@@ -14,7 +15,7 @@ const RingsPanel: React.FC = () => {
 
   const handleContract = async () => {
     try {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      if (isTauri()) {
         await invoke('contract_outer_ring');
         // The FS watcher should trigger a reload, but we might want to reload manually too
         window.location.reload(); 
@@ -26,7 +27,7 @@ const RingsPanel: React.FC = () => {
 
   const handleRevert = async (level: number) => {
     try {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      if (isTauri()) {
         await invoke('revert_to_level', { ring: level });
         window.location.reload();
       }

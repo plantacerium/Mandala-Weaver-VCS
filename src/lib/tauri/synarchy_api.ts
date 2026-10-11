@@ -1,9 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { ProjectEntry } from '../../types/synarchy';
-
-function isTauri(): boolean {
-  return typeof window !== 'undefined' && '__TAURI__' in window;
-}
+import { isTauri } from './isTauri';
 
 export async function getProjects(): Promise<ProjectEntry[]> {
   if (!isTauri()) {
@@ -13,8 +10,8 @@ export async function getProjects(): Promise<ProjectEntry[]> {
   try {
     return await invoke<ProjectEntry[]>('get_projects');
   } catch (error) {
-    console.warn('Failed to get projects:', error);
-    return getMockProjects();
+    console.error('Failed to get projects from Tauri:', error);
+    return [];
   }
 }
 
@@ -78,20 +75,32 @@ export async function rescanProject(id: string): Promise<ProjectEntry> {
 }
 
 export async function getProjectMandala(id: string): Promise<any> {
-  if (!isTauri()) {
-    return {
-      bindu_name: 'Mock Project',
-      constellations: [],
-      edges: [],
-    };
+  if (isTauri()) {
+    try {
+      return await invoke<any>('get_project_mandala', { id });
+    } catch (e) {
+      console.warn('Failed to get project mandala from Tauri:', e);
+    }
   }
+
+  // Fallback to static state
+  try {
+    const res = await fetch('/mandala_state.json');
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {}
   
-  return await invoke<any>('get_project_mandala', { id });
+  return {
+    bindu_name: 'Mock Project',
+    constellations: [],
+    edges: [],
+  };
 }
 
 function getMockProjects(): ProjectEntry[] {
   return [
-    { id: 'mandala-vcs', name: 'Mandala Weaver', path: 'I:\\GITHUB\\Mandala-Weaver-VCS', project_type: 'Weaver', last_scanned: Math.floor(Date.now() / 1000) - 3600, ring_count: 7, monad_count: 156, status: 'Active' },
+    { id: 'mandala-vcs', name: 'Mandala Weaver VCS', path: 'I:\\GITHUB\\Mandala-Weaver-VCS', project_type: 'Weaver', last_scanned: Math.floor(Date.now() / 1000), ring_count: 4, monad_count: 336, status: 'Active' },
     { id: 'rust-core', name: 'Rust Core', path: 'I:\\Projects\\rust-core', project_type: 'Local', last_scanned: Math.floor(Date.now() / 1000) - 7200, ring_count: 12, monad_count: 482, status: 'Active' },
     { id: 'astro-blog', name: 'Astro Blog', path: 'I:\\Projects\\astro-blog', project_type: 'Local', last_scanned: Math.floor(Date.now() / 1000) - 86400, ring_count: 4, monad_count: 38, status: 'Active' },
     { id: 'react-ui', name: 'React UI', path: 'I:\\Projects\\react-ui-lib', project_type: 'Local', last_scanned: Math.floor(Date.now() / 1000) - 172800, ring_count: 6, monad_count: 89, status: 'Dormant' },

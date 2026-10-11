@@ -7,6 +7,7 @@ import { listenForFileChanges } from '../../lib/tauri/events';
 import { useWorkspaceStore } from '../../lib/state/workspaceStore';
 import { setupSemanticZoom, getZoomMode, setMacroZoom, setMicroZoom } from '../../lib/d3/zoom';
 import { fetchLineageEdges } from '../../lib/tauri/commands';
+import { isTauri } from '../../lib/tauri/isTauri';
 import type { Monad } from '../../types/ontology';
 
 interface CommitDialogProps {
@@ -135,16 +136,63 @@ const MandalaCanvas: React.FC = () => {
 
     async function loadData() {
       try {
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const projId = params.get('project') || params.get('id');
+          if (projId && isTauri()) {
+            try {
+              const { getProjectDetail } = await import('../../lib/tauri/synarchy_api');
+              const { invoke } = await import('@tauri-apps/api/core');
+              const proj = await getProjectDetail(projId);
+              if (proj && proj.path) {
+                await invoke('open_project', { projectPath: proj.path });
+              }
+            } catch (e) {
+              console.error('Failed to switch project context:', e);
+            }
+          }
+        }
+
         const state = await fetchMandalaState();
-        setMandalaState(state);
         
-        const allMonads = state.constellations.flatMap(c => 
-          c.monads.map(m => ({
-            ...m,
-            ring: c.ring_level,
-            coord: { r: c.ring_level * 70, theta: m.coord.theta }
-          }))
-        );
+        const allMonads = state.constellations.flatMap(c => {
+          const totalInRing = c.monads.length;
+          const circleRadius = totalInRing > 150 ? 3 : totalInRing > 50 ? 4 : 6;
+          const baseRingRadius = 50 + (c.ring_level - 1) * 70;
+
+          const uniqueThetas = new Set(c.monads.map(item => Math.round(item.coord.theta)));
+          const shouldRedistribute = uniqueThetas.size < Math.min(totalInRing, 32);
+
+          return c.monads.map((m, idx) => {
+            const angle = shouldRedistribute
+              ? ((360 / totalInRing) * idx + ((c.ring_level % 2) * (180 / totalInRing))) % 360
+              : m.coord.theta;
+
+            const subTrackOffset = totalInRing > 60 ? ((idx % 3) - 1) * 8 : 0;
+            const r = (m.coord?.r && !shouldRedistribute) ? m.coord.r : (baseRingRadius + subTrackOffset);
+
+            return {
+              ...m,
+              ring: c.ring_level,
+              radius: circleRadius,
+              coord: {
+                r,
+                theta: angle
+              }
+            };
+          });
+        });
+
+        const updatedConstellations = state.constellations.map(c => ({
+          ...c,
+          monads: allMonads.filter(m => m.ring === c.ring_level)
+        }));
+        const updatedState = {
+          ...state,
+          total_monads: state.total_monads || allMonads.length,
+          constellations: updatedConstellations
+        };
+        setMandalaState(updatedState);
         
         if (svgGroupRef.current) {
           if (state.edges) {

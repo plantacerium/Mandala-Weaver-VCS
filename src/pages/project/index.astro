@@ -1,8 +1,22 @@
 ---
-import AppLayout from '../../layouts/AppLayout.astro';
-import ProjectDetail from '../../components/project/ProjectDetail';
+// Redirect directly to the main updated and navigable workspace UI
 ---
-
-<AppLayout title="Project Detail">
-  <ProjectDetail client:only="react" />
-</AppLayout>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Cargando Proyecto...</title>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id') || params.get('project');
+    if (id) {
+      window.location.replace(`/?project=${encodeURIComponent(id)}`);
+    } else {
+      window.location.replace('/');
+    }
+  </script>
+</head>
+<body style="background: #050508; color: #00e5ff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace;">
+  <p>🌀 Abriendo lienzo de Mandala Weaver...</p>
+</body>
+</html>
