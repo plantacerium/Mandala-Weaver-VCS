@@ -12,9 +12,21 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onSelect,
   onDelete
 }) => {
-  const getStatusClass = (status: ProjectEntry['status']) => {
+  const getStatusText = (status: ProjectEntry['status']) => {
     if (typeof status === 'string') return status;
-    return 'Error';
+    if (status && typeof status === 'object') {
+      if ('Error' in status) return `Error: ${(status as any).Error}`;
+      if ('message' in status) return `Error: ${(status as any).message}`;
+      if ('type' in status) return (status as any).type;
+    }
+    return 'Active';
+  };
+
+  const getStatusClass = (status: ProjectEntry['status']) => {
+    const text = getStatusText(status).toLowerCase();
+    if (text.includes('error')) return 'Error';
+    if (text.includes('dormant')) return 'Dormant';
+    return 'Active';
   };
 
   const formatDate = (timestamp: number) => {
@@ -105,7 +117,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       <div className="card-status">
         <span className={`status-badge ${getStatusClass(project.status)}`}>
-          {typeof project.status === 'string' ? project.status : 'Error'}
+          • {getStatusText(project.status)}
         </span>
 
         <button

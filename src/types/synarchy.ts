@@ -1,3 +1,5 @@
+export type ScanMode = 'mandala' | 'git';
+
 export interface ProjectEntry {
   id: string;
   name: string;
@@ -13,7 +15,8 @@ export type ProjectStatus =
   | 'Active'
   | 'Dormant'
   | 'Scanning'
-  | { Error: string };
+  | { Error: string }
+  | { type: string; message?: string };
 
 export interface ProjectRegistry {
   projects: ProjectEntry[];

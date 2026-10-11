@@ -28,28 +28,40 @@ const ProjectList: React.FC = () => {
     }
   };
 
+  const isStatusMatch = (status: any, expected: string) => {
+    if (typeof status === 'string') return status.toLowerCase() === expected.toLowerCase();
+    if (status && typeof status === 'object') {
+      if ('type' in status) return (status.type as string).toLowerCase() === expected.toLowerCase();
+      if ('Error' in status) return expected.toLowerCase() === 'error';
+    }
+    return expected.toLowerCase() === 'active';
+  };
+
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.path.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' ||
-      (typeof p.status === 'string' && p.status === statusFilter);
+    const matchesStatus = statusFilter === 'all' || isStatusMatch(p.status, statusFilter);
     return matchesSearch && matchesStatus;
   });
 
   const stats = {
     total: projects.length,
-    active: projects.filter(p => p.status === 'Active').length,
-    dormant: projects.filter(p => p.status === 'Dormant').length,
+    active: projects.filter(p => isStatusMatch(p.status, 'active')).length,
+    dormant: projects.filter(p => isStatusMatch(p.status, 'dormant')).length,
     totalMonads: projects.reduce((sum, p) => sum + p.monad_count, 0),
   };
 
-  const handleAddProject = async (path: string, name: string) => {
+  const handleAddProject = async (path: string, name: string, scanMode: any) => {
     try {
-      const newProject = await addProject(path, name);
-      setProjects(prev => [...prev, newProject]);
+      const newProject = await addProject(path, name, scanMode);
+      setProjects(prev => {
+        const remaining = prev.filter(p => p.id !== newProject.id);
+        return [...remaining, newProject];
+      });
       setShowAddDialog(false);
     } catch (error) {
       console.error('Failed to add project:', error);
+      throw error;
     }
   };
 

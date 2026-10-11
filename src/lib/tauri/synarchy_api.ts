@@ -15,13 +15,13 @@ export async function getProjects(): Promise<ProjectEntry[]> {
   }
 }
 
-export async function addProject(path: string, name: string): Promise<ProjectEntry> {
+export async function addProject(path: string, name: string, scanMode: 'mandala' | 'git' = 'mandala'): Promise<ProjectEntry> {
   if (!isTauri()) {
     return {
       id: Math.random().toString(36).slice(2, 10),
       name: name || path.split(/[/\\]/).pop() || 'New Project',
       path,
-      project_type: 'Local',
+      project_type: scanMode === 'git' ? 'Git' : 'Weaver',
       last_scanned: Math.floor(Date.now() / 1000),
       ring_count: 3,
       monad_count: Math.floor(Math.random() * 50) + 10,
@@ -29,7 +29,7 @@ export async function addProject(path: string, name: string): Promise<ProjectEnt
     };
   }
   
-  return await invoke<ProjectEntry>('add_project', { path, name });
+  return await invoke<ProjectEntry>('add_project', { path, name, scanMode });
 }
 
 export async function removeProject(id: string): Promise<void> {
