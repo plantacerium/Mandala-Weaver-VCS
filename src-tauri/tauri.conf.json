@@ -9,15 +9,17 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "Mandala Weaver VCS",
         "width": 1280,
         "height": 800
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; img-src 'self' data:; style-src 'self' 'unsafe-inline';"
+      "csp": null
     }
   },
   "plugins": {
