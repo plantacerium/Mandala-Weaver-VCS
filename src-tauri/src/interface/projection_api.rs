@@ -301,3 +301,16 @@ pub async fn search_monads(
         .await
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn get_monads_paginated_api(
+    page: usize,
+    page_size: usize,
+    ring_filter: Option<u32>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+) -> Result<Vec<Monad>, String> {
+    let db_conn = db.read().await;
+    crate::persistence::surreal_bridge::get_monads_paginated(&*db_conn, page, page_size, ring_filter)
+        .await
+        .map_err(|e| e.to_string())
+}

@@ -23,13 +23,70 @@ pub struct VariableDef {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum RingSelector {
     Level(u32),
     Latest,
     Range { min: u32, max: u32 },
     All,
+}
+
+impl<'de> Deserialize<'de> for RingSelector {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Helper {
+            Simple(String),
+            LevelNum(u32),
+            Tagged {
+                #[serde(rename = "type")]
+                selector_type: String,
+                #[serde(default)]
+                value: Option<u32>,
+                #[serde(default)]
+                level: Option<u32>,
+                #[serde(default)]
+                min: Option<u32>,
+                #[serde(default)]
+                max: Option<u32>,
+            },
+            RangeObj {
+                min: u32,
+                max: u32,
+            },
+        }
+
+        match Helper::deserialize(deserializer)? {
+            Helper::Simple(s) => match s.to_lowercase().as_str() {
+                "latest" => Ok(RingSelector::Latest),
+                "all" => Ok(RingSelector::All),
+                other => {
+                    if let Ok(n) = other.parse::<u32>() {
+                        Ok(RingSelector::Level(n))
+                    } else {
+                        Err(serde::de::Error::custom(format!("Unknown ring selector string: {}", other)))
+                    }
+                }
+            },
+            Helper::LevelNum(n) => Ok(RingSelector::Level(n)),
+            Helper::RangeObj { min, max } => Ok(RingSelector::Range { min, max }),
+            Helper::Tagged { selector_type, value, level, min, max } => {
+                match selector_type.to_lowercase().as_str() {
+                    "latest" => Ok(RingSelector::Latest),
+                    "all" => Ok(RingSelector::All),
+                    "level" => Ok(RingSelector::Level(value.or(level).unwrap_or(0))),
+                    "range" => Ok(RingSelector::Range {
+                        min: min.unwrap_or(0),
+                        max: max.unwrap_or(u32::MAX),
+                    }),
+                    other => Err(serde::de::Error::custom(format!("Unknown ring selector type: {}", other))),
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,13 +139,56 @@ pub struct OutputConfig {
 
 fn default_true() -> bool { true }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum OutputStructure {
     Flat,
     VectorDirs,
     RingDirs,
     Nested { rings: bool, vectors: bool },
+}
+
+impl<'de> Deserialize<'de> for OutputStructure {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Helper {
+            Simple(String),
+            Tagged {
+                #[serde(rename = "type")]
+                structure_type: String,
+                #[serde(default)]
+                rings: bool,
+                #[serde(default)]
+                vectors: bool,
+            },
+            NestedObj {
+                rings: bool,
+                vectors: bool,
+            },
+        }
+
+        match Helper::deserialize(deserializer)? {
+            Helper::Simple(s) => match s.to_lowercase().as_str() {
+                "flat" => Ok(OutputStructure::Flat),
+                "vectordirs" | "vector_dirs" => Ok(OutputStructure::VectorDirs),
+                "ringdirs" | "ring_dirs" => Ok(OutputStructure::RingDirs),
+                other => Err(serde::de::Error::custom(format!("Unknown output structure string: {}", other))),
+            },
+            Helper::NestedObj { rings, vectors } => Ok(OutputStructure::Nested { rings, vectors }),
+            Helper::Tagged { structure_type, rings, vectors } => {
+                match structure_type.to_lowercase().as_str() {
+                    "flat" => Ok(OutputStructure::Flat),
+                    "vectordirs" | "vector_dirs" => Ok(OutputStructure::VectorDirs),
+                    "ringdirs" | "ring_dirs" => Ok(OutputStructure::RingDirs),
+                    "nested" => Ok(OutputStructure::Nested { rings, vectors }),
+                    other => Err(serde::de::Error::custom(format!("Unknown output structure type: {}", other))),
+                }
+            }
+        }
+    }
 }
 
 pub mod adapter;

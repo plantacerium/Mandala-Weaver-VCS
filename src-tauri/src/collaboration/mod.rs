@@ -10,7 +10,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use crate::ontology::monad::{Monad, MonadKind};
+use crate::ontology::monad::Monad;
 use crate::persistence::surreal_bridge::{Db, get_all_monads, get_all_edges, insert_and_link, EdgeDto};
 use crate::geometry::polar_space::PolarCoord;
 
@@ -270,16 +270,17 @@ pub async fn merge_mandala(
     })
 }
 
-/// Imports git history as initial rings (read-only bridge)
-/// Each commit becomes a ring with its changed files as monads
+/// Imports git history as initial concentric rings (read-only bridge).
+/// Each commit in chronological order becomes a ring, extracting real source code AST Monads.
 pub async fn import_git_history(
     db: &Surreal<Db>,
     repo_path: &PathBuf,
 ) -> anyhow::Result<u32> {
     use std::process::Command;
 
+    // Use git log in reverse (chronological order: oldest commit -> Ring 1)
     let git_log = Command::new("git")
-        .args(["log", "--oneline", "--all", "--format=%H %s"])
+        .args(["log", "--reverse", "--format=%H|%s"])
         .current_dir(repo_path)
         .output()?;
 
@@ -287,23 +288,24 @@ pub async fn import_git_history(
         anyhow::bail!("Failed to read git history: {}", String::from_utf8_lossy(&git_log.stderr));
     }
 
-    let commits = String::from_utf8_lossy(&git_log.stdout);
-    let commit_lines: Vec<&str> = commits.lines().collect();
-    let total_commits = commit_lines.len() as u32;
-
-    if total_commits == 0 {
+    let commits_output = String::from_utf8_lossy(&git_log.stdout);
+    let commit_lines: Vec<&str> = commits_output.lines().filter(|l| !l.is_empty()).collect();
+    if commit_lines.is_empty() {
         return Ok(0);
     }
 
+    let max_commits = commit_lines.len().min(50);
     let mut ring = 0u32;
+    let source_extensions = ["rs", "ts", "tsx", "js", "jsx", "py", "go"];
 
-    for line in commit_lines.iter().take(20) {
-        let parts: Vec<&str> = line.splitn(2, ' ').collect();
-        if parts.len() < 2 {
+    for (commit_idx, line) in commit_lines.iter().take(max_commits).enumerate() {
+        let parts: Vec<&str> = line.splitn(2, '|').collect();
+        if parts.is_empty() {
             continue;
         }
         let commit_hash = parts[0];
-        let commit_msg = parts[1];
+
+        ring = (commit_idx as u32) + 1;
 
         let diff_output = Command::new("git")
             .args(["diff-tree", "--no-commit-id", "-r", "--name-only", commit_hash])
@@ -311,34 +313,49 @@ pub async fn import_git_history(
             .output()?;
 
         let diff_stdout = String::from_utf8_lossy(&diff_output.stdout);
-        let files: Vec<&str> = diff_stdout.lines().filter(|l| !l.is_empty()).collect();
+        let files: Vec<&str> = diff_stdout.lines()
+            .filter(|l| !l.is_empty())
+            .filter(|f| {
+                let ext = f.rsplit('.').next().unwrap_or("");
+                source_extensions.contains(&ext)
+            })
+            .collect();
 
         if files.is_empty() {
-            ring += 1;
             continue;
         }
 
-        let max_files = files.len().min(50);
-        for (i, file) in files.iter().take(max_files).enumerate() {
-            let theta = (i as f64 / max_files as f64) * 360.0;
-            let monad = Monad {
-                id: format!("git_{}_{}", &commit_hash[..8.min(commit_hash.len())], i),
-                coord: PolarCoord { r: ring as f64, theta },
-                content: format!("commit: {}\nfile: {}", commit_msg, file),
-                name: file.split('/').last().unwrap_or(file).to_string(),
-                ring,
-                kind: MonadKind::Unknown,
-                semantic_hash: crate::ontology::semantic_hash::generate_pure_hash(file),
-                line_start: 0,
-                line_end: 0,
-                language: file.rsplit('.').next().unwrap_or("txt").to_string(),
-                is_archived: false,
-            };
+        let previous_monads = if ring > 1 {
+            crate::persistence::surreal_bridge::get_ring(db, ring - 1).await.unwrap_or_default()
+        } else {
+            vec![]
+        };
 
-            let _ = insert_and_link(db, &monad, None).await;
+        for file in files.iter().take(15) {
+            let show_arg = format!("{}:{}", commit_hash, file);
+            let show_output = Command::new("git")
+                .args(["show", &show_arg])
+                .current_dir(repo_path)
+                .output();
+
+            if let Ok(out) = show_output {
+                if out.status.success() {
+                    let content = String::from_utf8_lossy(&out.stdout).to_string();
+                    let lang = crate::language::detect_language(std::path::Path::new(file));
+                    let monads = crate::weaver::ast_extractor::extract_raw_monads_lang(
+                        &content,
+                        ring,
+                        lang.tree_sitter_name(),
+                    );
+
+                    for monad in monads {
+                        let parent = previous_monads.iter().find(|p| p.name == monad.name);
+                        let parent_id = parent.map(|p| p.id.as_str());
+                        let _ = insert_and_link(db, &monad, parent_id).await;
+                    }
+                }
+            }
         }
-
-        ring += 1;
     }
 
     Ok(ring)

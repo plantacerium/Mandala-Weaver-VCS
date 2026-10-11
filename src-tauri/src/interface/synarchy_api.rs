@@ -138,19 +138,31 @@ pub async fn get_project_mandala(
     let project = registry.find(&id)
         .ok_or_else(|| "Project not found".to_string())?;
     
-    let mandala_path = project.path.join(".mandala");
-    
-    if !mandala_path.exists() {
-        return Ok(serde_json::json!({
-            "bindu_name": project.name,
-            "constellations": [],
-            "edges": []
-        }));
+    let db = crate::persistence::surreal_bridge::connect_db(Some(&project.path))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
+    let edges = crate::persistence::surreal_bridge::get_all_edges(&db).await.unwrap_or_default();
+    let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
+
+    let mut rings_map: std::collections::HashMap<u32, Vec<crate::ontology::monad::Monad>> = std::collections::HashMap::new();
+    for m in all_monads {
+        rings_map.entry(m.ring).or_default().push(m);
     }
-    
+
+    let mut constellations = rings_map.into_iter()
+        .map(|(ring_level, monads)| serde_json::json!({ "ring_level": ring_level, "monads": monads }))
+        .collect::<Vec<_>>();
+    constellations.sort_by_key(|c| c["ring_level"].as_u64().unwrap_or(0));
+
+    let total: usize = constellations.iter().map(|c| c["monads"].as_array().map(|a| a.len()).unwrap_or(0)).sum();
+
     Ok(serde_json::json!({
         "bindu_name": project.name,
-        "constellations": [],
-        "edges": []
+        "constellations": constellations,
+        "edges": edges,
+        "total_monads": total,
+        "max_ring": max_ring
     }))
 }

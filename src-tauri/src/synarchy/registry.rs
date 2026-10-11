@@ -84,6 +84,10 @@ pub struct ProjectScanner;
 
 impl ProjectScanner {
     pub async fn scan(path: &PathBuf) -> anyhow::Result<ProjectEntry> {
+        Self::scan_and_index(path).await
+    }
+
+    pub async fn scan_and_index(path: &PathBuf) -> anyhow::Result<ProjectEntry> {
         let name = path.file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown")
@@ -93,101 +97,111 @@ impl ProjectScanner {
             .to_hex()
             .to_string()[..8]
             .to_string();
-        
-        let monad_count = Self::count_source_files(path).await?;
-        
-        let mut ring_count: u32 = 0;
-        
-        let db_path = path.join(".mandala");
-        if db_path.exists() {
-            ring_count = 3;
+
+        let mandala_dir = path.join(".mandala");
+        let has_mandala = mandala_dir.exists();
+        let is_git = path.join(".git").exists();
+        let project_type = if is_git {
+            ProjectType::Git
+        } else if has_mandala {
+            ProjectType::Weaver
+        } else {
+            ProjectType::Local
+        };
+
+        let db = crate::persistence::surreal_bridge::connect_db(Some(path)).await?;
+        let mut all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
+
+        if all_monads.is_empty() {
+            let bindu = crate::ontology::bindu::Bindu::genesis(&name);
+            let val = serde_json::to_value(&bindu)?;
+            let _: Option<serde_json::Value> = db.create(("bindu", "genesis")).content(val).await?;
+
+            let mut files = Vec::new();
+            let extensions = ["rs", "ts", "tsx", "js", "jsx", "py", "go"];
+            Self::collect_files_recursive(path, &extensions, &mut files, 0)?;
+
+            files.sort_by_key(|(depth, p)| (*depth, p.clone()));
+
+            for (depth, file_path) in files.iter().take(120) {
+                if let Ok(content) = std::fs::read_to_string(file_path) {
+                    let ring = ((*depth as u32) + 1).min(10);
+                    let lang = crate::language::detect_language(file_path);
+                    let monads = crate::weaver::ast_extractor::extract_raw_monads_lang(
+                        &content,
+                        ring,
+                        lang.tree_sitter_name(),
+                    );
+                    for m in monads {
+                        let _ = crate::persistence::surreal_bridge::insert_and_link(&db, &m, None).await;
+                    }
+                }
+            }
+            all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
         }
-        
+
+        let monad_count = all_monads.len();
+        let ring_count = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
+
         Ok(ProjectEntry {
             id,
             name,
             path: path.clone(),
-            project_type: ProjectType::Local,
+            project_type,
             last_scanned: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
+                .unwrap_or_default()
                 .as_secs(),
             ring_count,
             monad_count,
             status: ProjectStatus::Active,
         })
     }
-    
-    
+
     pub async fn scan_with_rings(path: &PathBuf, ring_count: u32) -> anyhow::Result<ProjectEntry> {
-        let name = path.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("unknown")
-            .to_string();
-        
-        let id = blake3::hash(format!("{}_{}", name, path.display()).as_bytes())
-            .to_hex()
-            .to_string()[..8]
-            .to_string();
-        
-        let monad_count = Self::count_source_files(path).await?;
-        
-        Ok(ProjectEntry {
-            id,
-            name,
-            path: path.clone(),
-            project_type: ProjectType::Local,
-            last_scanned: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-            ring_count,
-            monad_count,
-            status: ProjectStatus::Active,
-        })
+        let mut entry = Self::scan(path).await?;
+        entry.ring_count = ring_count;
+        Ok(entry)
     }
-    
-    async fn count_source_files(path: &PathBuf) -> anyhow::Result<usize> {
-        let mut count = 0;
-        let extensions = ["rs", "ts", "tsx", "js", "jsx", "py", "go", "java", "c", "cpp", "h"];
-        
-        Self::count_recursive(path, &extensions, &mut count)?;
-        Ok(count)
-    }
-    
-    fn count_recursive(path: &PathBuf, extensions: &[&str], count: &mut usize) -> anyhow::Result<()> {
-        if !path.exists() {
+
+    fn collect_files_recursive(
+        current: &PathBuf,
+        extensions: &[&str],
+        collected: &mut Vec<(usize, PathBuf)>,
+        depth: usize,
+    ) -> anyhow::Result<()> {
+        if !current.exists() || depth > 8 {
             return Ok(());
         }
-        
-        for entry in std::fs::read_dir(path)? {
+
+        for entry in std::fs::read_dir(current)? {
             let entry = entry?;
             let path = entry.path();
-            
+
             if path.is_file() {
                 if let Some(ext) = path.extension() {
                     if extensions.contains(&ext.to_str().unwrap_or("")) {
-                        *count += 1;
+                        collected.push((depth, path));
                     }
                 }
             } else if path.is_dir() {
                 let name = path.file_name()
                     .and_then(|n| n.to_str())
                     .unwrap_or("");
-                
-                if !name.starts_with('.') 
-                    && name != "target" 
-                    && name != "node_modules" 
+
+                if !name.starts_with('.')
+                    && name != "target"
+                    && name != "node_modules"
                     && name != "__pycache__"
                     && name != "dist"
                     && name != "build"
                     && name != ".git"
                 {
-                    Self::count_recursive(&path, extensions, count)?;
+                    Self::collect_files_recursive(&path, extensions, collected, depth + 1)?;
                 }
             }
         }
-        
+
         Ok(())
     }
 }

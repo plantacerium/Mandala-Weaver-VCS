@@ -173,3 +173,35 @@ pub struct WriteResult {
     pub monad_count: usize,
     pub output_dir: String,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TemplateInfo {
+    pub name: String,
+    pub filename: String,
+    pub content: String,
+}
+
+#[tauri::command]
+pub async fn list_templates() -> Result<Vec<TemplateInfo>, String> {
+    let mut templates = Vec::new();
+    let template_dir = std::path::PathBuf::from("templates");
+    if template_dir.exists() {
+        if let Ok(entries) = std::fs::read_dir(template_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|s| s.to_str()) == Some("yaml") {
+                    if let Ok(content) = std::fs::read_to_string(&path) {
+                        let filename = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+                        let name = filename.trim_end_matches(".yaml").to_string();
+                        templates.push(TemplateInfo {
+                            name,
+                            filename,
+                            content,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    Ok(templates)
+}

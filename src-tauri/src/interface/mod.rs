@@ -7,3 +7,4 @@ pub mod projection_api;
 pub mod synarchy_api;
 pub mod template_api;
 pub mod collaboration_api;
+pub mod mcp;

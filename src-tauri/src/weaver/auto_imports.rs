@@ -74,8 +74,6 @@ impl ImportAnalyzer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geometry::polar_space::PolarCoord;
-    use crate::ontology::monad::Monad;
 
     #[test]
     fn test_extract_references() {

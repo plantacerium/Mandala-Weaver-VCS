@@ -27,6 +27,17 @@ pub async fn import_mandala_archive(
 }
 
 #[tauri::command]
+pub async fn import_git_repository(
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    repo_path: String,
+) -> Result<u32, String> {
+    let db_conn = db.read().await;
+    let path = PathBuf::from(repo_path);
+    collaboration::import_git_history(&*db_conn, &path).await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn diff_mandala_states(
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     remote_path: String,

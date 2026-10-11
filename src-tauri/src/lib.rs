@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod geometry;
 pub mod interface;
 pub mod language;

@@ -16,22 +16,37 @@ impl TemplateEngine {
         Self { db }
     }
 
+    pub fn substitute_variables(template: &DistillationTemplate) -> DistillationTemplate {
+        let mut t = template.clone();
+        for (key, var_def) in &template.variables {
+            if let Some(val) = &var_def.default {
+                let token_curlies = format!("{{{{{}}}}}", key);
+                let token_dollar = format!("${}", key);
+                t.output.filename = t.output.filename
+                    .replace(&token_curlies, val)
+                    .replace(&token_dollar, val);
+            }
+        }
+        t
+    }
+
     pub async fn resolve(&self, template: &DistillationTemplate) -> Result<Vec<Monad>> {
+        let t = Self::substitute_variables(template);
         let mut candidates = Vec::new();
 
-        let ring_monads = self.resolve_rings(&template.rings).await?;
+        let ring_monads = self.resolve_rings(&t.rings).await?;
         candidates.extend(ring_monads);
 
-        if !template.vectors.is_empty() {
-            candidates = self.filter_by_vectors(candidates, &template.vectors).await;
+        if !t.vectors.is_empty() {
+            candidates = self.filter_by_vectors(candidates, &t.vectors).await;
         }
 
-        if !template.exclude.is_empty() {
-            candidates = self.apply_exclusions(candidates, &template.exclude);
+        if !t.exclude.is_empty() {
+            candidates = self.apply_exclusions(candidates, &t.exclude);
         }
 
-        if !template.adapters.is_empty() {
-            crate::template::adapter::AdapterEngine::resolve_with_adapters(&candidates, &template.adapters);
+        if !t.adapters.is_empty() {
+            crate::template::adapter::AdapterEngine::resolve_with_adapters(&candidates, &t.adapters);
         }
 
         Ok(candidates)
@@ -69,10 +84,16 @@ impl TemplateEngine {
                 vectors.iter().any(|v| {
                     if let (Some(start), Some(end)) = (v.angle_start, v.angle_end) {
                         m.coord.theta >= start && m.coord.theta <= end
-                    } else if v.ring.is_some() {
-                        v.ring.map(|r| m.ring == r).unwrap_or(false)
+                    } else if let Some(r) = v.ring {
+                        m.ring == r
                     } else {
-                        true
+                        match v.name.to_uppercase().as_str() {
+                            "CORE" => m.coord.theta >= 0.0 && m.coord.theta < 90.0,
+                            "IO" | "NETWORK" => m.coord.theta >= 90.0 && m.coord.theta < 180.0,
+                            "UI" => m.coord.theta >= 180.0 && m.coord.theta < 270.0,
+                            "DATA" => m.coord.theta >= 270.0 && m.coord.theta <= 360.0,
+                            _ => true,
+                        }
                     }
                 })
             })

@@ -86,6 +86,8 @@ pub enum Commands {
     },
     Plugins,
     Audit,
+    /// Run Model Context Protocol (MCP) server over stdio for AI agents and developer tools
+    Mcp,
 }
 
 #[derive(Debug, Error)]
@@ -135,6 +137,7 @@ pub async fn run_cli() -> Result<(), CliError> {
         Commands::Inspect { monad_id, full } => cmd_inspect(&monad_id, full, json).await?,
         Commands::Plugins => cmd_plugins(json).await?,
         Commands::Audit => cmd_audit(json).await?,
+        Commands::Mcp => crate::interface::mcp::run_mcp_server().await.map_err(|e| CliError::Database(e.to_string()))?,
     }
 
     Ok(())

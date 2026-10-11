@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![allow(dead_code)]
 
 mod interface;
 mod persistence;
@@ -28,10 +29,12 @@ use interface::projection_api::{
     get_archived_monads_count,
     purge_archived_monads,
     search_monads,
+    get_monads_paginated_api,
 };
 use interface::collaboration_api::{
     export_mandala_archive,
     import_mandala_archive,
+    import_git_repository,
     diff_mandala_states,
     merge_mandala_states,
     sync_project,
@@ -74,6 +77,7 @@ use interface::template_api::{
     validate_template_content,
     create_template,
     distill_and_write,
+    list_templates,
 };
 use tauri::Manager;
 use std::path::PathBuf;
@@ -159,8 +163,10 @@ fn main() {
             get_archived_monads_count,
             purge_archived_monads,
             search_monads,
+            get_monads_paginated_api,
             export_mandala_archive,
             import_mandala_archive,
+            import_git_repository,
             diff_mandala_states,
             merge_mandala_states,
             sync_project,
@@ -196,6 +202,7 @@ fn main() {
             validate_template_content,
             create_template,
             distill_and_write,
+            list_templates,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

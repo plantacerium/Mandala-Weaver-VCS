@@ -78,6 +78,58 @@ pub async fn insert_and_link(
     Ok(())
 }
 
+/// Persiste múltiples mónadas y sus relaciones en lote para alto rendimiento (Phase 9.2)
+pub async fn insert_batch(
+    db: &Surreal<Db>,
+    items: &[(&Monad, Option<&str>)],
+) -> anyhow::Result<()> {
+    if items.is_empty() {
+        return Ok(());
+    }
+
+    for (monad, parent_id) in items {
+        let json_value = serde_json::to_value(monad)?;
+        let _: Option<JsonValue> = db.create(("monad", monad.id.as_str()))
+            .content(json_value)
+            .await?;
+
+        if let Some(pid) = parent_id {
+            let _ = db.query("RELATE monad:$parent -> evolves_to -> monad:$current")
+                .bind(("parent", pid.to_string()))
+                .bind(("current", monad.id.clone()))
+                .await;
+        }
+    }
+
+    Ok(())
+}
+
+/// Recupera mónadas con paginación optimizada (Phase 9.3 Lazy Loading)
+pub async fn get_monads_paginated(
+    db: &Surreal<Db>,
+    page: usize,
+    page_size: usize,
+    ring_filter: Option<u32>,
+) -> anyhow::Result<Vec<Monad>> {
+    let start = page.saturating_mul(page_size);
+    let mut response = if let Some(ring) = ring_filter {
+        db.query("SELECT * FROM monad WHERE ring = $ring AND is_archived = false ORDER BY coord.theta ASC LIMIT $limit START $start")
+            .bind(("ring", ring))
+            .bind(("limit", page_size))
+            .bind(("start", start))
+            .await?
+    } else {
+        db.query("SELECT * FROM monad WHERE is_archived = false ORDER BY ring ASC, coord.theta ASC LIMIT $limit START $start")
+            .bind(("limit", page_size))
+            .bind(("start", start))
+            .await?
+    };
+
+    let values: Vec<JsonValue> = response.take(0)?;
+    let monads: Vec<Monad> = values.into_iter().filter_map(|v| serde_json::from_value(v).ok()).collect();
+    Ok(monads)
+}
+
 /// Recupera todas las mónadas de un anillo específico.
 pub async fn get_ring(db: &Surreal<Db>, ring: u32) -> anyhow::Result<Vec<Monad>> {
     let mut response = db.query("SELECT * FROM monad WHERE ring = $ring AND is_archived = false")

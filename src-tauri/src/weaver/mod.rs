@@ -8,7 +8,7 @@ pub mod file_writer;
 pub mod contract;
 pub mod semantic_diff;
 
-use crate::persistence::surreal_bridge::{Db, insert_and_link, get_ring, get_all_monads};
+use crate::persistence::surreal_bridge::{Db, get_ring, get_all_monads};
 use crate::weaver::ast_extractor::extract_raw_monads_lang;
 use crate::weaver::resolver::identify_deltas;
 use crate::weaver::semantic_diff::SemanticDiff;
@@ -54,13 +54,14 @@ pub async fn expand_from_source(
         println!("  Δ Semantic Change in {}: {}", diff.monad_id, SemanticDiff::format_colored(&diff));
     }
 
-    // 8. Persistir deltas y vincular con padres si existen
-    for monad in deltas {
+    // 8. Persistir deltas en lote y vincular con padres si existen (Phase 9.2)
+    let batch_items: Vec<(&crate::ontology::monad::Monad, Option<&str>)> = deltas.iter().map(|monad| {
         let parent = base_monads.iter().find(|m| m.name == monad.name);
         let parent_id = parent.map(|p| p.id.as_str());
-        
-        insert_and_link(db, &monad, parent_id).await?;
-    }
+        (monad, parent_id)
+    }).collect();
+
+    crate::persistence::surreal_bridge::insert_batch(db, &batch_items).await?;
 
     Ok(next_ring)
 }
