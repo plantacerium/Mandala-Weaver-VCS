@@ -106,13 +106,13 @@ fn main() {
         .setup(|app| {
             let handle = app.handle().clone();
             
+            let db_path = crate::persistence::surreal_bridge::find_project_root();
             let db = tauri::async_runtime::block_on(async {
-                let db_path = crate::persistence::surreal_bridge::find_project_root();
                 let db_conn = if let Some(ref path) = db_path {
                     crate::persistence::surreal_bridge::connect_db(Some(path))
                         .await
-                        .unwrap_or_else(|_| {
-                            eprintln!("⚠ Failed to connect with project root, falling back to embedded");
+                        .unwrap_or_else(|e| {
+                            eprintln!("⚠ Failed to connect with project root ({}): falling back to embedded", e);
                             tauri::async_runtime::block_on(connect_embedded()).expect("Failed to initialize SurrealDB")
                         })
                 } else {
@@ -124,11 +124,36 @@ fn main() {
                 }
                 db_conn
             });
-            handle.manage(std::sync::Arc::new(tokio::sync::RwLock::new(db)));
+            handle.manage(std::sync::Arc::new(tokio::sync::RwLock::new(db.clone())));
+
+            let active_project_path: crate::persistence::surreal_bridge::ActiveProjectState = 
+                std::sync::Arc::new(tokio::sync::RwLock::new(db_path.clone()));
+            handle.manage(active_project_path);
 
             let synarchy_state = SynarchyState::new(
                 app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."))
             );
+
+            // Auto-register current project if found and not yet in registry
+            if let Some(ref root) = db_path {
+                let root_clone = root.clone();
+                let synarchy_clone = synarchy_state.registry.clone();
+                let db_ref = db.clone();
+                tauri::async_runtime::block_on(async {
+                    let mut reg = synarchy_clone.write().await;
+                    let exists = reg.projects.iter().any(|p| {
+                        p.path.canonicalize().unwrap_or(p.path.clone()) == root_clone.canonicalize().unwrap_or(root_clone.clone())
+                    });
+                    if !exists {
+                        if let Ok(entry) = crate::synarchy::ProjectScanner::scan_and_index_with_db(&db_ref, &root_clone).await {
+                            reg.add(entry);
+                            drop(reg);
+                            let _ = synarchy_state.save().await;
+                        }
+                    }
+                });
+            }
+
             handle.manage(synarchy_state);
             handle.manage(synchronizer);
 

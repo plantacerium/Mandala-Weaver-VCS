@@ -45,16 +45,34 @@ pub async fn add_project(
     path: String,
     name: String,
     state: State<'_, SynarchyState>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
 ) -> Result<ProjectEntry, String> {
     let path_buf = PathBuf::from(&path);
     
     if !path_buf.exists() {
         return Err("Path does not exist".to_string());
     }
-    
-    let entry = ProjectScanner::scan(&path_buf)
-        .await
-        .map_err(|e| e.to_string())?;
+
+    let is_active = {
+        let current = active_root.read().await;
+        if let Some(ref curr) = *current {
+            curr.canonicalize().unwrap_or(curr.clone()) == path_buf.canonicalize().unwrap_or(path_buf.clone())
+        } else {
+            false
+        }
+    };
+
+    let entry = if is_active {
+        let db_conn = db.read().await;
+        ProjectScanner::scan_and_index_with_db(&*db_conn, &path_buf)
+            .await
+            .map_err(|e| e.to_string())?
+    } else {
+        ProjectScanner::scan(&path_buf)
+            .await
+            .map_err(|e| e.to_string())?
+    };
     
     let mut final_entry = entry;
     if !name.is_empty() {
@@ -103,6 +121,8 @@ pub async fn get_project_detail(
 pub async fn rescan_project(
     id: String,
     state: State<'_, SynarchyState>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
 ) -> Result<ProjectEntry, String> {
     let (path, name) = {
         let registry = state.registry.read().await;
@@ -110,10 +130,27 @@ pub async fn rescan_project(
             .ok_or_else(|| "Project not found".to_string())?;
         (project.path.clone(), project.name.clone())
     };
+
+    let is_active = {
+        let current = active_root.read().await;
+        if let Some(ref curr) = *current {
+            curr.canonicalize().unwrap_or(curr.clone()) == path.canonicalize().unwrap_or(path.clone())
+        } else {
+            false
+        }
+    };
     
-    let mut new_entry = ProjectScanner::scan(&path)
-        .await
-        .map_err(|e| e.to_string())?;
+    let mut new_entry = if is_active {
+        let db_conn = db.read().await;
+        ProjectScanner::scan_and_index_with_db(&*db_conn, &path)
+            .await
+            .map_err(|e| e.to_string())?
+    } else {
+        ProjectScanner::scan(&path)
+            .await
+            .map_err(|e| e.to_string())?
+    };
+
     new_entry.name = name;
     
     {
@@ -132,18 +169,42 @@ pub async fn rescan_project(
 pub async fn get_project_mandala(
     id: String,
     state: State<'_, SynarchyState>,
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
 ) -> Result<serde_json::Value, String> {
     let registry = state.registry.read().await;
     
     let project = registry.find(&id)
         .ok_or_else(|| "Project not found".to_string())?;
     
-    let db = crate::persistence::surreal_bridge::connect_db(Some(&project.path))
-        .await
-        .map_err(|e| e.to_string())?;
+    let is_active = {
+        let current = active_root.read().await;
+        if let Some(ref curr) = *current {
+            curr.canonicalize().unwrap_or(curr.clone()) == project.path.canonicalize().unwrap_or(project.path.clone())
+        } else {
+            false
+        }
+    };
 
-    let all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
-    let edges = crate::persistence::surreal_bridge::get_all_edges(&db).await.unwrap_or_default();
+    let (all_monads, edges) = if is_active {
+        let db_conn = db.read().await;
+        let monads = crate::persistence::surreal_bridge::get_all_monads(&*db_conn).await.unwrap_or_default();
+        let edges = crate::persistence::surreal_bridge::get_all_edges(&*db_conn).await.unwrap_or_default();
+        (monads, edges)
+    } else {
+        match crate::persistence::surreal_bridge::connect_db(Some(&project.path)).await {
+            Ok(temp_db) => {
+                let monads = crate::persistence::surreal_bridge::get_all_monads(&temp_db).await.unwrap_or_default();
+                let edges = crate::persistence::surreal_bridge::get_all_edges(&temp_db).await.unwrap_or_default();
+                (monads, edges)
+            }
+            Err(e) => {
+                eprintln!("Failed to connect to project db: {}", e);
+                (Vec::new(), Vec::new())
+            }
+        }
+    };
+
     let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
 
     let mut rings_map: std::collections::HashMap<u32, Vec<crate::ontology::monad::Monad>> = std::collections::HashMap::new();

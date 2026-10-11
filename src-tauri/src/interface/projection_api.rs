@@ -36,17 +36,18 @@ pub struct LineageResult {
     pub depth: usize,
 }
 
-/// Retrieves the Bindu (project name) from SurrealDB, or returns "Unnamed_Project" as default.
 async fn get_bindu_name(db: &Surreal<Db>) -> String {
     let result: Result<Vec<JsonValue>, _> = db.select("bindu").await;
     match result {
         Ok(bindus) if !bindus.is_empty() => {
             if let Some(name) = bindus[0].get("project_name").and_then(|v| v.as_str()) {
-                return name.to_string();
+                if !name.is_empty() && name != "unknown" && name != "Unnamed_Project" {
+                    return name.to_string();
+                }
             }
-            "Unnamed_Project".to_string()
+            "Mandala Weaver VCS".to_string()
         }
-        _ => "Unnamed_Project".to_string(),
+        _ => "Mandala Weaver VCS".to_string(),
     }
 }
 
@@ -71,7 +72,21 @@ pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_brid
     }
 
     let mut constellations: Vec<ConstellationDto> = rings_map.into_iter()
-        .map(|(ring_level, monads)| ConstellationDto { ring_level, monads })
+        .map(|(ring_level, mut monads)| {
+            let total = monads.len();
+            if total > 0 {
+                let unique_angles: std::collections::HashSet<i64> = monads.iter()
+                    .map(|m| m.coord.theta.round() as i64)
+                    .collect();
+                if unique_angles.len() < total.min(32) {
+                    let offset = ((ring_level % 2) as f64) * (180.0 / total as f64);
+                    for (idx, monad) in monads.iter_mut().enumerate() {
+                        monad.coord.theta = ((360.0 / total as f64) * (idx as f64) + offset) % 360.0;
+                    }
+                }
+            }
+            ConstellationDto { ring_level, monads }
+        })
         .collect();
     
     // Sort constellations by ring level for consistent output
@@ -133,15 +148,39 @@ pub async fn init_project(
 #[tauri::command]
 pub async fn open_project(
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
     project_path: String,
 ) -> Result<String, String> {
-    let path = std::path::PathBuf::from(project_path);
-    let new_db = crate::persistence::surreal_bridge::connect_db(Some(&path))
+    let target_path = std::path::PathBuf::from(&project_path);
+    let target_canonical = target_path.canonicalize().unwrap_or(target_path.clone());
+
+    {
+        let current = active_root.read().await;
+        if let Some(ref curr) = *current {
+            let curr_canonical = curr.canonicalize().unwrap_or(curr.clone());
+            if curr_canonical == target_canonical {
+                return Ok("Project is already active.".to_string());
+            }
+        }
+    }
+
+    let mut db_write = db.write().await;
+    // Release previous file lock
+    let temp_mem = crate::persistence::surreal_bridge::connect_embedded()
+        .await
+        .map_err(|e| e.to_string())?;
+    *db_write = temp_mem;
+
+    tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+
+    let new_db = crate::persistence::surreal_bridge::connect_db(Some(&target_path))
         .await
         .map_err(|e| e.to_string())?;
         
-    let mut db_write = db.write().await;
     *db_write = new_db;
+
+    let mut current_write = active_root.write().await;
+    *current_write = Some(target_path);
     
     Ok("Project successfully opened.".to_string())
 }
@@ -313,4 +352,46 @@ pub async fn get_monads_paginated_api(
     crate::persistence::surreal_bridge::get_monads_paginated(&*db_conn, page, page_size, ring_filter)
         .await
         .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_export_mandala_state_direct() {
+        let root = std::path::PathBuf::from("..");
+        let db = crate::persistence::surreal_bridge::connect_db(Some(&root)).await.unwrap();
+        let all_monads = get_all_monads(&db).await.unwrap();
+        println!(">>> test_export: all_monads count = {}", all_monads.len());
+        assert_eq!(all_monads.len(), 336);
+
+        let edges = get_all_edges(&db).await.unwrap_or_default();
+        let bindu_name = get_bindu_name(&db).await;
+        let total_monads = all_monads.len();
+        let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
+
+        let mut rings_map: std::collections::HashMap<u32, Vec<Monad>> = std::collections::HashMap::new();
+        for m in all_monads {
+            rings_map.entry(m.ring).or_default().push(m);
+        }
+
+        let mut constellations: Vec<ConstellationDto> = rings_map.into_iter()
+            .map(|(ring_level, monads)| ConstellationDto { ring_level, monads })
+            .collect();
+        constellations.sort_by_key(|c| c.ring_level);
+
+        let state = MandalaState {
+            bindu_name,
+            constellations,
+            edges,
+            total_monads,
+            max_ring,
+        };
+
+        let json = serde_json::to_string_pretty(&state).unwrap();
+        println!(">>> test_export: json length = {}, total_monads = {}", json.len(), state.total_monads);
+        let _ = std::fs::write("../public/mandala_state.json", &json);
+        assert!(json.len() > 100);
+    }
 }

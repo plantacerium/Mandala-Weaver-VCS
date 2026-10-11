@@ -88,6 +88,10 @@ pub enum Commands {
     Audit,
     /// Run Model Context Protocol (MCP) server over stdio for AI agents and developer tools
     Mcp,
+    /// Recursively scan and index codebase files into radial rings without git
+    Scan {
+        path: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, Error)]
@@ -138,6 +142,7 @@ pub async fn run_cli() -> Result<(), CliError> {
         Commands::Plugins => cmd_plugins(json).await?,
         Commands::Audit => cmd_audit(json).await?,
         Commands::Mcp => crate::interface::mcp::run_mcp_server().await.map_err(|e| CliError::Database(e.to_string()))?,
+        Commands::Scan { path } => cmd_scan(path, json).await?,
     }
 
     Ok(())
@@ -1017,5 +1022,30 @@ async fn cmd_audit(json: bool) -> Result<(), CliError> {
         }
     }
     
+    Ok(())
+}
+
+async fn cmd_scan(path: Option<PathBuf>, json: bool) -> Result<(), CliError> {
+    let target = path.unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let canonical = std::fs::canonicalize(&target).unwrap_or(target);
+    if !json {
+        println!("🌀 Scanning project at {} into Mandala space...", canonical.display());
+    }
+
+    let entry = crate::synarchy::ProjectScanner::scan_and_index(&canonical)
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&entry).unwrap_or_default());
+    } else {
+        println!("✅ Mandala Scan Complete!");
+        println!("   Project:   {}", entry.name);
+        println!("   Path:      {}", entry.path.display());
+        println!("   Rings:     {}", entry.ring_count);
+        println!("   Monads:    {}", entry.monad_count);
+        println!("   Storage:   .mandala/db (SurrealKV)");
+        println!("\n✨ Ready to view in UI! Run `pnpm run tauri dev` to see all nodes on the canvas.");
+    }
     Ok(())
 }

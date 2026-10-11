@@ -13,7 +13,7 @@ pub struct ProjectEntry {
     pub status: ProjectStatus,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProjectType {
     Local,
     Remote,
@@ -21,7 +21,7 @@ pub enum ProjectType {
     Weaver,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "message")]
 pub enum ProjectStatus {
     Active,
@@ -88,9 +88,18 @@ impl ProjectScanner {
     }
 
     pub async fn scan_and_index(path: &PathBuf) -> anyhow::Result<ProjectEntry> {
-        let name = path.file_name()
+        let db = crate::persistence::surreal_bridge::connect_db(Some(path)).await?;
+        Self::scan_and_index_with_db(&db, path).await
+    }
+
+    pub async fn scan_and_index_with_db(
+        db: &surrealdb::Surreal<crate::persistence::surreal_bridge::Db>,
+        path: &PathBuf
+    ) -> anyhow::Result<ProjectEntry> {
+        let canonical = path.canonicalize().unwrap_or(path.clone());
+        let name = canonical.file_name()
             .and_then(|n| n.to_str())
-            .unwrap_or("unknown")
+            .unwrap_or("Mandala-Weaver-VCS")
             .to_string();
         
         let id = blake3::hash(format!("{}_{}", name, path.display()).as_bytes())
@@ -109,8 +118,7 @@ impl ProjectScanner {
             ProjectType::Local
         };
 
-        let db = crate::persistence::surreal_bridge::connect_db(Some(path)).await?;
-        let mut all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
+        let mut all_monads = crate::persistence::surreal_bridge::get_all_monads(db).await.unwrap_or_default();
 
         if all_monads.is_empty() {
             let bindu = crate::ontology::bindu::Bindu::genesis(&name);
@@ -123,6 +131,8 @@ impl ProjectScanner {
 
             files.sort_by_key(|(depth, p)| (*depth, p.clone()));
 
+            let mut ring_counters: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
+
             for (depth, file_path) in files.iter().take(120) {
                 if let Ok(content) = std::fs::read_to_string(file_path) {
                     let ring = ((*depth as u32) + 1).min(10);
@@ -132,12 +142,15 @@ impl ProjectScanner {
                         ring,
                         lang.tree_sitter_name(),
                     );
-                    for m in monads {
-                        let _ = crate::persistence::surreal_bridge::insert_and_link(&db, &m, None).await;
+                    for mut m in monads {
+                        let count = ring_counters.entry(ring).or_insert(0);
+                        m.coord.theta = ((*count as f64) * 137.50776405) % 360.0;
+                        *count += 1;
+                        let _ = crate::persistence::surreal_bridge::insert_and_link(db, &m, None).await;
                     }
                 }
             }
-            all_monads = crate::persistence::surreal_bridge::get_all_monads(&db).await.unwrap_or_default();
+            all_monads = crate::persistence::surreal_bridge::get_all_monads(db).await.unwrap_or_default();
         }
 
         let monad_count = all_monads.len();
@@ -203,5 +216,22 @@ impl ProjectScanner {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_scan_mandala_project() {
+        let root = PathBuf::from("..");
+        if root.join(".git").exists() {
+            let db = crate::persistence::surreal_bridge::connect_embedded().await.unwrap();
+            let entry = ProjectScanner::scan_and_index_with_db(&db, &root).await.unwrap();
+            assert!(entry.monad_count > 0);
+            assert_eq!(entry.project_type, ProjectType::Git);
+            println!("✅ Scanned project: {} with {} monads and {} rings", entry.name, entry.monad_count, entry.ring_count);
+        }
     }
 }

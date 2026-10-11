@@ -137,8 +137,8 @@ fn extract_with_ast_grep(
             let line_start = range.start as u32;
             let line_end = range.end as u32;
 
-            // Auto-assign angular position based on monad index
-            let angle = (monads.len() as f64) * (360.0 / 16.0);
+            // Auto-assign angular position using golden angle (phyllotaxis) to prevent angle collisions
+            let angle = ((monads.len() as f64) * 137.50776405) % 360.0;
             let coord = PolarCoord::new((ring as f64) * 100.0, angle);
 
             monads.push(Monad::spawn_typed(
@@ -185,7 +185,7 @@ fn extract_with_heuristic(source_code: &str, ring: u32, language: &str) -> Vec<M
         if is_keyword_line {
             if !current_block.is_empty() {
                 let hash = generate_pure_hash(&current_block);
-                let angle = (monads.len() as f64) * (360.0 / 16.0);
+                let angle = ((monads.len() as f64) * 137.50776405) % 360.0;
                 let coord = PolarCoord::new((ring as f64) * 100.0, angle);
                 monads.push(Monad::spawn_typed(
                     hash,

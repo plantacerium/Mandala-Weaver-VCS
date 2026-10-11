@@ -11,6 +11,7 @@ use tokio::sync::RwLock;
 
 pub type Db = surrealdb::engine::local::Db;
 pub type SharedDb = Arc<RwLock<Surreal<Db>>>;
+pub type ActiveProjectState = Arc<RwLock<Option<std::path::PathBuf>>>;
 
 /// Busca el directorio raíz del proyecto (.mandala) subiendo desde el directorio actual
 pub fn find_project_root() -> Option<std::path::PathBuf> {
