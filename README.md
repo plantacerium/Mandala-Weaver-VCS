@@ -5,8 +5,14 @@ Mandala Weaver is the exact execution of the Golden Thread Engine instantiated i
 
 This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the **Distillation** of a unique Source—an infinite spiral of innovation where code expands outward with mathematical purity and structural harmony.
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V2.png)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V3.png)
+![Mandala Weaver VCS  CLI](public/assets/Mandala-Weaver-VCS-UI-V4.png)
+![Mandala Weaver VCS  CLI](public/assets/Mandala-Weaver-VCS-UI-V5.png)
+---
 
+## Logo
+
+![Mandala Weaver VCS  CLI](public/assets/mandala-icon.png)
 ---
 
 ## 🌟 Propuesta de Valor (Value Proposition)
@@ -114,7 +120,7 @@ cargo run --manifest-path src-tauri/Cargo.toml -- mcp
 }
 ```
 
-For more details, see [mcp/README.md](file:///Mandala-Weaver-VCS/mcp/README.md).
+For more details, see [mcp/README.md](./mcp/README.md).
 
 ---
 
@@ -165,7 +171,7 @@ output:
 - **Vector Filtering:** Specific domain inclusion (`CORE`, `UI`, `IO`, `DATA`, `NETWORK`).
 - **Semantic Adapters:** Automated `Import`, `Reexport`, `Wrap`, and `Custom` transformations.
 - **Variable Substitution:** Dynamic interpolation of `{{variable}}` placeholders at compilation time.
-- **Interactive UI Editor:** Integrated [`TemplateEditor.tsx`](file:///Mandala-Weaver-VCS/src/components/panels/TemplateEditor.tsx) in the desktop interface for creating and testing templates.
+- **Interactive UI Editor:** Integrated [`TemplateEditor.tsx`](./src/components/panels/TemplateEditor.tsx) in the desktop interface for creating and testing templates.
 
 ---
 
@@ -206,7 +212,7 @@ Mandala Weaver provides the `weave` command-line tool for terminal-based workflo
 The Loom is built on three high-performance engineering pillars:
 
 - **The Engine (Backend):** Rust + [`nalgebra`](https://crates.io/crates/nalgebra) (Orbital and spatial math) + [`ast-grep`](https://ast-grep.github.io/) (Semantic AST parsing) + [`tokio`](https://tokio.rs/) (Async runtime) + [`blake3`](https://crates.io/crates/blake3) (Cryptographic hashing).
-- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Operates with local persistent disk storage in `.mandala/db/` via SurrealKV ([`FileBridge`](file:///Mandala-Weaver-VCS/src-tauri/src/persistence/file_bridge.rs)) or in-memory mode for unit tests. Includes composite indexing, batch insertions (`insert_batch`), and paginated retrieval (`get_monads_paginated`).
+- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Operates with local persistent disk storage in `.mandala/db/` via SurrealKV ([`FileBridge`](./src-tauri/src/persistence/file_bridge.rs)) or in-memory mode for unit tests. Includes composite indexing, batch insertions (`insert_batch`), and paginated retrieval (`get_monads_paginated`).
 - **The Canvas (UI):** Tauri 2.0 + Astro + React + D3.js (Hardware-accelerated radial visualization). Features a neo-metric dark glassmorphism aesthetic with glowing monads, polar grids, dynamic stats panels, and an integrated real-time code inspector.
 
 ---
@@ -371,36 +377,36 @@ The Tauri backend provides comprehensive IPC commands accessible from the fronte
 
 | Category | Command | Description | Return Type |
 |---|---|---|---|
-| **Workspace & Topology** | [`export_mandala_state`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns full mandala state (bindu, constellations, edges) as JSON | `Promise<string>` |
-| | [`export_mandala_state_paginated`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns paginated mandala state for large-scale graphs | `Promise<string>` |
-| | [`expand_ring`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Expands a new ring by extracting monads from a source file | `Promise<u32>` |
-| | [`init_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Initializes a new project Point Zero (Bindu) | `Promise<string>` |
-| | [`open_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Switches database context to specified project path | `Promise<string>` |
-| | [`distill_from_selection`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Compiles source code from a list of selected monad IDs | `Promise<string>` |
-| | [`write_distilled_to_disk`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Writes compiled distillation output to filesystem | `Promise<string>` |
-| | [`trace_monad_lineage`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Returns evolutionary graph lineage of a monad | `Promise<string>` |
-| | [`get_monad_detail`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Retrieves full AST, code content, and coordinates of a monad | `Promise<string>` |
-| | [`contract_outer_ring`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Rolls back the outermost ring and archives its monads | `Promise<u32>` |
-| | [`revert_to_level`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Reverts project topology to a specified ring level | `Promise<u32>` |
-| | [`search_monads`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Searches monads by name, kind, or content substring | `Promise<string>` |
-| | [`get_monads_paginated_api`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/projection_api.rs) | Paginated monad retrieval for efficient high-volume rendering | `Promise<string>` |
-| **YAML Templates** | [`list_templates`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Lists all available YAML templates in `.mandala/templates` & defaults | `Promise<string>` |
-| | [`distill_from_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Executes distillation based on a template file path | `Promise<string>` |
-| | [`distill_from_template_content`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Executes distillation directly from raw YAML content | `Promise<string>` |
-| | [`validate_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Validates a template file on disk | `Promise<string>` |
-| | [`validate_template_content`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Validates raw YAML template syntax in memory | `Promise<string>` |
-| | [`create_template`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Saves a new YAML template to the project template library | `Promise<string>` |
-| | [`distill_and_write`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/template_api.rs) | Distills from template and writes directly to target directory | `Promise<string>` |
-| **Synarchy Ecosystem** | [`get_projects`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Retrieves list of all registered projects in the synarchy registry | `Promise<string>` |
-| | [`add_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Registers and scans a new project path | `Promise<string>` |
-| | [`remove_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Unregisters a project from the synarchy registry | `Promise<string>` |
-| | [`get_project_detail`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Retrieves detailed metadata, rings, and stats for a project | `Promise<string>` |
-| | [`rescan_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Triggers automated re-scan and AST indexing for a project | `Promise<string>` |
-| | [`get_project_mandala`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/synarchy_api.rs) | Fetches the full mandala state of a specific project | `Promise<string>` |
-| **Ingestion & Sync** | [`import_git_repository`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Imports sequential commit history into concentric rings | `Promise<string>` |
-| | [`export_mandala_archive`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Exports a portable compressed archive of the project mandala | `Promise<string>` |
-| | [`import_mandala_archive`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Imports a project archive into local storage | `Promise<string>` |
-| | [`sync_project`](file:///Mandala-Weaver-VCS/src-tauri/src/interface/collaboration_api.rs) | Synchronizes project with remote synarchy peers | `Promise<string>` |
+| **Workspace & Topology** | [`export_mandala_state`](./src-tauri/src/interface/projection_api.rs) | Returns full mandala state (bindu, constellations, edges) as JSON | `Promise<string>` |
+| | [`export_mandala_state_paginated`](./src-tauri/src/interface/projection_api.rs) | Returns paginated mandala state for large-scale graphs | `Promise<string>` |
+| | [`expand_ring`](./src-tauri/src/interface/projection_api.rs) | Expands a new ring by extracting monads from a source file | `Promise<u32>` |
+| | [`init_project`](./src-tauri/src/interface/projection_api.rs) | Initializes a new project Point Zero (Bindu) | `Promise<string>` |
+| | [`open_project`](./src-tauri/src/interface/projection_api.rs) | Switches database context to specified project path | `Promise<string>` |
+| | [`distill_from_selection`](./src-tauri/src/interface/projection_api.rs) | Compiles source code from a list of selected monad IDs | `Promise<string>` |
+| | [`write_distilled_to_disk`](./src-tauri/src/interface/projection_api.rs) | Writes compiled distillation output to filesystem | `Promise<string>` |
+| | [`trace_monad_lineage`](./src-tauri/src/interface/projection_api.rs) | Returns evolutionary graph lineage of a monad | `Promise<string>` |
+| | [`get_monad_detail`](./src-tauri/src/interface/projection_api.rs) | Retrieves full AST, code content, and coordinates of a monad | `Promise<string>` |
+| | [`contract_outer_ring`](./src-tauri/src/interface/projection_api.rs) | Rolls back the outermost ring and archives its monads | `Promise<u32>` |
+| | [`revert_to_level`](./src-tauri/src/interface/projection_api.rs) | Reverts project topology to a specified ring level | `Promise<u32>` |
+| | [`search_monads`](./src-tauri/src/interface/projection_api.rs) | Searches monads by name, kind, or content substring | `Promise<string>` |
+| | [`get_monads_paginated_api`](./src-tauri/src/interface/projection_api.rs) | Paginated monad retrieval for efficient high-volume rendering | `Promise<string>` |
+| **YAML Templates** | [`list_templates`](./src-tauri/src/interface/template_api.rs) | Lists all available YAML templates in `.mandala/templates` & defaults | `Promise<string>` |
+| | [`distill_from_template`](./src-tauri/src/interface/template_api.rs) | Executes distillation based on a template file path | `Promise<string>` |
+| | [`distill_from_template_content`](./src-tauri/src/interface/template_api.rs) | Executes distillation directly from raw YAML content | `Promise<string>` |
+| | [`validate_template`](./src-tauri/src/interface/template_api.rs) | Validates a template file on disk | `Promise<string>` |
+| | [`validate_template_content`](./src-tauri/src/interface/template_api.rs) | Validates raw YAML template syntax in memory | `Promise<string>` |
+| | [`create_template`](./src-tauri/src/interface/template_api.rs) | Saves a new YAML template to the project template library | `Promise<string>` |
+| | [`distill_and_write`](./src-tauri/src/interface/template_api.rs) | Distills from template and writes directly to target directory | `Promise<string>` |
+| **Synarchy Ecosystem** | [`get_projects`](./src-tauri/src/interface/synarchy_api.rs) | Retrieves list of all registered projects in the synarchy registry | `Promise<string>` |
+| | [`add_project`](./src-tauri/src/interface/synarchy_api.rs) | Registers and scans a new project path | `Promise<string>` |
+| | [`remove_project`](./src-tauri/src/interface/synarchy_api.rs) | Unregisters a project from the synarchy registry | `Promise<string>` |
+| | [`get_project_detail`](./src-tauri/src/interface/synarchy_api.rs) | Retrieves detailed metadata, rings, and stats for a project | `Promise<string>` |
+| | [`rescan_project`](./src-tauri/src/interface/synarchy_api.rs) | Triggers automated re-scan and AST indexing for a project | `Promise<string>` |
+| | [`get_project_mandala`](./src-tauri/src/interface/synarchy_api.rs) | Fetches the full mandala state of a specific project | `Promise<string>` |
+| **Ingestion & Sync** | [`import_git_repository`](./src-tauri/src/interface/collaboration_api.rs) | Imports sequential commit history into concentric rings | `Promise<string>` |
+| | [`export_mandala_archive`](./src-tauri/src/interface/collaboration_api.rs) | Exports a portable compressed archive of the project mandala | `Promise<string>` |
+| | [`import_mandala_archive`](./src-tauri/src/interface/collaboration_api.rs) | Imports a project archive into local storage | `Promise<string>` |
+| | [`sync_project`](./src-tauri/src/interface/collaboration_api.rs) | Synchronizes project with remote synarchy peers | `Promise<string>` |
 | **CLI Proxies** | `cli_bindu`, `cli_telemetry`, `cli_status`, `cli_crystallize`, `cli_distill`, `cli_lineage`, `cli_spectrum`, `cli_inspect`, `cli_echo`, `cli_vector`, `cli_focus`, `cli_dormant`, `cli_synthesize`, `cli_absorb`, `cli_emanate`, `cli_seed` | Direct terminal execution proxies for the integrated GUI terminal panel | `Promise<string>` |
 
 ---
@@ -509,15 +515,9 @@ pnpm run tauri build
 
 ---
 
-## Tutorial & Walkthrough
-
-For a step-by-step interactive guide on getting started, navigating the canvas, creating your first radial commit, harvesting with the lasso tool, using YAML templates, and connecting AI agents via MCP, read **[TUTORIAL.md](file:///Mandala-Weaver-VCS/TUTORIAL.md)**.
-
----
-
 ## Roadmap
 
-For the detailed 10-phase engineering roadmap—including completed core engines, YAML templates, MCP server, performance scaling, and distributed synarchy networks—see **[Roadmap.md](file:///Mandala-Weaver-VCS/Roadmap.md)**.
+For the detailed 10-phase engineering roadmap—including completed core engines, YAML templates, MCP server, performance scaling, and distributed synarchy networks—see **[Roadmap.md](./Roadmap.md)**.
 
 ---
 
