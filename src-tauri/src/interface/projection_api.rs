@@ -75,13 +75,29 @@ pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_brid
         .map(|(ring_level, mut monads)| {
             let total = monads.len();
             if total > 0 {
+                let ring_gap = 70.0;
+                let base_ring_radius = 50.0 + ((ring_level as f64) - 1.0) * ring_gap;
+                let band_width = crate::geometry::polar_coordinate::compute_adaptive_band_width(
+                    base_ring_radius,
+                    ring_gap,
+                    total,
+                );
+
                 let unique_angles: std::collections::HashSet<i64> = monads.iter()
                     .map(|m| m.coord.theta.round() as i64)
                     .collect();
-                if unique_angles.len() < total.min(32) {
-                    let offset = ((ring_level % 2) as f64) * (180.0 / total as f64);
-                    for (idx, monad) in monads.iter_mut().enumerate() {
+                let should_redistribute_angles = unique_angles.len() < total.min(32);
+                let offset = ((ring_level % 2) as f64) * (180.0 / total as f64);
+
+                for (idx, monad) in monads.iter_mut().enumerate() {
+                    if should_redistribute_angles {
                         monad.coord.theta = ((360.0 / total as f64) * (idx as f64) + offset) % 360.0;
+                    }
+                    if band_width > 0.0 {
+                        let r_offset = crate::geometry::polar_coordinate::compute_jittered_radius_offset(idx, band_width);
+                        monad.coord.r = base_ring_radius + r_offset;
+                    } else {
+                        monad.coord.r = base_ring_radius;
                     }
                 }
             }
@@ -377,7 +393,36 @@ mod tests {
         }
 
         let mut constellations: Vec<ConstellationDto> = rings_map.into_iter()
-            .map(|(ring_level, monads)| ConstellationDto { ring_level, monads })
+            .map(|(ring_level, mut monads)| {
+                let total = monads.len();
+                if total > 0 {
+                    let ring_gap = 70.0;
+                    let base_ring_radius = 50.0 + ((ring_level as f64) - 1.0) * ring_gap;
+                    let band_width = crate::geometry::polar_coordinate::compute_adaptive_band_width(
+                        base_ring_radius,
+                        ring_gap,
+                        total,
+                    );
+                    let unique_angles: std::collections::HashSet<i64> = monads.iter()
+                        .map(|m| m.coord.theta.round() as i64)
+                        .collect();
+                    let should_redistribute_angles = unique_angles.len() < total.min(32);
+                    let offset = ((ring_level % 2) as f64) * (180.0 / total as f64);
+
+                    for (idx, monad) in monads.iter_mut().enumerate() {
+                        if should_redistribute_angles {
+                            monad.coord.theta = ((360.0 / total as f64) * (idx as f64) + offset) % 360.0;
+                        }
+                        if band_width > 0.0 {
+                            let r_offset = crate::geometry::polar_coordinate::compute_jittered_radius_offset(idx, band_width);
+                            monad.coord.r = base_ring_radius + r_offset;
+                        } else {
+                            monad.coord.r = base_ring_radius;
+                        }
+                    }
+                }
+                ConstellationDto { ring_level, monads }
+            })
             .collect();
         constellations.sort_by_key(|c| c.ring_level);
 
