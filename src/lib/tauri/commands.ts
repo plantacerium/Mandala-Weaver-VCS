@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { MandalaState, Monad, EdgeDto } from '../../types/ontology';
+import type { MandalaState, Monad, EdgeDto, DistilledArtifact } from '../../types/ontology';
 
 import { isTauri } from './isTauri';
 
@@ -171,4 +171,45 @@ export async function getMonadsPaginated(
         pageSize,
         ringFilter: ringFilter ?? null,
     });
+}
+
+/**
+ * Executes a spatial distillation using a YAML recipe (Weaver Espacial).
+ * Traverses the tripartite graph, resolves contracts, and injects bridge monads when needed.
+ */
+export async function distillSpatialRecipe(recipeYaml: string): Promise<DistilledArtifact> {
+    if (isTauri()) {
+        return await invoke<DistilledArtifact>('distill_spatial_recipe', { recipeYaml });
+    }
+    return {
+        recipe_name: 'browser_mock',
+        assembled_source: '// Spatial Distillation Mock (Browser Mode)\n// Demonstrating Weaver Espacial with SO(2) continuous polar guidance\nfn mock_spatial_distillation() {\n    println!("Spatial Weaver Active");\n}',
+        traces: [],
+        bridge_traces: [],
+    };
+}
+
+/**
+ * Quick spatial distillation using angular direction and max ring from UI controls.
+ */
+export async function distillSpatialQuick(
+    name: string,
+    targetAngleDeg: number,
+    maxRing: number,
+    seeds: string[]
+): Promise<DistilledArtifact> {
+    if (isTauri()) {
+        return await invoke<DistilledArtifact>('distill_spatial_quick', {
+            name,
+            targetAngleDeg,
+            maxRing,
+            seeds,
+        });
+    }
+    return {
+        recipe_name: name,
+        assembled_source: `// Quick Spatial Distillation for angle ${targetAngleDeg.toFixed(1)}° (Max Ring ${maxRing})\n// Seeds: ${seeds.join(', ')}\nfn main() {}`,
+        traces: [],
+        bridge_traces: [],
+    };
 }

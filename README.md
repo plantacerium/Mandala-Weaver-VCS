@@ -5,9 +5,13 @@ Mandala Weaver is the exact execution of the Golden Thread Engine instantiated i
 
 This topology enables non-linear code orchestration: the Architect selects precise spatial coordinates across various rings and vectors, weaving them into a harmonious, executable reality. The result is the **Distillation** of a unique Source—an infinite spiral of innovation where code expands outward with mathematical purity and structural harmony.
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-UI-V3.png)
-![Mandala Weaver VCS  CLI](public/assets/Mandala-Weaver-VCS-UI-V4.png)
-![Mandala Weaver VCS  CLI](public/assets/Mandala-Weaver-VCS-UI-V5.png)
+## Main UI
+
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-44.JPG)
+
+## Projects UI
+
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-44.JPG)
 ---
 
 ## Logo
@@ -53,12 +57,40 @@ Mandala Weaver VCS fundamenta el desarrollo, navegación y síntesis del softwar
 - **Navegación Visual Fractal:** Interfaz gráfica interactiva con aceleración por hardware (Tauri + React + D3.js) con respiración semántica (macro-orquestación de galaxias de código y micro-inmersión en el AST de cada nodo).
 - **Control Total por Consola:** Suite completa de comandos de terminal (`weave`) e interfaz interactiva TUI para flujos de trabajo ágiles en entornos de servidor y consola.
 
+### 9. Hasher Merkle Canónico & Doble Dominio Ontológico (`contract_hash` e `implementation_hash`)
+- **Invarianza de Formato y Comentarios:** El árbol de sintaxis de `ast-grep` se normaliza ignorando trivia, saltos de línea y comentarios, garantizando que dos códigos con distinta estética generen exactamente el mismo `implementation_hash`.
+- **Invarianza de Nombres de Parámetro en Interfaz:** En Rust y lenguajes tipados, `fn procesar(x: f64) -> bool` y `fn procesar(valor: f64) -> bool` comparten el mismo contrato binario. El sistema hashea exclusivamente tipos y orden, otorgándoles un `contract_hash` idéntico y permitiendo su intercambio transparente en el anillo.
+- **Detección Automática de Puertos de Salida:** Extracción en tiempo real de todas las llamadas salientes (`outbound_calls`) en el cuerpo AST, discriminando intrínsecos del lenguaje (`Ok`, `Err`, `Some`).
+
+### 10. Grafo Tripartito Ontológico (`monad` — `contract` — `port`) y Geometría Continua en $SO(2)$
+- **Direccionamiento por Contenido Puro en SurrealDB:** En lugar de documentos planos, el sistema modela un grafo tripartito:
+  $$\text{monad} \xrightarrow{\text{implements}} \text{contract} \xrightarrow{\text{exposes\_port}} \text{port} \xleftarrow{\text{requires\_port}} \text{monad}$$
+- **Espacio Polar Continuo en el Grupo de Rotación $SO(2)$:** Representación angular mediante `nalgebra::UnitComplex<f64>`, eliminando la discontinuidad artificial en $0 \leftrightarrow 2\pi$ y el gimbal lock modular al calcular distancias geodésicas y vecindades semánticas.
+
+### 11. Weaver Espacial con Mónadas Puente Automáticas (`@mandala-bridge`)
+- **Resolución Automática de Colisión de Contratos:** Cuando un invocador requiere un contrato histórico pero el proveedor evolucionó a una firma más avanzada, SurrealDB localiza un adaptador mediante la relación `adapts_contract`.
+- **Reescritor Higiénico de AST (`AstSynthesizer`):** Genera un alias determinista (`__bridge_<hash8>`) y reescribe exclusivamente los nodos `call_expression` del invocador sin colisiones de símbolos en el archivo compilado.
+- **Ordenación Topológica Determinista:** Algoritmo de Componentes Fuertemente Conexas de Tarjan (`tarjan_scc`) que garantiza emisión determinista de dependencias (`Proveedor -> Puente -> Invocador`) con encabezados de auditoría `@mandala-bridge`.
+
+### 12. Split View Zen (70% Mandala | 30% Inspector) con Ocultación Dinámica
+- **Modo Dividido Ergonómico:** Al seleccionar una mónada, el Mandala se ajusta al 70% de la pantalla y el 30% derecho se convierte en un visor de código Zen a altura completa (`100% vertical`) con canal de números de línea (`gutter`).
+- **Alternancia y Pantalla Completa:** Botón `▶ Ocultar Panel` para devolver el Mandala al 100% de la pantalla con una píldora flotante minimalista (`◀ Desplegar Mónada`), y botón `⤢ Zen` para expandir el código al 75% cuando se requiere concentración absoluta.
+
 ---
 
 ## Core Concepts
 
 **The Golden Thread of Code**
 - **Monads (Pure Logic Units):** Mandala Weaver isolates and versions atomic logic (functions, structs, traits) using Abstract Syntax Tree analysis ([`ast-grep`](https://ast-grep.github.io/)). It captures the absolute essence of the code by filtering out formatting and whitespace, ensuring semantic purity.
+- **Canonical Dual Domain Hashing:** Identity is separated into two cryptographic domains:
+  - **`contract_hash`:** The interface signature (name, generic constraints, parameter types, and return type), ignoring local parameter identifiers. Two functions with different variable names share the same binary contract and are 100% interchangeable in the ring.
+  - **`implementation_hash`:** The canonical normalized AST body (ignoring whitespace and comments). Ensures strict functional determinism.
+- **The Tripartite Graph (`monad` — `contract` — `port`):** In SurrealDB, code is modeled as an ontological tripartite graph:
+  - `monad:<implementation_hash>`: Physical source code node with polar coordinates.
+  - `contract:<contract_hash>`: Immutable interface definition and canonical signature.
+  - `port:<symbol_name>`: Nominal anchor symbol called by other AST bodies.
+- **Continuous $SO(2)$ Polar Coordinates:** Spatial positioning uses `nalgebra::UnitComplex<f64>` for the angular vector and a discrete `RingLevel`. Operations on rotation vectors avoid floating-point modulus pitfalls and gimbal lock at the $0 \leftrightarrow 2\pi$ boundary.
+- **Automatic Bridge Monads (`@mandala-bridge`):** When caller contracts and provider contracts evolve at different speeds, the Spatial Weaver dynamically discovers and injects adapter monads via `adapts_contract`. The hygienic AST rewriter renames the adapter to a deterministic alias (`__bridge_<hash8>`) and patches call sites without naming collisions.
 - **Chromatic Synesthesia:** Every Monad possesses a unique visual frequency. Its color is a direct projection of its `blake3` semantic hash mapped to the HSL color space. The visual cortex instantly validates the truth of the logic: if the atomic logic mutates, the hue shifts; if the structure remains invariant, the color is immutable.
 - **Vectors and Rings (Spatial Topology):** Software is organized as living geometry. Logical domains (e.g., UI, Network, Core Logic, Data) are assigned specific Angles ($\theta$), while temporal iterations and evolutionary stages expand outward as Radii ($r$).
 - **Synarchic Weaving:** Features and logical units coexist in geometric space. Collaboration is a harmonious weaving of nodes drawn together by gravity and resonance. The architecture allows simultaneous evolution of components in complete synarchy, ensuring the network operates without interference.
@@ -175,6 +207,53 @@ output:
 - **Variable Substitution:** Dynamic interpolation of `{{variable}}` placeholders at compilation time.
 - **Interactive UI Editor:** Integrated [`TemplateEditor.tsx`](./src/components/panels/TemplateEditor.tsx) in the desktop interface for creating and testing templates.
 
+### Spatial Distillation Recipes (Weaver Espacial SO(2))
+
+In addition to vector-based templates, Mandala Weaver features the **Spatial Weaver (`Weaver`)**: an ontological, polar-guided linker. Rather than resolving code branches through linear git commit trees, it takes a spatial recipe with an angular affinity vector ($\theta_{\text{target}}$) and a maximum ring stability bound (`max_ring`), traversing SurrealDB's tripartite graph to assemble a single deterministic source artifact.
+
+#### Sample Spatial Recipe: `distill.yaml`
+
+```yaml
+name: "motor_calculo_espacial"
+# Master angle in radians (e.g. 0.785398 rad = 45° -> SIMD / Math optimization sector)
+target_angle_rad: 0.785398
+# Maximum allowed ring (0 = Immutable Core, 1 = Stable, 2 = Experimental)
+max_ring: 1
+# Angular selection policy:
+# - "GlobalTarget": measures proximity relative to target_angle_rad
+# - "CallerLocal": measures proximity relative to the caller Monad's angle
+angular_policy: "GlobalTarget"
+# Penalty for straying from Ring 0 (in equivalent radians per ring level)
+ring_penalty_rad: 0.05
+
+# Global header injected at the top of the distilled artifact
+prelude: |
+  //! Artefacto destilado automáticamente por Mandala Weaver VCS
+  use std::f64::consts::PI;
+
+# Seed entry points from which the dependency graph is woven
+seeds:
+  - symbol: "calcular_tension"
+
+# Explicit pins (symbol_name -> implementation_hash) bypassing ring filters
+pins:
+  normalizar_experimental: "8f3a9c1d4e..."
+
+# Whitelisted external symbols (std / crates) that do not require internal monad resolution
+external_symbols:
+  - "sin"
+  - "cos"
+  - "println"
+```
+
+#### Automatic Bridge Monad Injection (`@mandala-bridge`)
+
+When a caller requires an older contract (`Contract_Expected`) but the angularly selected provider has evolved to a new contract (`Contract_Actual`), the Spatial Weaver automatically:
+1. **Discovers Adapter in Graph:** Queries SurrealDB via `adapts_contract` to locate a registered bridge monad.
+2. **Generates Hygienic Alias:** Renames the bridge declaration to `symbol__bridge_<hash8>` using byte offsets from `ast-grep`.
+3. **Redirects Call Sites:** Patches only the caller's `call_expression` nodes, leaving string literals, comments, and the rest of the AST untouched.
+4. **Tarjan Topological Sorting:** Orders the output graph (`Provider -> Bridge -> Caller`) with `@mandala-bridge` audit headers detailing lossy/lossless fidelity and contract hashes.
+
 ---
 
 ## Commands of Cooperation (CLI Suite)
@@ -197,6 +276,7 @@ Mandala Weaver provides the `weave` command-line tool for terminal-based workflo
 
 ### Spatial Navigation & Assembly
 - **`weave distill [coordinates] [-r <ring>] [-v <vector>] [-t <template.yaml>] [-o <output_path>]`**: Compiles an executable source by harvesting monads across rings and vectors.
+- **`weave innerknow [path] [-o <output>]`**: Runs canonical ontological analysis and deep unweaving (*shattering*). Extracts immutable contracts, computes port in/out degrees, generates reproducible distillation manifests, and maps cross-module topological dependencies.
 - **`weave spectrum <monad>`**: Analyzes chromatic shift between rings, displaying semantic variance based on HSL signatures.
 - **`weave lineage [-m <monad>] [-l <limit>]`**: Queries the embedded Akashic Record to trace the evolutionary lineage of a Monad or Vector.
 - **`weave echo <ring_id> [-m <monad>]`**: Retrieves the semantic resonance of a Monad from an inner Ring and weaves it into the current Ring.
@@ -214,9 +294,9 @@ Mandala Weaver provides the `weave` command-line tool for terminal-based workflo
 
 The Loom is built on three high-performance engineering pillars:
 
-- **The Engine (Backend):** Rust + [`nalgebra`](https://crates.io/crates/nalgebra) (Orbital and spatial math) + [`ast-grep`](https://ast-grep.github.io/) (Semantic AST parsing) + [`tokio`](https://tokio.rs/) (Async runtime) + [`blake3`](https://crates.io/crates/blake3) (Cryptographic hashing).
-- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Operates with local persistent disk storage in `.mandala/db/` via SurrealKV ([`FileBridge`](./src-tauri/src/persistence/file_bridge.rs)) or in-memory mode for unit tests. Includes composite indexing, batch insertions (`insert_batch`), and paginated retrieval (`get_monads_paginated`).
-- **The Canvas (UI):** Tauri 2.0 + Astro + React + D3.js (Hardware-accelerated radial visualization). Features a neo-metric dark glassmorphism aesthetic with glowing monads, polar grids, dynamic stats panels, and an integrated real-time code inspector.
+- **The Engine (Backend):** Rust + [`nalgebra`](https://crates.io/crates/nalgebra) (Orbital and spatial math in the continuous $SO(2)$ Lie group) + [`ast-grep`](https://ast-grep.github.io/) (Canonical AST parsing & hygienic rewriting) + [`petgraph`](https://crates.io/crates/petgraph) (Tarjan Strongly Connected Components topological ordering) + [`tokio`](https://tokio.rs/) (Async runtime) + [`blake3`](https://crates.io/crates/blake3) (Dual-domain cryptographic Merkle tree hashing).
+- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Pure tripartite graph modeling (`monad` — `contract` — `port`) with continuous $SO(2)$ polar coordinates, `requires_contract`, `adapts_contract` bridge relations, composite indexing, and batch insertions.
+- **The Canvas (UI):** Tauri 2.0 + Astro + React + D3.js. Features a Zen Split View (70% Mandala | 30% Inspector) with line numbers, instant full-screen collapse/expand, interactive spatial distillation dials ($0 \dots 2\pi$), bridge trace alerts, and neo-metric dark glassmorphism.
 
 ---
 
@@ -250,6 +330,7 @@ Mandala-Weaver-VCS/
 │       │
 │       ├── geometry/                      # Topological Engine (Polar Coordinates)
 │       │   ├── mod.rs                     # Module exports
+│       │   ├── polar_coordinate.rs        # Continuous SO(2) Lie group coordinates & geodesic distance
 │       │   ├── polar_space.rs             # Polar coordinates (r, theta) calculation
 │       │   ├── transform.rs               # Polar <-> Cartesian conversion (nalgebra)
 │       │   ├── collision.rs               # Overlap detection & orbital shifting
@@ -258,6 +339,8 @@ Mandala-Weaver-VCS/
 │       │
 │       ├── ontology/                      # System Entities & Domain Models
 │       │   ├── mod.rs                     # Module exports
+│       │   ├── canonical_hasher.rs        # Canonical Merkle Tree Hasher (contract vs impl)
+│       │   ├── extractor.rs               # Unified semantic monad extractor
 │       │   ├── monad.rs                   # Pure functional unit (AST-based)
 │       │   ├── bindu.rs                   # Immutable project center (Point Zero)
 │       │   ├── constellation.rs           # Group of harmonic monads in a ring
@@ -265,6 +348,9 @@ Mandala-Weaver-VCS/
 │       │
 │       ├── weaver/                        # The Loom (Expansion & Assembly Engine)
 │       │   ├── mod.rs                     # Radial expansion (commit) logic
+│       │   ├── spatial_weaver.rs          # Polar-guided Weaver & Bridge injection
+│       │   ├── rewriter.rs                # Hygienic AST Synthesizer (ast-grep byte patching)
+│       │   ├── unweave.rs                 # UnweaveEngine for project shattering (innerknow)
 │       │   ├── ast_extractor.rs           # Polyglot AST extraction (ast-grep)
 │       │   ├── threader.rs                # Evolutionary graph lineage queries
 │       │   ├── resolver.rs                # Delta detection between rings
@@ -283,6 +369,7 @@ Mandala-Weaver-VCS/
 │       │
 │       ├── persistence/                   # The Akashic Record (SurrealDB Engine)
 │       │   ├── mod.rs                     # Module exports
+│       │   ├── store.rs                   # Tripartite Graph Store (monad-contract-port)
 │       │   ├── schemas.rs                 # SurrealQL schemas & composite indexes
 │       │   ├── surreal_bridge.rs          # Embedded SurrealDB bridge & queries
 │       │   ├── file_bridge.rs             # Persistent storage (.mandala/db/ SurrealKV)
@@ -396,6 +483,8 @@ The Tauri backend provides comprehensive IPC commands accessible from the fronte
 | **YAML Templates** | [`list_templates`](./src-tauri/src/interface/template_api.rs) | Lists all available YAML templates in `.mandala/templates` & defaults | `Promise<string>` |
 | | [`distill_from_template`](./src-tauri/src/interface/template_api.rs) | Executes distillation based on a template file path | `Promise<string>` |
 | | [`distill_from_template_content`](./src-tauri/src/interface/template_api.rs) | Executes distillation directly from raw YAML content | `Promise<string>` |
+| | [`distill_spatial_recipe`](./src-tauri/src/interface/template_api.rs) | Executes spatial distillation from a YAML recipe using the tripartite graph and automatic bridge monads | `Promise<DistilledArtifact>` |
+| | [`distill_spatial_quick`](./src-tauri/src/interface/template_api.rs) | Quick spatial crystallization using target angle $\theta$ (deg) and max ring from UI dials | `Promise<DistilledArtifact>` |
 | | [`validate_template`](./src-tauri/src/interface/template_api.rs) | Validates a template file on disk | `Promise<string>` |
 | | [`validate_template_content`](./src-tauri/src/interface/template_api.rs) | Validates raw YAML template syntax in memory | `Promise<string>` |
 | | [`create_template`](./src-tauri/src/interface/template_api.rs) | Saves a new YAML template to the project template library | `Promise<string>` |
@@ -410,74 +499,139 @@ The Tauri backend provides comprehensive IPC commands accessible from the fronte
 | | [`export_mandala_archive`](./src-tauri/src/interface/collaboration_api.rs) | Exports a portable compressed archive of the project mandala | `Promise<string>` |
 | | [`import_mandala_archive`](./src-tauri/src/interface/collaboration_api.rs) | Imports a project archive into local storage | `Promise<string>` |
 | | [`sync_project`](./src-tauri/src/interface/collaboration_api.rs) | Synchronizes project with remote synarchy peers | `Promise<string>` |
-| **CLI Proxies** | `cli_bindu`, `cli_telemetry`, `cli_status`, `cli_crystallize`, `cli_distill`, `cli_lineage`, `cli_spectrum`, `cli_inspect`, `cli_echo`, `cli_vector`, `cli_focus`, `cli_dormant`, `cli_synthesize`, `cli_absorb`, `cli_emanate`, `cli_seed` | Direct terminal execution proxies for the integrated GUI terminal panel | `Promise<string>` |
+| **CLI Proxies** | `cli_bindu`, `cli_telemetry`, `cli_status`, `cli_crystallize`, `cli_distill`, `cli_lineage`, `cli_spectrum`, `cli_inspect`, `cli_echo`, `cli_vector`, `cli_focus`, `cli_dormant`, `cli_synthesize`, `cli_absorb`, `cli_emanate`, `cli_seed`, `cli_innerknow` | Direct terminal execution proxies for the integrated GUI terminal panel | `Promise<string>` |
 
 ---
 
 ## Data Flow Architecture
 
+### 🌀 End-to-End System Flow
+
+```mermaid
+flowchart TD
+    subgraph UI_TIER["Presentation & Interaction Tier"]
+        SplitUI["Split View Zen\n(70% Radial Canvas | 30% Zen Inspector Dock)"]
+        CLI["Terminal CLI Suite\n(weave innerknow / distill / status)"]
+        MCPClient["AI Coding Agents\n(Claude, Cursor, Antigravity via stdio MCP)"]
+    end
+
+    subgraph INTERFACE_TIER["Interface & Protocol Tier"]
+        TauriIPC["Tauri 2.0 Native IPC\n(30+ Commands & Event Streams)"]
+        MCPServer["MCP Server\n(10 Semantic Tools, Resources & Prompts)"]
+    end
+
+    subgraph CORE_TIER["Mandala Ontological Core"]
+        direction TB
+        AST["Canonical Merkle Hasher (ast-grep C-CST)\n• contract_hash (type signature invariant)\n• implementation_hash (whitespace/trivia invariant)\n• Outbound call extraction (std-safe)"]
+        Geom["Continuous SO(2) Lie Group Space (nalgebra)\n• PolarCoordinate (RingLevel, radius, sector)\n• Geodesic distance d_SO(2) without gimbal lock"]
+        Weaver["Spatial Weaver & Compiler (spatial_weaver.rs)\n• Angular affinity selection (target_angle_rad)\n• Tarjan SCC topological sorting (petgraph)\n• AstSynthesizer: hygienic AST rewriter\n• Automatic Bridge Monad Injection (@mandala-bridge)"]
+    end
+
+    subgraph DB_TIER["The Akashic Record (Persistence Tier - Embedded SurrealDB 3.0)"]
+        direction TB
+        subgraph TRIPARTITE["Tripartite Ontological Graph"]
+            M["monad:impl_hash\n(Source code & SO(2) Polar Coord)"]
+            C["contract:contract_hash\n(Canonical Signature Interface)"]
+            P["port:symbol_name\n(Nominal Entry / Invocation Target)"]
+            M -->|"implements"| C
+            C -->|"exposes_port"| P
+            M -->|"requires_port"| P
+            M -.->|"requires_contract"| C
+            C -.->|"adapts_contract (Bridge Monad)"| C
+        end
+        subgraph ENGINES["Storage Engines"]
+            SKV["SurrealKV: Persistent Disk (.mandala/db/)"]
+            MEM["In-Memory: Transient ultra-fast engine (surrealdb://mem)"]
+        end
+    end
+
+    SplitUI --> TauriIPC
+    CLI --> TauriIPC
+    MCPClient --> MCPServer
+
+    TauriIPC --> AST
+    TauriIPC --> Geom
+    TauriIPC --> Weaver
+    MCPServer --> Weaver
+    MCPServer --> DB_TIER
+
+    AST --> M
+    AST --> C
+    AST --> P
+    Geom --> M
+    Weaver --> TRIPARTITE
+    TRIPARTITE --> Weaver
+    Weaver --> Output["Distilled Executable Source (distilled_*.rs)"]
 ```
-+-----------------------------------------------------------------------------------------+
-|                                    ARCHITECT / USER                                     |
-|    +--------------------+    +--------------------+    +---------------------------+    |
-|    | Visual Canvas (D3) |    | Terminal CLI / TUI |    | AI Agent (MCP via stdio)  |    |
-|    +---------+----------+    +---------+----------+    +-------------+-------------+    |
-+--------------|-------------------------|-----------------------------|------------------+
-               |                         |                             |
-               V                         V                             V
-+-----------------------------------------------------------------------------------------+
-|                                 APPLICATION INTERFACE                                   |
-|                                                                                         |
-|  +-----------------------------------+        +--------------------------------------+  |
-|  |     Tauri 2.0 IPC Layer           |        |      Model Context Protocol (MCP)    |  |
-|  |  (30+ Commands & Event Streams)   |        |   (10 Tools, Resources & Prompts)    |  |
-|  +-----------------+-----------------+        +------------------+-------------------+  |
-+--------------------|---------------------------------------------|----------------------+
-                     |                                             |
-                     +----------------------+----------------------+
-                                            |
-                                            V
-+-----------------------------------------------------------------------------------------+
-|                                  MANDALA CORE ENGINE                                    |
-|                                                                                         |
-|  +-----------------------------------+        +--------------------------------------+  |
-|  |     Geometry & Polar Space        |        |      Weaver & AST Parser             |  |
-|  |  - PolarCoord (r, theta)          |        |  - ast-grep Polyglot Parser          |  |
-|  |  - Collision resolution           |        |  - blake3 Semantic Hashing           |  |
-|  |  - nalgebra orbital projection    |        |  - Delta Resolver & Source Compiler  |  |
-|  +-----------------+-----------------+        +------------------+-------------------+  |
-|                    |                                             |                      |
-|                    +----------------------+----------------------+                      |
-|                                           |                                             |
-|  +----------------------------------------+------------------------------------------+  |
-|  |     Declarative Distillation Engine (YAML Manifests)                              |  |
-|  |  - Range/Exact Ring Selectors  - Semantic Adapters  - Variable Substitution        |  |
-|  +----------------------------------------+------------------------------------------+  |
-+-------------------------------------------|---------------------------------------------+
-                                            |
-                                            V
-+-----------------------------------------------------------------------------------------+
-|                         THE AKASHIC RECORD (Persistence Layer)                          |
-|                                                                                         |
-|  +-----------------------------------------------------------------------------------+  |
-|  |     Embedded SurrealDB 3.0 (Graph & Relational Engine)                            |  |
-|  |                                                                                   |  |
-|  |  Storage Modes:                                                                   |  |
-|  |  • Persistent: .mandala/db/ (SurrealKV Engine via FileBridge)                     |  |
-|  |  • Ephemeral:  surrealdb://mem (In-Memory for unit tests)                         |  |
-|  |                                                                                   |  |
-|  |  Tables & Lineage:                                                                |  |
-|  |  • monad (id, name, content, ring, coord {r, theta}, kind, semantic_hash)        |  |
-|  |  • evolves_to (Graph Relation: monad -> monad)                                    |  |
-|  |  • bindu (project_name, timestamp)                                                |  |
-|  |  • operation_log (op_type, monad_id, timestamp, payload)                          |  |
-|  |                                                                                   |  |
-|  |  Optimization & Performance:                                                      |  |
-|  |  • Composite Indexes: (ring, theta), (name, ring), (semantic_hash)                |  |
-|  |  • High-Throughput Batch Ingestion: insert_batch()                                |  |
-|  |  • Scalable Pagination: get_monads_paginated()                                     |  |
-|  +-----------------------------------------------------------------------------------+  |
-+-----------------------------------------------------------------------------------------+
+
+### 🏛️ Detailed Architectural Matrix
+
+```text
++---------------------------------------------------------------------------------------------------+
+|                                      ARCHITECT / USER TIERS                                       |
+|  +--------------------------------+  +-------------------------------+  +----------------------+  |
+|  |   Split View 70% | 30% Zen     |  |      Terminal CLI / TUI       |  |  AI Agents via MCP   |  |
+|  | (D3 Radial Canvas + Inspector) |  | (weave innerknow/distill/...) |  | (stdio JSON-RPC)     |  |
+|  +---------------+----------------+  +---------------+---------------+  +----------+-----------+  |
++------------------|-----------------------------------|-----------------------------|--------------+
+                   |                                   |                             |
+                   V                                   V                             V
++---------------------------------------------------------------------------------------------------+
+|                                       APPLICATION INTERFACE                                       |
+|  +----------------------------------------------------+  +-------------------------------------+  |
+|  |             Tauri 2.0 Native IPC Layer             |  |     Model Context Protocol (MCP)    |  |
+|  |     (30+ Commands, Event Streams & FileBridge)     |  |   (10 Tools, Resources & Prompts)   |  |
+|  +-------------------------+--------------------------+  +------------------+------------------+  |
++----------------------------|------------------------------------------------|---------------------+
+                             |                                                |
+                             +-----------------------+------------------------+
+                                                     |
+                                                     V
++---------------------------------------------------------------------------------------------------+
+|                                   MANDALA ONTOLOGICAL ENGINE                                      |
+|                                                                                                   |
+|  +------------------------------------------+  +-----------------------------------------------+  |
+|  |     AST Canonical Merkle Tree Hasher     |  |      Continuous SO(2) Polar Space             |  |
+|  |  (ast-grep Tree-sitter Polyglot Parser)  |  |   (nalgebra::UnitComplex Lie Group)           |  |
+|  |  • contract_hash (Signature Invariant)   |  |  • PolarCoordinate (ring, radius, sector)     |  |
+|  |  • implementation_hash (Format Free)     |  |  • Geodesic distance d_SO(2) (Zero Gimbal)    |  |
+|  |  • Outbound call extraction (std-safe)   |  |  • Discrete RingLevels (Core/Stable/Mut)      |  |
+|  +--------------------+---------------------+  +-----------------------+-----------------------+  |
+|                       |                                                |                          |
+|                       +-----------------------+------------------------+                          |
+|                                               |                                                   |
+|  +--------------------------------------------V------------------------------------------------+  |
+|  |      Spatial Weaver & Deterministic Compiler (spatial_weaver.rs)                            |  |
+|  |  • Spatial Affinity Resolution (target_angle_rad & ring_penalty)                            |  |
+|  |  • Tarjan SCC Topological Dependency Sorter (petgraph)                                      |  |
+|  |  • Automatic Bridge Monad Injection (@mandala-bridge) via adapts_contract                   |  |
+|  |  • AstSynthesizer: Hygienic AST Rewriter & Deterministic Call Site Renamer                  |  |
+|  +--------------------------------------------+------------------------------------------------+  |
++-----------------------------------------------|---------------------------------------------------+
+                                                |
+                                                V
++---------------------------------------------------------------------------------------------------+
+|                              THE AKASHIC RECORD (Persistence Layer)                               |
+|                                                                                                   |
+|  +---------------------------------------------------------------------------------------------+  |
+|  |      Embedded SurrealDB 3.0 (Content-Addressable Tripartite Ontological Graph)              |  |
+|  |                                                                                             |  |
+|  |               +------------------+      implements       +--------------------+             |  |
+|  |               | monad:<impl_hash>| --------------------> |contract:<cont_hash>|             |  |
+|  |               +--------+---------+                       +---------+----------+             |  |
+|  |                        |                                           |                        |  |
+|  |                        | requires_port               exposes_port  |                        |  |
+|  |                        V                                           V                        |  |
+|  |                     +-------------------------------------------------+                     |  |
+|  |                     |                port:<symbol_name>               |                     |  |
+|  |                     +-------------------------------------------------+                     |  |
+|  |                                                                                             |  |
+|  |  Bridges:   contract:expected --[ adapts_contract (is_lossy, bridge_hash) ]--> contract:real |  |
+|  |  Lineage:   monad --[ evolves_to ]--> monad | bindu (project_root, timestamp)               |  |
+|  |  Storage:   • Persistent: .mandala/db/ (SurrealKV Engine)                                   |  |
+|  |             • Ephemeral:  surrealdb://mem (In-Memory for unit tests)                         |  |
+|  +---------------------------------------------------------------------------------------------+  |
++---------------------------------------------------------------------------------------------------+
 ```
 
 ---

@@ -4,6 +4,12 @@ export type MonadKind = 'Function' | 'Struct' | 'Enum' | 'Impl' | 'Trait' | 'Mod
 
 export type DeltaType = 'Added' | 'Modified' | 'Renamed' | 'Deleted' | 'Unchanged';
 
+export interface SemanticIdentity {
+    contract_hash: string;
+    implementation_hash: string;
+    canonical_signature: string;
+}
+
 export interface Monad {
     id: string;              // Hash semántico
     coord: PolarCoord;       // Ubicación radial
@@ -15,6 +21,7 @@ export interface Monad {
     line_start: number;
     line_end: number;
     language: string;
+    identity?: SemanticIdentity;
 }
 
 export interface EdgeDto {
@@ -31,4 +38,33 @@ export interface MandalaState {
     bindu_name: string;
     constellations: Constellation[];
     edges: EdgeDto[];
+    total_monads?: number;
+    max_ring?: number;
+}
+
+export interface WovenNodeTrace {
+    symbol_name: string;
+    implementation_hash: string;
+    contract_hash: string;
+    selected_ring: number;
+    selected_angle_rad: number;
+    angular_distance_rad: number;
+    alternatives_considered: number;
+}
+
+export interface WovenBridgeTrace {
+    caller_symbol: string;
+    target_symbol: string;
+    bridge_alias: string;
+    bridge_impl_hash: string;
+    from_expected_contract: string;
+    to_actual_contract: string;
+    is_lossy: boolean;
+}
+
+export interface DistilledArtifact {
+    recipe_name: string;
+    assembled_source: string;
+    traces: WovenNodeTrace[];
+    bridge_traces: WovenBridgeTrace[];
 }

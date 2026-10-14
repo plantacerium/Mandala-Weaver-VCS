@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { isTauri } from '../../lib/tauri/isTauri';
+import { distillSpatialRecipe } from '../../lib/tauri/commands';
 
 interface TemplateInfo {
   name: string;
@@ -25,7 +26,7 @@ interface TemplateResult {
 
 export const TemplateEditor: React.FC = () => {
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('minimal');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('spatial-simd');
   const [yamlContent, setYamlContent] = useState<string>('');
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,17 +38,23 @@ export const TemplateEditor: React.FC = () => {
   }, []);
 
   const loadTemplates = async () => {
+    const spatialPreset: TemplateInfo = {
+      name: 'spatial-simd',
+      filename: 'distill.yaml',
+      content: `name: "motor_calculo_espacial"\ntarget_angle_rad: 0.785398 # 45 grados (Sector SIMD/Math)\nmax_ring: 1\nangular_policy: "GlobalTarget"\nring_penalty_rad: 0.05\nprelude: |\n  //! Artefacto destilado espacialmente por Mandala Weaver VCS\nseeds:\n  - symbol: "main"\nexternal_symbols:\n  - "println"`
+    };
+
     try {
       if (isTauri()) {
         const list = await invoke<TemplateInfo[]>('list_templates');
-        setTemplates(list);
-        if (list.length > 0) {
-          setSelectedTemplate(list[0].name);
-          setYamlContent(list[0].content);
-        }
+        const merged = [spatialPreset, ...list.filter(t => t.name !== 'spatial-simd')];
+        setTemplates(merged);
+        setSelectedTemplate(merged[0].name);
+        setYamlContent(merged[0].content);
       } else {
         // Fallback for browser mode
         const mock: TemplateInfo[] = [
+          spatialPreset,
           {
             name: 'minimal',
             filename: 'minimal.yaml',
@@ -60,7 +67,7 @@ export const TemplateEditor: React.FC = () => {
           }
         ];
         setTemplates(mock);
-        setSelectedTemplate('minimal');
+        setSelectedTemplate(mock[0].name);
         setYamlContent(mock[0].content);
       }
     } catch (err) {
@@ -105,7 +112,16 @@ export const TemplateEditor: React.FC = () => {
     setIsProcessing(true);
     setError(null);
     try {
-      if (isTauri()) {
+      if (yamlContent.includes('target_angle_rad') || yamlContent.includes('seeds:')) {
+        const artifact = await distillSpatialRecipe(yamlContent);
+        setDistillResult({
+          source: artifact.assembled_source,
+          monad_count: artifact.traces.length,
+          monad_names: artifact.traces.map(t => t.symbol_name),
+          rings_included: String(Math.max(0, ...artifact.traces.map(t => t.selected_ring))),
+          output_file: `${artifact.recipe_name || 'spatial'}.rs`,
+        });
+      } else if (isTauri()) {
         const res = await invoke<TemplateResult>('distill_from_template_content', {
           templateContent: yamlContent,
         });
