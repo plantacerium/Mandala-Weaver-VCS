@@ -3,7 +3,7 @@ use crate::language::Language;
 use serde::{Deserialize, Serialize};
 
 /// Represents the kind of code entity that a Monad encapsulates.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub enum MonadKind {
     Function,
     Struct,
@@ -13,6 +13,7 @@ pub enum MonadKind {
     Module,
     Constant,
     TypeAlias,
+    #[default]
     Unknown,
 }
 
@@ -50,7 +51,7 @@ pub enum DeltaType {
 /// The minimal functional unit — a logical code entity, not a text line.
 /// Each Monad is located at an exact coordinate on the circumference
 /// of a temporal ring in the Mandala.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Monad {
     pub id: String,              // Unique identifier (semantic hash)
     pub coord: PolarCoord,       // Position in radial space
@@ -64,6 +65,16 @@ pub struct Monad {
     pub language: String,        // Source language ("rust", "typescript", etc.)
     #[serde(default)]
     pub is_archived: bool,       // Soft delete flag for archival
+    #[serde(default)]
+    pub contract_hash: String,   // Hash of public interface (name, generics, param types, return type)
+    #[serde(default)]
+    pub implementation_hash: String, // Hash of normalized AST body without trivia
+    #[serde(default)]
+    pub canonical_signature: String, // Human-readable normalized signature
+    #[serde(default)]
+    pub outbound_calls: Vec<String>, // External symbols invoked by body
+    #[serde(default)]
+    pub identity: crate::ontology::canonical_hasher::SemanticIdentity,
 }
 
 impl Monad {
@@ -88,6 +99,11 @@ impl Monad {
             line_end: 0,
             language: "rust".to_string(),
             is_archived: false,
+            contract_hash: String::new(),
+            implementation_hash: String::new(),
+            canonical_signature: String::new(),
+            outbound_calls: Vec::new(),
+            identity: Default::default(),
         }
     }
 
@@ -117,6 +133,11 @@ impl Monad {
             line_end,
             language: language.to_string(),
             is_archived: false,
+            contract_hash: String::new(),
+            implementation_hash: String::new(),
+            canonical_signature: String::new(),
+            outbound_calls: Vec::new(),
+            identity: Default::default(),
         }
     }
 
@@ -125,6 +146,24 @@ impl Monad {
         self.semantic_hash != other.semantic_hash
     }
 
+    /// Checks if this monad has an identical contract and can be dropped-in cleanly.
+    pub fn is_drop_in_compatible(&self, other: &Monad) -> bool {
+        !self.contract_hash.is_empty() && self.contract_hash == other.contract_hash
+    }
+
+    /// Sets the canonical Merkle-AST semantic identity and outbound calls.
+    pub fn with_canonical_identity(
+        mut self,
+        identity: crate::ontology::canonical_hasher::SemanticIdentity,
+        outbound: Vec<String>,
+    ) -> Self {
+        self.contract_hash = identity.contract_hash.clone();
+        self.implementation_hash = identity.implementation_hash.clone();
+        self.canonical_signature = identity.canonical_signature.clone();
+        self.identity = identity;
+        self.outbound_calls = outbound;
+        self
+    }
     
     pub fn language_enum(&self) -> Language {
         Language::from_extension(&self.language)

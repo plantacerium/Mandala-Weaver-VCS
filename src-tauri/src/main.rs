@@ -60,6 +60,7 @@ use interface::cli_api::{
     cli_absorb,
     cli_emanate,
     cli_seed,
+    cli_innerknow,
 };
 use interface::synarchy_api::{
     get_projects,
@@ -78,6 +79,8 @@ use interface::template_api::{
     create_template,
     distill_and_write,
     list_templates,
+    distill_spatial_recipe,
+    distill_spatial_quick,
 };
 use tauri::Manager;
 use std::path::PathBuf;
@@ -215,6 +218,7 @@ fn main() {
             cli_absorb,
             cli_emanate,
             cli_seed,
+            cli_innerknow,
             get_projects,
             add_project,
             remove_project,
@@ -228,6 +232,8 @@ fn main() {
             create_template,
             distill_and_write,
             list_templates,
+            distill_spatial_recipe,
+            distill_spatial_quick,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

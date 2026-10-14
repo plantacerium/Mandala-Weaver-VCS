@@ -7,6 +7,14 @@ pub mod auto_imports;
 pub mod file_writer;
 pub mod contract;
 pub mod semantic_diff;
+pub mod unweave;
+pub mod spatial_weaver;
+pub mod rewriter;
+
+#[allow(unused_imports)]
+pub use spatial_weaver::*;
+#[allow(unused_imports)]
+pub use rewriter::*;
 
 use crate::persistence::surreal_bridge::{Db, get_ring, get_all_monads};
 use crate::weaver::ast_extractor::extract_raw_monads_lang;

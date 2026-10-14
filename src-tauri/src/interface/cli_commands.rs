@@ -92,6 +92,13 @@ pub enum Commands {
     Scan {
         path: Option<PathBuf>,
     },
+    /// Ontological self-knowledge: shatter monolith into atomic monads, centrality rings, and distill recipe
+    #[command(alias = "unweave", alias = "shatter", alias = "refract")]
+    Innerknow {
+        path: Option<PathBuf>,
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, Error)]
@@ -143,6 +150,7 @@ pub async fn run_cli() -> Result<(), CliError> {
         Commands::Audit => cmd_audit(json).await?,
         Commands::Mcp => crate::interface::mcp::run_mcp_server().await.map_err(|e| CliError::Database(e.to_string()))?,
         Commands::Scan { path } => cmd_scan(path, json).await?,
+        Commands::Innerknow { path, output } => cmd_innerknow(path, output, json).await?,
     }
 
     Ok(())
@@ -484,13 +492,55 @@ async fn cmd_distill(
     _coordinates: Option<String>,
     ring: Option<u32>,
     vector: Option<String>,
-    _template: Option<PathBuf>,
+    template: Option<PathBuf>,
     output: Option<PathBuf>,
     json: bool,
 ) -> Result<(), CliError> {
     println!("🔮 Distilling...");
     
     let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
+
+    // Verificar si se especificó una receta espacial YAML o si existe distill.yaml
+    let template_candidate = template.or_else(|| {
+        let p = PathBuf::from("distill.yaml");
+        if p.exists() && ring.is_none() && vector.is_none() {
+            Some(p)
+        } else {
+            None
+        }
+    });
+
+    if let Some(ref t_path) = template_candidate {
+        if t_path.exists() {
+            if let Ok(yaml_content) = std::fs::read_to_string(t_path) {
+                if let Ok(recipe) = serde_yml::from_str::<crate::weaver::DistillationRecipe>(&yaml_content) {
+                    let store = crate::persistence::MandalaStore::from_existing_db(db.clone());
+                    let weaver = crate::weaver::Weaver::new(&store);
+                    match weaver.distill(&recipe).await {
+                        Ok(artifact) => {
+                            if let Some(ref path) = output {
+                                std::fs::write(path, &artifact.assembled_source).map_err(CliError::Io)?;
+                                println!("✓ Spatial distilled artifact written to: {}", path.display());
+                            } else {
+                                println!("\n{}", artifact.assembled_source);
+                            }
+                            println!("✓ Spatially woven {} nodes for recipe '{}'", artifact.traces.len(), artifact.recipe_name);
+                            print_result(DistillOutput2 {
+                                source: if output.is_some() { "File".to_string() } else { "Stdout".to_string() },
+                                monad_count: artifact.traces.len(),
+                                ring_count: 1,
+                            }, json);
+                            return Ok(());
+                        }
+                        Err(e) => {
+                            eprintln!("⚠ Spatial distillation notice: {}", e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let selected: Vec<Monad> = if let Some(r) = ring {
@@ -709,15 +759,9 @@ async fn cmd_echo(ring_id: u32, monad: Option<String>, json: bool) -> Result<(),
                 r: target_ring as f64,
                 theta: source.coord.theta,
             },
-            content: source.content.clone(),
-            name: source.name.clone(),
             ring: target_ring,
-            kind: source.kind.clone(),
-            semantic_hash: source.semantic_hash.clone(),
-            line_start: source.line_start,
-            line_end: source.line_end,
-            language: source.language.clone(),
             is_archived: false,
+            ..(*source).clone()
         };
 
         insert_and_link(&db, &echoed_monad, Some(&source.id))
@@ -1049,3 +1093,51 @@ async fn cmd_scan(path: Option<PathBuf>, json: bool) -> Result<(), CliError> {
     }
     Ok(())
 }
+
+async fn cmd_innerknow(
+    path: Option<PathBuf>,
+    output: Option<PathBuf>,
+    json: bool,
+) -> Result<(), CliError> {
+    let target = path.unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let canonical = std::fs::canonicalize(&target).unwrap_or(target);
+
+    if !json {
+        println!("🔮 Invocando `innerknow` (autoconocimiento ontológico del código)...");
+        println!("   Descomponiendo el monolito en mónadas atómicas por gravedad y contratos.");
+        println!("   Objetivo: {}", canonical.display());
+    }
+
+    let report = crate::weaver::unweave::UnweaveEngine::unweave(&canonical, output.as_deref())
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap_or_default());
+    } else {
+        println!("\n✨ ¡Proceso `innerknow` completado con éxito!");
+        println!("   Proyecto:     {}", report.project_name);
+        println!("   Mónadas:      {} unidades atómicas extraídas", report.monads_extracted);
+        println!("   Anillos:      {} niveles concéntricos gravitacionales", report.max_ring);
+        println!("   Dominios:     {} ({})", report.domains.len(), report.domains.join(", "));
+        println!("   Receta YAML:  {}", report.recipe_path.display());
+        println!("\n🏛️  Contratos Fundacionales / Núcleo Central (cercanos al Bindu):");
+        for (i, c) in report.top_contracts.iter().take(8).enumerate() {
+            println!(
+                "   {:2}. [{}] (Anillo {}, Dominio: {}, In-Degree: {}, Out-Degree: {})",
+                i + 1,
+                if c.canonical_signature.is_empty() { &c.symbol_name } else { &c.canonical_signature },
+                c.ring,
+                c.domain,
+                c.in_degree,
+                c.out_degree
+            );
+        }
+        println!("\n🌀 Para reconstruir o destilar el proyecto en cualquier momento:");
+        println!("   weave distill --template {}", report.recipe_path.display());
+        println!("✨ Abre la UI de Mandala Weaver (`pnpm run tauri dev`) para explorar el mandala organizado.");
+    }
+
+    Ok(())
+}
+

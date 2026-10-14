@@ -266,15 +266,9 @@ pub async fn cli_echo(ring_id: u32, monad_name: Option<String>, db: State<'_, Sh
                 r: target_ring as f64,
                 theta: source.coord.theta,
             },
-            content: source.content.clone(),
-            name: source.name.clone(),
             ring: target_ring,
-            kind: source.kind.clone(),
-            semantic_hash: source.semantic_hash.clone(),
-            line_start: source.line_start,
-            line_end: source.line_end,
-            language: source.language.clone(),
             is_archived: false,
+            ..(*source).clone()
         };
 
         crate::persistence::surreal_bridge::insert_and_link(&*db_guard, &echoed_monad, Some(&source.id))
@@ -481,3 +475,32 @@ pub async fn cli_seed(source: String, db: State<'_, SharedDb>) -> Result<CliResp
         }
     }
 }
+
+#[tauri::command]
+pub async fn cli_innerknow(path: Option<String>, output: Option<String>) -> Result<CliResponse, String> {
+    let p = path.map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
+    let out = output.map(PathBuf::from);
+
+    match crate::weaver::unweave::UnweaveEngine::unweave(&p, out.as_deref()).await {
+        Ok(report) => {
+            let mut out_str = format!(
+                "✨ ¡Innerknow completado con éxito!\nProyecto: {}\nMónadas: {}\nNiveles: {}\nDominios: {}\nReceta: {}\n\nContratos Principales:\n",
+                report.project_name, report.monads_extracted, report.max_ring, report.domains.join(", "), report.recipe_path.display()
+            );
+            for (i, c) in report.top_contracts.iter().take(5).enumerate() {
+                out_str.push_str(&format!("  {}. {} (Anillo {}, Dominio: {}, In: {}, Out: {})\n", i + 1, c.symbol_name, c.ring, c.domain, c.in_degree, c.out_degree));
+            }
+            Ok(CliResponse {
+                success: true,
+                output: out_str,
+                error: None,
+            })
+        }
+        Err(e) => Ok(CliResponse {
+            success: false,
+            output: String::new(),
+            error: Some(format!("Error en innerknow: {}", e)),
+        }),
+    }
+}
+

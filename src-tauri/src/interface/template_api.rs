@@ -205,3 +205,40 @@ pub async fn list_templates() -> Result<Vec<TemplateInfo>, String> {
     }
     Ok(templates)
 }
+
+#[tauri::command]
+pub async fn distill_spatial_recipe(
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    recipe_yaml: String,
+) -> Result<crate::weaver::spatial_weaver::DistilledArtifact, String> {
+    let db_conn = db.read().await.clone();
+    let store = crate::persistence::MandalaStore::from_existing_db(db_conn);
+    let weaver = crate::weaver::spatial_weaver::Weaver::new(&store);
+    weaver.distill_from_yaml(&recipe_yaml).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn distill_spatial_quick(
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    name: String,
+    target_angle_deg: f64,
+    max_ring: u32,
+    seeds: Vec<String>,
+) -> Result<crate::weaver::spatial_weaver::DistilledArtifact, String> {
+    let target_angle_rad = target_angle_deg.to_radians();
+    let recipe = crate::weaver::spatial_weaver::DistillationRecipe {
+        name,
+        target_angle_rad,
+        max_ring,
+        angular_policy: crate::weaver::spatial_weaver::AngularPolicy::GlobalTarget,
+        ring_penalty_rad: 0.05,
+        prelude: String::new(),
+        seeds: seeds.into_iter().map(|s| crate::weaver::spatial_weaver::SeedSpec { symbol: s }).collect(),
+        pins: Default::default(),
+        external_symbols: Default::default(),
+    };
+    let db_conn = db.read().await.clone();
+    let store = crate::persistence::MandalaStore::from_existing_db(db_conn);
+    let weaver = crate::weaver::spatial_weaver::Weaver::new(&store);
+    weaver.distill(&recipe).await.map_err(|e| e.to_string())
+}

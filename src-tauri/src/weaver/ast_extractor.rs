@@ -130,7 +130,20 @@ fn extract_with_ast_grep(
             let text = node.text().to_string();
             let monad_kind = kind_from_node(kind_ref).unwrap_or(MonadKind::Unknown);
             let name = extract_name_from_text(&text, &monad_kind);
-            let hash = generate_pure_hash(&text);
+
+            // Compute canonical Merkle-AST identity and outbound calls
+            let (identity, outbound_calls) = if kind_ref == "function_item" && language_name == "rust" {
+                crate::ontology::canonical_hasher::extract_rust_function_identity(node)
+                    .unwrap_or_else(|_| crate::ontology::canonical_hasher::extract_generic_identity(node, &name))
+            } else {
+                crate::ontology::canonical_hasher::extract_generic_identity(node, &name)
+            };
+
+            let hash = if !identity.implementation_hash.is_empty() {
+                identity.implementation_hash.clone()
+            } else {
+                generate_pure_hash(&text)
+            };
 
             // Calculate line positions from byte range
             let range = node.range();
@@ -141,7 +154,7 @@ fn extract_with_ast_grep(
             let angle = ((monads.len() as f64) * 137.50776405) % 360.0;
             let coord = PolarCoord::new((ring as f64) * 100.0, angle);
 
-            monads.push(Monad::spawn_typed(
+            let mut monad = Monad::spawn_typed(
                 hash,
                 name,
                 coord,
@@ -151,7 +164,10 @@ fn extract_with_ast_grep(
                 line_start,
                 line_end,
                 language_name,
-            ));
+            );
+            monad = monad.with_canonical_identity(identity, outbound_calls.into_iter().collect());
+
+            monads.push(monad);
             // Don't recurse into children of extractable nodes to avoid
             // duplicating nested items (e.g. fn inside impl).
             return;

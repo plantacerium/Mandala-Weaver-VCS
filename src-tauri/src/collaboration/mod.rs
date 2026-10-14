@@ -227,15 +227,9 @@ pub async fn merge_mandala(
                     let expanded_monad = Monad {
                         id: format!("{}_merged", base.id),
                         coord: resolved_coord,
-                        content: base.content.clone(),
-                        name: base.name.clone(),
                         ring: base.ring + 1,
-                        kind: base.kind.clone(),
-                        semantic_hash: base.semantic_hash.clone(),
-                        line_start: base.line_start,
-                        line_end: base.line_end,
-                        language: base.language.clone(),
                         is_archived: false,
+                        ..base.clone()
                     };
                     merged.push(expanded_monad);
                 } else if is_semantic_diff {
