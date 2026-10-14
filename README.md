@@ -7,7 +7,7 @@ This topology enables non-linear code orchestration: the Architect selects preci
 
 ## Main UI
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-44.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-45.JPG)
 
 ## Projects UI
 
