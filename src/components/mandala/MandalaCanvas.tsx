@@ -153,12 +153,61 @@ const MandalaCanvas: React.FC = () => {
           }
         }
 
+const PHI_CONJUGATE = 0.618033988749895;
+
+/**
+ * Computes an adaptive radial band width tailored to ring size and density.
+ * As the ring radius grows (outer rings), it can host a wider band safely,
+ * but inner rings maintain strict boundaries so they don't engulf the Bindu.
+ */
+function computeAdaptiveBandWidth(baseRingRadius: number, ringGap: number, totalInRing: number): number {
+  if (totalInRing <= 36) return 0;
+
+  const perimeter = 2 * Math.PI * baseRingRadius;
+  const linearDensity = totalInRing / perimeter; // nodes per pixel along circumference
+  const congestionFactor = Math.max(1.0, linearDensity / 0.07);
+
+  // Desired band width scales smoothly with congestion
+  const desiredWidth = (congestionFactor - 1.0) * 18;
+
+  // Maximum allowed width: does NOT collide with adjacent rings (safe margin of 55% of ringGap)
+  // and does not exceed 28% of the ring's own radius (protects inner rings)
+  const maxSafeWidth = Math.min(ringGap * 0.55, baseRingRadius * 0.28);
+
+  return Math.min(desiredWidth, maxSafeWidth);
+}
+
+/**
+ * Low-discrepancy Weyl sequence based on the golden ratio conjugate (1 / φ).
+ * Successive angular neighbors (idx, idx + 1) jump across opposite sides of the band [-W/2, +W/2],
+ * eliminating the visual single-line "particle accelerator" collision.
+ */
+function computeGoldenRadiusOffset(index: number, bandWidth: number, kind?: string): number {
+  if (bandWidth <= 0) return 0;
+
+  const normalized = ((index * PHI_CONJUGATE) % 1); // [0, 1)
+  let offset = (normalized - 0.5) * bandWidth; // [-W/2, +W/2]
+
+  // Subtle semantic stratification:
+  // Data structures (Struct, Enum) anchor slightly inward
+  // Modules anchor near centerline
+  if (kind === 'Struct' || kind === 'Enum') {
+    offset = offset * 0.85 - (bandWidth * 0.08);
+  } else if (kind === 'Module') {
+    offset = offset * 0.5;
+  }
+
+  return offset;
+}
+
         const state = await fetchMandalaState();
         
         const allMonads = state.constellations.flatMap(c => {
           const totalInRing = c.monads.length;
           const circleRadius = totalInRing > 150 ? 3 : totalInRing > 50 ? 4 : 6;
-          const baseRingRadius = 50 + (c.ring_level - 1) * 70;
+          const ringGap = 70;
+          const baseRingRadius = 50 + (c.ring_level - 1) * ringGap;
+          const bandWidth = computeAdaptiveBandWidth(baseRingRadius, ringGap, totalInRing);
 
           const uniqueThetas = new Set(c.monads.map(item => Math.round(item.coord.theta)));
           const shouldRedistribute = uniqueThetas.size < Math.min(totalInRing, 32);
@@ -168,8 +217,11 @@ const MandalaCanvas: React.FC = () => {
               ? ((360 / totalInRing) * idx + ((c.ring_level % 2) * (180 / totalInRing))) % 360
               : m.coord.theta;
 
-            const subTrackOffset = totalInRing > 60 ? ((idx % 3) - 1) * 8 : 0;
-            const r = (m.coord?.r && !shouldRedistribute) ? m.coord.r : (baseRingRadius + subTrackOffset);
+            const radiusOffset = computeGoldenRadiusOffset(idx, bandWidth, m.kind);
+            // Ensure nodes strictly follow the adaptive golden ratio band within visual grid space
+            const r = (m.coord?.r && Math.abs(m.coord.r - baseRingRadius) <= (bandWidth / 2 + 2))
+              ? m.coord.r
+              : (baseRingRadius + radiusOffset);
 
             return {
               ...m,
