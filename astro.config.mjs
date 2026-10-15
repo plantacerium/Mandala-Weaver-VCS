@@ -8,4 +8,9 @@ export default defineConfig({
   },
   integrations: [react()],
   output: 'static',
+  vite: {
+    ssr: {
+      noExternal: ['@tauri-apps/api'],
+    },
+  },
 });
