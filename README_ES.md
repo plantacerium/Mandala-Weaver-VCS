@@ -11,10 +11,10 @@ Esta topología habilita la orquestación no lineal del software: el Arquitecto 
 ## 📸 Interfaz de Usuario
 
 ### 🧭 Lienzo Radial Principal (Mandala Canvas & Split View Zen)
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-45.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-46.JPG)
 
 ### 🪐 Explorador Sinárquico Multi-Proyecto (Synarchy Explorer)
-![Mandala Weaver VCS Synarchy](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-44.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-47.JPG)
 
 ### 💠 Emblema del Sistema
 ![Mandala Weaver Logo](public/assets/mandala-icon.png)
