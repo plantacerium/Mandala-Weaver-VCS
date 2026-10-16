@@ -3,16 +3,21 @@ import type { ProjectEntry } from '../../types/synarchy';
 
 interface ProjectCardProps {
   project: ProjectEntry;
+  scanning?: boolean;
   onSelect: (id: string) => void;
+  onRescan: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
+  scanning = false,
   onSelect,
-  onDelete
+  onRescan,
+  onDelete,
 }) => {
   const getStatusText = (status: ProjectEntry['status']) => {
+    if (scanning) return 'Scanning...';
     if (typeof status === 'string') return status;
     if (status && typeof status === 'object') {
       if ('Error' in status) return `Error: ${(status as any).Error}`;
@@ -23,6 +28,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   const getStatusClass = (status: ProjectEntry['status']) => {
+    if (scanning) return 'Scanning';
     const text = getStatusText(status).toLowerCase();
     if (text.includes('error')) return 'Error';
     if (text.includes('dormant')) return 'Dormant';
@@ -30,9 +36,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   const formatDate = (timestamp: number) => {
-    if (timestamp === 0) return '—';
+    if (!timestamp || timestamp === 0) return '—';
     const now = Date.now() / 1000;
-    const diff = now - timestamp;
+    const diff = Math.max(0, now - timestamp);
+    if (diff < 60) return 'Just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
@@ -41,14 +48,18 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Git': return '🐙';
-      case 'Weaver': return '🌀';
-      case 'Remote': return '🌐';
-      default: return '📁';
+      case 'Git':
+        return '🐙';
+      case 'Weaver':
+        return '🌀';
+      case 'Remote':
+        return '🌐';
+      default:
+        return '📁';
     }
   };
 
-  const ringCount = Math.min(project.ring_count, 5);
+  const ringCount = Math.min(Math.max(project.ring_count, 1), 5);
 
   return (
     <div className="project-card" onClick={() => onSelect(project.id)}>
@@ -62,27 +73,34 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 key={ringIdx}
                 cx="40"
                 cy="40"
-                r={(ringIdx + 1) * 12 + 8}
+                r={(ringIdx + 1) * 6 + 6}
                 fill="none"
-                stroke={ringIdx === ringCount - 1 ? 'rgba(0, 229, 255, 0.4)' : 'rgba(255,255,255,0.12)'}
+                stroke={
+                  ringIdx === ringCount - 1
+                    ? 'rgba(0, 229, 255, 0.5)'
+                    : 'rgba(255,255,255,0.14)'
+                }
                 strokeWidth={ringIdx === ringCount - 1 ? 1.5 : 1}
               />
             ))}
 
             {project.monad_count > 0 && (
               <g>
-                {Array.from({ length: Math.min(project.monad_count, ringCount * 4) }).map((_, i) => {
-                  const angle = (i / Math.min(project.monad_count, ringCount * 4)) * 360;
+                {Array.from({
+                  length: Math.min(project.monad_count, ringCount * 5),
+                }).map((_, i) => {
+                  const totalDots = Math.min(project.monad_count, ringCount * 5);
+                  const angle = (i / totalDots) * 360;
                   const rad = (angle * Math.PI) / 180;
-                  const radius = 16 + ((i % ringCount) + 1) * 10;
+                  const radius = 10 + ((i % ringCount) + 1) * 5.5;
                   return (
                     <circle
                       key={i}
                       cx={40 + Math.cos(rad) * radius}
                       cy={40 + Math.sin(rad) * radius}
-                      r="2.5"
-                      fill={`hsl(${(i * 45) % 360}, 70%, 55%)`}
-                      opacity="0.85"
+                      r="2.2"
+                      fill={`hsl(${(i * 45) % 360}, 75%, 60%)`}
+                      opacity="0.9"
                     />
                   );
                 })}
@@ -92,10 +110,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
 
         <div className="project-info">
-          <h3>{project.name}</h3>
-          <span className="project-path">{project.path}</span>
-          <span className="project-type-badge">
-            {getTypeIcon(project.project_type)} {project.project_type}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+            <h3 title={project.name}>{project.name}</h3>
+            <span className="project-type-badge">
+              {getTypeIcon(project.project_type)} {project.project_type}
+            </span>
+          </div>
+          <span className="project-path" title={project.path}>
+            {project.path}
           </span>
         </div>
       </div>
@@ -115,6 +137,24 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </div>
 
+      <div className="card-actions-row" onClick={e => e.stopPropagation()}>
+        <button
+          className="card-action-btn primary"
+          onClick={() => onSelect(project.id)}
+          title="Abrir este proyecto en el lienzo radial del Mandala"
+        >
+          🧭 Abrir Lienzo
+        </button>
+        <button
+          className="card-action-btn"
+          onClick={() => onRescan(project.id)}
+          disabled={scanning}
+          title="Re-escanear AST políglota y actualizar el grafo tripartito"
+        >
+          {scanning ? '⏳ Escaneando...' : '↻ Scan AST'}
+        </button>
+      </div>
+
       <div className="card-status">
         <span className={`status-badge ${getStatusClass(project.status)}`}>
           • {getStatusText(project.status)}
@@ -122,7 +162,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
         <button
           className="btn-delete"
-          onClick={(e) => {
+          title="Quitar proyecto del registro Synarchy (no borra archivos en disco)"
+          onClick={e => {
             e.stopPropagation();
             onDelete(project.id);
           }}

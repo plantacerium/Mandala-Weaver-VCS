@@ -1,6 +1,6 @@
 # 🗺️ Roadmap de Implementación: Mandala Weaver VCS
 
-> **Last audited against codebase:** 2026-04-24 (Post-Synarchy-UI-Review)
+> **Last audited against codebase:** 2026-10-16 (Post-MCP-v2-and-Synarchy-Upgrade)
 > **Legend:** ✅ Done — 🔧 Needs refinement — ⬜ Not started — 🚧 In progress
 
 ---
@@ -14,7 +14,7 @@ Establecer la estructura de directorios y el esqueleto de Tauri + Rust.
 | 0.1 | **Inicialización del Workspace Rust** — Estructura de módulos en `src-tauri/src/` | ✅ | `geometry/`, `ontology/`, `weaver/`, `persistence/`, `interface/` |
 | 0.2 | **Integración Tauri + Astro** — Frontend React + D3.js operacional | ✅ | Astro 4, React 18, D3 7 — `package.json` verified |
 | 0.3 | **SurrealDB Embebido** — Motor `kv-mem` puro Rust | ✅ | `Surreal::new::<Mem>(())` en `surreal_bridge.rs` |
-| 0.4 | **Resolución de Errores de Compilación** — Lifetimes, SurrealValue, Tauri config | ✅ | `cargo check` clean en última sesión |
+| 0.4 | **Resolución de Errores de Compilación** — Lifetimes, SurrealValue, Tauri config | ✅ | `cargo check` y `cargo test --lib` limpios con 0 warnings críticos |
 
 ---
 
@@ -24,270 +24,251 @@ Matemáticas y capacidad de leer código sin tocar la base de datos ni la UI.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 1.1 | **Primitivas Geométricas (`nalgebra`)** | ✅ | `PolarCoord { r, theta }`, `to_cartesian()`, `from_cartesian()` |
-| 1.2 | **Estructuras Ontológicas** | ✅ | `Bindu`, `Monad`, `Ring`, `Vector`, `Constellation` |
-| 1.3 | **Extractor de Mónadas (`ast-grep`)** | ✅ | Native `ast-grep-core` tree-sitter extraction integrated |
-| 1.3.1 | → Integrar `ast-grep-core` y `ast-grep-language` con `tree-sitter` Rust grammar | ✅ | Complete in `ast_extractor.rs` |
-| 1.3.2 | → Extraer `struct`, `enum`, `impl`, `trait` además de `fn` | ✅ | Mapping implemented via `kind_from_node` fallback |
-| 1.3.3 | → Preservar span de líneas (start/end) en cada Monad | ✅ | `line_start` and `line_end` fields extracted |
-| 1.3.4 | → Unit tests con fuentes Rust reales (>200 LOC) | ✅ | Tests passing locally |
-| 1.4 | **Lógica de Resolución Espacial** — Colisiones y desplazamiento orbital | ✅ | `detect_overlap()`, `resolve_orbital_shift()` |
+| 1.1 | **Primitivas Geométricas (`nalgebra`)** | ✅ | `PolarCoord { r, theta }`, `to_cartesian()`, `from_cartesian()`, rotaciones continuas $SO(2)$ |
+| 1.2 | **Estructuras Ontológicas** | ✅ | `Bindu`, `Monad`, `Ring`, `Vector`, `Constellation`, `Contract`, `Port` |
+| 1.3 | **Extractor de Mónadas (`ast-grep`)** | ✅ | Native `ast-grep-core` tree-sitter extraction políglota para 22 lenguajes |
+| 1.3.1 | → Integrar `ast-grep-core` y gramáticas Tree-sitter | ✅ | Rust, TypeScript, JavaScript, Python, Go, Java, C, C++, C#, Ruby, etc. |
+| 1.3.2 | → Extraer `struct`, `enum`, `impl`, `trait`, `class`, `interface` además de `fn` | ✅ | Mapeo riguroso en `kind_from_node` para todos los lenguajes soportados |
+| 1.3.3 | → Preservar span de líneas reales (1-based start/end) en cada Monad | ✅ | `node.start_pos().line() + 1` y `node.end_pos().line() + 1` implementados |
+| 1.3.4 | → Unit tests con fuentes reales políglotas (>200 LOC) | ✅ | Tests pasando localmente (`test_polyglot_ast_extraction`, etc.) |
+| 1.4 | **Lógica de Resolución Espacial** — Colisiones y desplazamiento orbital | ✅ | `detect_overlap()`, `resolve_orbital_shift()`, dispersión áurea ($137.5^\circ$) |
 
 ---
 
 ## 📍 Fase 2: El Registro Akáshico (Persistencia Espacial)
 
-Conectar la lógica matemática con SurrealDB para guardar la historia radial.
+Conectar la lógica matemática con SurrealDB para guardar la historia radial y el Grafo Tripartito.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 2.1 | **Esquemas SurrealQL** — Tablas `monad`, relación `evolves_to` | ✅ | `schemas.rs::get_initialization_queries()` |
-| 2.2 | **Aristas Evolutivas (Edges)** — Lógica `RELATE` | ✅ | `insert_and_link()` with `RELATE monad:$parent -> evolves_to -> monad:$current` |
-| 2.3 | **Repositorio CRUD en Rust** — `surreal_bridge.rs` | ✅ | `get_ring()`, `get_all_monads()`, `get_vector_sector()` |
-| 2.4 | **Tests de Integración DB** — 1000 mónadas simuladas | ✅ | `persistence::tests::test_simulate_growth()` — 10 rings × 100 monads |
-| 2.5 | **Eliminación de Mónadas (Soft Delete)** | ✅ | `is_archived: bool` field, `archive_monad()`, `get_active_monads()` |
-| 2.6 | **Consulta de Linaje Completo** — Traverse bidireccional | ✅ | `threader.rs::trace_full_chain()` — bidirectional TRAVERSE with `<-evolves_to<-` and `->evolves_to->` |
-| 2.7 | **Consulta de Búsqueda Semántica** — Buscar mónada por hash o nombre | ✅ | `persistence/search.rs` — `SearchEngine::search()`, `by_name()`, `by_hash()` |
+| 2.1 | **Esquemas SurrealQL** — Tablas `monad`, relación `evolves_to`, contratos y puertos | ✅ | `schemas.rs::get_initialization_queries()` |
+| 2.2 | **Aristas Evolutivas (Edges)** — Lógica `RELATE` compatible con SurrealDB v3 | ✅ | `LET $p = type::record(...); LET $c = ...; RELATE $p -> evolves_to -> $c;` |
+| 2.3 | **Repositorio CRUD en Rust** — `surreal_bridge.rs` & `store.rs` | ✅ | `get_ring()`, `get_all_monads()`, `get_vector_sector()`, `MandalaStore::upsert_monad` |
+| 2.4 | **Tests de Integración DB** — Mónadas y grafos simulados | ✅ | `persistence::tests::test_simulate_growth()`, `test_tripartite_graph_upsert_and_resolve` |
+| 2.5 | **Eliminación de Mónadas (Soft Delete)** | ✅ | `is_archived: bool` field, `archive_monad()`, `get_active_monads()`, `purge_archived_monads()` |
+| 2.6 | **Consulta de Linaje Completo** — Traverse bidireccional | ✅ | `threader.rs::trace_full_chain()` con traversals `<-evolves_to<-` y `->evolves_to->` |
+| 2.7 | **Consulta de Búsqueda Semántica** — Buscar mónada por hash, nombre o código | ✅ | `projection_api::search_monads()` y MCP `mandala_search_monads` |
 
 ---
 
-## 📍 Fase 3: El Tejedor (Lógica de Negocio y Cooperacion de Versiones)
+## 📍 Fase 3: El Tejedor (Lógica de Negocio y Cooperación de Versiones)
 
-Comandos lógicos que reemplazan git commit, git checkout y git merge.
+Comandos lógicos que reemplazan git commit, git checkout y git merge con tejido continuo $SO(2)$.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 3.1 | **Operación Expand (El nuevo Commit)** | ✅ | `weaver/mod.rs::expand_from_source()` — read → extract → delta → persist |
-| 3.2 | **Operación Distill (El nuevo Checkout/Build)** | ✅ | `source_compiler.rs::distill_source()` — assembles content with dependency ordering |
+| 3.1 | **Operación Expand (El nuevo Commit)** | ✅ | `weaver/mod.rs::expand_from_source()` — lectura, extracción, delta y persistencia |
+| 3.2 | **Operación Distill (El nuevo Checkout/Build)** | ✅ | `source_compiler.rs::distill_source()` — ensamblado determinista con ordenamiento de dependencias |
 | 3.2.1 | → Ordenar mónadas por dependencia (topo-sort) antes de concatenar | ✅ | `order_by_dependency()` — modules → const/type → struct/enum → trait → impl → fn |
-| 3.2.2 | → Generar `use`/`mod` statements automáticos entre mónadas | ✅ | `weaver/auto_imports.rs::ImportAnalyzer` — cross-reference analysis |
-| 3.2.3 | → Escribir resultado a disco con estructura de carpetas del proyecto | ✅ | `weaver/file_writer.rs::FileWriter` — ring/vector directory structure |
-| 3.3 | **Detección de Incoherencias** | ✅ | Validates sources against duplicate definitions and syntax blockages |
-| 3.3.1 | → Detector de definiciones duplicadas en una selección de mónadas | ✅ | Implemented `validate_source_coherence` comparing `name` inside constraints |
-| 3.3.2 | → Validación sintáctica del Source compilado (`syn::parse_file`) | ✅ | Implemented native `syn` AST validation on compiler flow |
-| 3.3.3 | → Informe de conflictos con coordenadas de las mónadas conflictivas | ✅ | Returns `Vec<IncoherenceReport>` directly to frontend exceptions |
-| 3.4 | **Operación Contract (El Anti-Expand)** | ✅ | `weaver/contract.rs::contract_ring()` — archive outermost ring |
-| 3.5 | **Delta Semántico Mejorado** | ✅ | `resolver.rs::identify_deltas_typed` utilizes full `blake3` semantics |
-| 3.5.1 | → Comparar hashes semánticos (blake3) en lugar de IDs | ✅ | Done via `is_semantically_different()` using `semantic_hash` field |
-| 3.5.2 | → Calcular `DeltaType` enum: `Added`, `Modified`, `Renamed`, `Deleted` | ✅ | Categorization cleanly outputted in `identify_deltas_typed()` |
-| 3.5.3 | → Generar diff semántico entre dos versiones de una mónada | ✅ | `weaver/semantic_diff.rs::SemanticDiff` — AST-level diff |
+| 3.2.2 | → Generar `use`/`mod` statements automáticos entre mónadas | ✅ | `weaver/auto_imports.rs::ImportAnalyzer` — análisis de referencias cruzadas |
+| 3.2.3 | → Escribir resultado a disco con estructura de carpetas del proyecto | ✅ | `weaver/file_writer.rs::FileWriter` — soporte para sandbox `.mandala/distilled/` |
+| 3.3 | **Detección de Incoherencias** | ✅ | Validación de fuentes contra definiciones duplicadas y bloqueos sintácticos |
+| 3.3.1 | → Detector de definiciones duplicadas en una selección de mónadas | ✅ | `validate_source_coherence` comparando `name` y `contract_hash` |
+| 3.3.2 | → Validación sintáctica del Source compilado (`syn::parse_file`) | ✅ | Validación sintáctica AST nativa en Rust, TS y Python |
+| 3.3.3 | → Informe de conflictos con coordenadas de las mónadas conflictivas | ✅ | Retorna `Vec<IncoherenceReport>` a frontend y respuestas MCP |
+| 3.4 | **Operación Contract (El Anti-Expand)** | ✅ | `weaver/contract.rs::contract_ring()` corregido con `GROUP ALL` y `mandala_contract_ring` |
+| 3.5 | **Delta Semántico Mejorado** | ✅ | `resolver.rs::identify_deltas_typed` con hashes BLAKE3 normalizados |
+| 3.5.1 | → Comparar hashes semánticos (blake3) en lugar de IDs | ✅ | `is_semantically_different()` usando el campo `semantic_hash` |
+| 3.5.2 | → Calcular `DeltaType` enum: `Added`, `Modified`, `Renamed`, `Deleted` | ✅ | Categorización limpia en `identify_deltas_typed()` |
+| 3.5.3 | → Generar diff semántico entre dos versiones de una mónada | ✅ | `weaver/semantic_diff.rs::SemanticDiff` & MCP `mandala_ring_diff` |
 
 ---
 
 ## 📍 Fase 4: El Telar (Puente Tauri IPC)
 
-Conectar el backend Rust con el frontend JavaScript.
+Conectar el backend Rust con el frontend JavaScript de forma segura y en tiempo real.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 4.1 | **Definición de Eventos Tauri** — `export_mandala_state` | ✅ | Operational in `projection_api.rs` |
-| 4.2 | **Serialización Optimizada** — TypeScript ↔ Rust types | ✅ | `Monad`, `MandalaState`, `ConstellationDto` with Serde |
+| 4.1 | **Definición de Eventos Tauri** — `export_mandala_state` | ✅ | Operacional en `projection_api.rs` |
+| 4.2 | **Serialización Optimizada** — TypeScript ↔ Rust types | ✅ | `Monad`, `MandalaState`, `ConstellationDto` con Serde |
 | 4.3 | **Comando `expand_ring`** — Recibir archivos del frontend | ✅ | `expand_ring(file_path: String) -> Result<u32, String>` |
-| 4.4 | **Escucha de Eventos en Tiempo Real (FS Watcher)** | ✅ | Background watcher threaded tracking mutations |
-| 4.4.1 | → Configurar `notify::RecommendedWatcher` en el directorio del proyecto | ✅ | Handled by `notify_debouncer_mini` relaying debounced vectors |
-| 4.4.2 | → Emitir evento Tauri `mandala::file-changed` con path y tipo de cambio | ✅ | Hot-reload events emitted reliably from isolated std::thread |
-| 4.4.3 | → Frontend listener en `lib/tauri/events.ts` — actualizar store automáticamente | ✅ | `listenForFileChanges` triggers `loadData()` silently behind canvas |
-| 4.5 | **Comando `distill_source`** — Tauri command para compilar una Fuente | ✅ | `distill_from_selection` IPC command with coherence validation |
-| 4.6 | **Comando `trace_lineage`** — Exponer `threader.rs` vía IPC | ✅ | `trace_monad_lineage` IPC command returns full bidirectional chain |
-| 4.7 | **Comando `get_monad_detail`** — Detalle completo de una mónada | ✅ | `get_monad_detail` IPC command added |
-| 4.8 | **Gestión del Bindu (Inicialización de Proyecto)** | ✅ | `init_project` IPC command implemented |
-| 4.8.1 | → Lector automático en `projection_api.rs:39-51` | ✅ | Reads from `bindu` via SurrealDB query, returns "Unnamed_Project" if empty |
+| 4.4 | **Escucha de Eventos en Tiempo Real (FS Watcher)** | ✅ | Watcher en segundo plano con debounce y filtro de extensiones |
+| 4.4.1 | → Configurar `notify::RecommendedWatcher` en el directorio activo | ✅ | Manejado por `notify_debouncer_mini` con auto-actualización en `open_project` |
+| 4.4.2 | → Emitir evento Tauri seguro `mandala:file-changed` | ✅ | Notificación conforme al estándar alfanumérico de Tauri v2 |
+| 4.4.3 | → Frontend listener en `lib/tauri/events.ts` | ✅ | `listenForFileChanges` recarga silenciosamente el estado del lienzo |
+| 4.5 | **Comando `distill_source`** — Tauri command para compilar una Fuente | ✅ | `distill_from_selection` IPC con validación de coherencia |
+| 4.6 | **Comando `trace_lineage`** — Exponer `threader.rs` vía IPC | ✅ | `trace_monad_lineage` devuelve la cadena evolutiva completa |
+| 4.7 | **Comando `get_monad_detail`** — Detalle completo de una mónada | ✅ | `get_monad_detail` devuelve líneas 1-based, llamadas y polar coordinates |
+| 4.8 | **Gestión del Bindu (Inicialización de Proyecto)** | ✅ | `init_project` IPC implementado y verificado en SurrealDB |
 
 ---
 
 ## 📍 Fase 5: El Mandala (Visualización Frontend con D3.js)
 
-La capa de magia visual e interacción del usuario.
+La capa de magia visual e interacción del usuario en el espacio polar.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 5.1 | **Renderizado Base del Canvas/SVG** — Cuadrícula polar, Bindu | ✅ | `drawMandalaGrid()`, `drawBindu()` with glow effects |
-| 5.2 | **Dibujado de Nodos y Conexiones** — Mapeo polar → SVG | ✅ | `renderMonads()` with `easeBackOut` animations |
-| 5.2.1 | → **Firmas Cromáticas Únicas** — Color dinámico basado en hash BLAKE3 | ✅ | Implementation in `renderer.ts` using HSL mapping |
-| 5.3 | **Interacción (Hover y Selección)** — Inspector de mónadas | ✅ | `highlightMonad()`, click/hover handlers in `MandalaCanvas.tsx` |
-| 5.4 | **State Management (Zustand)** — Store centralizado | ✅ | `workspaceStore.ts` — `mandalaState`, `selectedMonad`, `hoveredMonad`, `viewMode` |
-| 5.5 | **Interacciones D3 (Zoom/Pan)** — Zoom semántico | ✅ | `setupZoom()`, `enableLassoSelection()` in `interactions.ts` |
-| 5.6 | **Build Verificado** — `pnpm run build` clean | ✅ | Frontend compiles |
-| 5.7 | **Seleccionador de Fuente (El Lazo)** — Polygonal selection tool | ✅ | React lasso integration active |
-| 5.7.1 | → Cerrar polígono automáticamente al soltar mouse | ✅ | Closes properly to bounding box |
-| 5.7.2 | → Listar mónadas seleccionadas en panel lateral | ✅ | DistillPanel rendering selection loop |
-| 5.7.3 | → Botón "DISTILL" que invoque `distill_source` con la selección | ✅ | Wired to Tauri IPC |
-| 5.8 | **Renderizado de Linaje (Aristas Evolutivas)** | ✅ | Bézier curves drawn between parent/child monads |
-| 5.8.1 | → Fetch `evolves_to` edges from backend | ✅ | Edges loaded recursively and piped through `export_mandala_state` |
-| 5.8.2 | → Draw curved links with gradient opacity from inner → outer ring | ✅ | Implemented `renderEdges` connecting coordinate mappings |
-| 5.8.3 | → Animate lineage path on monad selection | ✅ | `lib/d3/animations.ts::animateLineagePath()` — D3 pulse animation |
-| 5.9 | **TooltipNode Mejorado** | ✅ | `TooltipNode.tsx` — displays name, ring, and kind on hover |
-| 5.10 | **SidebarHistory Mejorado** | ✅ | Implemented. Dynamically displays Bindu, Ring, and Monad stats in dark layout |
-| 5.11 | **MonadInspector Mejorado** | ✅ | Now displays kind, hashes, line numbers, and lang with neon layout |
-| 5.12 | **CommandPalette (CMD+K)** | ⬜ | Replaced by `DistillPanel.tsx` in current layout structure for source generation |
-| 5.13 | **Responsive Layout y Temas** | ✅ | |
-| 5.13.1 | → Panel resize handles (draggable sidebar/inspector widths) | ⬜ | |
-| 5.13.2 | → Light/Dark theme toggle con CSS variables | ✅ | Added `[data-theme="light"]` vars to `global.css` |
-| 5.14 | **Breathing Animation (Semantic Zoom)** | ✅ | `lib/d3/zoom.ts::setMacroZoom()`, `setMicroZoom()` |
-| 5.14.1 | → Macro-Orchestration (Zoom Out) | ✅ | `setMacroZoom()` — ring density indicators |
-| 5.14.2 | → Micro-Immersion (Zoom In) | ✅ | `setMicroZoom()` — fractal AST view |
+| 5.1 | **Renderizado Base del Canvas/SVG** — Cuadrícula polar, Bindu | ✅ | `drawMandalaGrid()`, `drawBindu()` con resplandor neon |
+| 5.2 | **Dibujado de Nodos y Conexiones** — Mapeo polar → SVG | ✅ | `renderMonads()` con interpolación suave y física orbital |
+| 5.2.1 | → **Firmas Cromáticas Únicas** — Color dinámico BLAKE3 $\to$ HSL | ✅ | `renderer.ts` mapeando hashes a frecuencias cromáticas estables |
+| 5.3 | **Interacción (Hover y Selección)** — Inspector de mónadas | ✅ | `highlightMonad()`, click/hover handlers en `MandalaCanvas.tsx` |
+| 5.4 | **State Management (Zustand)** — Store centralizado | ✅ | `workspaceStore.ts` — `mandalaState`, `selectedMonad`, `viewMode` |
+| 5.5 | **Interacciones D3 (Zoom/Pan)** — Zoom semántico y respiración | ✅ | `setupZoom()`, `enableLassoSelection()` en `interactions.ts` |
+| 5.6 | **Build Verificado** — `pnpm run build` limpio (código 0) | ✅ | Astro + React compilan sin errores de tipado |
+| 5.7 | **Seleccionador de Fuente (El Lazo)** — Selección poligonal | ✅ | Integración de lazo poligonal cerrada automáticamente |
+| 5.7.1 | → Cerrar polígono automáticamente al soltar mouse | ✅ | Bounding box y selección contenida activa |
+| 5.7.2 | → Listar mónadas seleccionadas en panel lateral | ✅ | `DistillPanel.tsx` reflejando la selección activa |
+| 5.7.3 | → Botón "DISTILL" que invoque `distill_source` | ✅ | Conectado a Tauri IPC con previsualización |
+| 5.8 | **Renderizado de Linaje (Aristas Evolutivas)** | ✅ | Curvas Bézier trazadas entre mónadas progenitoras y derivadas |
+| 5.8.1 | → Fetch `evolves_to` edges desde el backend | ✅ | Aristas cargadas y enviadas en `export_mandala_state` |
+| 5.8.2 | → Enlaces curvos con gradiente de opacidad radial | ✅ | `renderEdges` conectando coordenadas polares |
+| 5.8.3 | → Animación de ruta de linaje al seleccionar mónada | ✅ | Animación D3 pulse en `lib/d3/animations.ts` |
+| 5.9 | **TooltipNode Mejorado** | ✅ | Muestra nombre, anillo, lenguaje y coordenadas en hover |
+| 5.10 | **SidebarHistory Mejorado** | ✅ | Estadísticas dinámicas de Bindu, anillos y mónadas |
+| 5.11 | **MonadInspector Zen a Altura Completa** | ✅ | Visor con gutter de números de línea, split view y botón Zen |
+| 5.12 | **Búsqueda Rápida y Command Palette** | ✅ | Conectada a `search_monads` y expuesta en MCP y frontend |
+| 5.13 | **Layout Responsivo y Divisores Arrastrables** | ✅ | |
+| 5.13.1 | → Manijas de redimensionamiento (resize handles) | ✅ | Divisores arrastrables en `SplitViewZen` y `VectorsPanel` |
+| 5.13.2 | → Selector de temas Claro / Oscuro con variables CSS | ✅ | Variables `[data-theme="light"]` en `global.css` |
+| 5.14 | **Breathing Animation (Respiración Semántica)** | ✅ | `lib/d3/zoom.ts::setMacroZoom()`, `setMicroZoom()` |
 
 ---
 
-## 📍 Fase 6: Pergaminos de Destilación (Templates YAML)
+## 📍 Fase 6: Pergaminos de Destilación (Templates YAML & Recetas $SO(2)$)
 
-Manifiestos declarativos para automatizar la composición de fuentes.
+Manifiestos declarativos para automatizar la composición de fuentes y resolución espacial de contratos.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 6.1 | **Diseño del Esquema YAML** | ✅ | `template/mod.rs` - `DistillationTemplate` with rings, vectors, exclude, adapters |
-| 6.1.1 | → Campos: `name`, `version`, `rings[]`, `vectors[]`, `exclude[]`, `adapters[]` | ✅ | Full YAML schema with serde |
-| 6.1.2 | → Serde YAML deserialization in Rust | ✅ | `serde_yaml` dependency added |
-| 6.2 | **Motor de Resolución de Templates** | ✅ | `template/engine.rs` - `TemplateEngine` resolves to monads |
-| 6.2.1 | → Resolver `rings[]` + `vectors[]` → set de coordenadas candidatas | ✅ | `resolve_rings()` with Level/Latest/Range/All |
-| 6.2.2 | → Aplicar `exclude[]` filters y reglas de compatibilidad | ✅ | `apply_exclusions()` with glob patterns |
-| 6.2.3 | → Ejecutar adaptadores semánticos | ✅ | `adapter.rs` - Import/Alias/Wrapper injection |
-| 6.3 | **Comando Tauri `distill_from_template`** | ✅ | `interface/template_api.rs` - 6 Tauri commands |
-| 6.4 | **UI: Template Editor Panel** | ✅ | `TemplateEditor.tsx` + YAML editor tab in `DistillPanel.tsx` |
-| 6.5 | **Templates de Ejemplo** | ✅ | `templates/minimal.yaml`, `templates/core-only.yaml`, `templates/full-stack.yaml`, `templates/backend-api.yaml` |
+| 6.1 | **Diseño del Esquema YAML Unificado** | ✅ | Estandarizado en `serde_yml`, eliminando librerías deprecadas |
+| 6.1.1 | → Esquema dual: `DistillationTemplate` y `DistillationRecipe` | ✅ | Soporte simultáneo para selectores angulares y semillas $SO(2)$ |
+| 6.1.2 | → Deserialización serde robusta | ✅ | Validadores integrados en `template/engine.rs` y `mcp.rs` |
+| 6.2 | **Motor de Resolución de Templates** | ✅ | `TemplateEngine` resuelve a mónadas activas |
+| 6.2.1 | → Resolver `rings[]` + `vectors[]` a coordenadas candidatas | ✅ | Filtros por nivel, rango o más recientes |
+| 6.2.2 | → Aplicar filtros `exclude[]` y reglas de compatibilidad | ✅ | Exclusiones semánticas por patrones glob |
+| 6.2.3 | → Ejecutar adaptadores semánticos (`@mandala-bridge`) | ✅ | Inyección automática de puentes en colisión de contratos |
+| 6.3 | **Comandos Tauri de Plantillas** | ✅ | `distill_from_template`, `distill_spatial_recipe`, etc. |
+| 6.4 | **UI: Editor de Plantillas y Recetas Espaciales** | ✅ | Pestaña Espacial $SO(2)$ en `DistillPanel.tsx` con selectores de ángulo |
+| 6.5 | **Templates de Ejemplo Incluidos** | ✅ | `minimal.yaml`, `core-only.yaml`, `full-stack.yaml`, `backend-api.yaml` |
 
 ---
 
-## 📍 Fase 7: El Camino del Architecte (CLI & TUI)
+## 📍 Fase 7: El Camino del Arquitecto (CLI, TUI & Servidor MCP v2.0)
 
-Interfaz de línea de comandos y terminal visual para entornos sin GUI.
+Interfaz de línea de comandos y servidor de protocolo para agentes de Inteligencia Artificial.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 7.1 | **CLI Core (`clap`)** | ✅ | `cli_commands.rs` with all 15 Commands of Cooperation fully implemented |
-| 7.1.1 | → `weave bindu` — Create Bindu | ✅ | Instantiates Point Zero (0,0) |
-| 7.1.2 | → `weave seed <source>` — Plant repository | ✅ | Imports existing Mandala |
-| 7.1.3 | → `weave telemetry` — Scan topology | ✅ | Returns ecosystem pulse |
-| 7.1.4 | → `weave focus <monad>` — Focus monad | ✅ | Select into active constellation |
-| 7.1.5 | → `weave crystallize` — Radial commit | ✅ | Creates new ring |
-| 7.1.6 | → `weave vector <angle>` — New vector | ✅ | Opens angle of exploration |
-| 7.1.7 | → `weave dormant` — Dormant state | ✅ | Clears cache to latent space |
-| 7.1.8 | → `weave distill` — Compile Source | ✅ | Core compilation |
-| 7.1.9 | → `weave spectrum` — Chromatic analysis | ✅ | HSL semantic diff |
-| 7.1.10 | → `weave lineage` — Query lineage | ✅ | Evolutionary spiral |
-| 7.1.11 | → `weave echo` — Echo from inner ring | ✅ | Replays historical logic |
-| 7.1.12 | → `weave absorb` — Network sync | ✅ | Import from network |
-| 7.1.13 | → `weave synthesize` — Vector synthesis | ✅ | Merge two vectors |
-| 7.1.14 | → `weave emanate` — Emit to network | ✅ | Export to network |
-| 7.2 | **Persistent Storage (File Backend)** | ✅ | `FileBridge` in `file_bridge.rs` using `SurrealKV` in `.mandala/db/` |
-| 7.2.1 | → Store DB in `.mandala/db/` inside project root | ✅ | Automated `.mandala/db` folder and persistence creation |
-| 7.2.2 | → Auto-detect `.mandala/` directory walking up from cwd | ✅ | `FileBridge::auto_detect()` + `find_project_root()` |
-| 7.3 | **Model Context Protocol (MCP)** | ✅ | Native stdio MCP server in `interface/mcp.rs` (`weave mcp`) |
+| 7.1 | **CLI Core (`clap`)** — 18 Comandos Operacionales | ✅ | Implementados en `cli_commands.rs` con soporte `--json` y `--path` |
+| 7.1.1 | → `weave bindu` — Crear Bindu (Punto Cero) | ✅ | Instancia la raíz $(0,0)$ en SurrealDB |
+| 7.1.2 | → `weave seed <source>` — Plantar repositorio | ✅ | Importa historial Git o archivo Mandala |
+| 7.1.3 | → `weave telemetry` — Escanear topología | ✅ | Retorna pulso y métricas de anillos |
+| 7.1.4 | → `weave focus <monad>` — Enfocar mónada | ✅ | Inspecciona AST y linaje |
+| 7.1.5 | → `weave crystallize` — Commit radial | ✅ | Genera un nuevo anillo con mónadas AST |
+| 7.1.6 | → `weave vector <angle>` — Nuevo vector | ✅ | Abre sector de exploración angular |
+| 7.1.7 | → `weave dormant` — Estado latente | ✅ | Limpia caché a espacio latente |
+| 7.1.8 | → `weave distill` — Compilar Fuente | ✅ | Ensamblado modular en disco o sandbox |
+| 7.1.9 | → `weave spectrum` — Análisis cromático | ✅ | Desplazamiento HSL por BLAKE3 |
+| 7.1.10 | → `weave lineage` — Consultar linaje | ✅ | Espiral evolutiva de transformaciones |
+| 7.1.11 | → `weave echo` — Eco de anillo interior | ✅ | Reproduce lógica histórica |
+| 7.1.12 | → `weave absorb` — Sincronización de red | ✅ | Fusión geométrica desde archivo remoto |
+| 7.1.13 | → `weave synthesize` — Síntesis vectorial | ✅ | Fusiona dos vectores funcionales |
+| 7.1.14 | → `weave emanate` — Emisión a la red | ✅ | Exporta el estado a archivo `.mandala.json` |
+| 7.1.15 | → `weave scan [path]` — Escaneo nativo políglota | ✅ | Indexa proyectos a anillos sin requerir Git |
+| 7.1.16 | → `weave innerknow [path]` — Autoconocimiento | ✅ | Descompone monolitos y puebla puertos/contratos |
+| 7.1.17 | → `weave audit` — Auditoría de coherencia | ✅ | Valida contratos, puertos y duplicados |
+| 7.1.18 | → `weave mcp` — Servidor MCP sobre `stdio` | ✅ | Protocolo JSON-RPC para agentes de IA |
+| 7.2 | **Persistencia Duradera (SurrealKV)** | ✅ | Base de datos embebida en `.mandala/db/` |
+| 7.3 | **Model Context Protocol (MCP v2.0)** | ✅ | Servidor con 17 herramientas, 5 recursos, 2 prompts y sandbox no destructivo |
 
 ---
 
-## 📍 Fase 8: El Ojo Poliglota (Multi-Language AST Support)
+## 📍 Fase 8: El Ojo Políglota (Extracción AST Multi-Lenguaje)
 
-Extend the monad extractor beyond Rust.
+Soporte nativo de extracción sintáctica para 22 lenguajes de programación.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 8.1 | **Language Detector** | ✅ | `src/language/mod.rs` — `Language` enum with `from_extension`, `from_content`, `detect_language` |
-| 8.2 | **TypeScript/JavaScript Extraction** | ✅ | Already via `ast_grep_language::SupportLang::TypeScript/JavaScript` in `ast_extractor.rs` |
-| 8.3 | **Python Extraction** | ✅ | Already via `ast_grep_language::SupportLang::Python` in `ast_extractor.rs` |
-| 8.4 | **Go Extraction** | ✅ | Already via `ast_grep_language::SupportLang::Go` in `ast_extractor.rs` |
-| 8.5 | **Language-Agnostic Monad Schema** | ✅ | `language: String` field + `language_enum()` getter in `Monad` |
-| 8.6 | **Cross-Language Distillation Rules** | ✅ | `order_by_language()`, `group_by_language()`, `distill_multi_lang()` in `source_compiler.rs` |
+| 8.1 | **Detector de Lenguajes** | ✅ | `src/language/mod.rs` con detección por extensión y contenido |
+| 8.2 | **Extracción Rust, TS/JS, Python y Go con ast-grep** | ✅ | Gramáticas Tree-sitter nativas y mapeo de tipos de nodo |
+| 8.3 | **Extracción de 17 Lenguajes Adicionales** | ✅ | Java, C, C++, C#, Kotlin, Swift, Ruby, PHP, Scala, Elixir, Haskell, Lua, Dart, SQL, HTML, CSS, YAML |
+| 8.4 | **Líneas Reales 1-Based** | ✅ | `line_start` y `line_end` basados en posiciones de línea reales (no byte offsets) |
+| 8.5 | **Normalización de Nombres de Módulos y Tests** | ✅ | Nombres calificados `<file_stem>::tests` y módulos sintéticos |
+| 8.6 | **Reglas de Destilación Multi-Lenguaje** | ✅ | `distill_multi_lang()`, `order_by_language()`, `group_by_language()` |
 
 ---
 
-## 📍 Fase 9: El Ancla (Persistence Migration & Performance)
+## 📍 Fase 9: El Ancla (Persistencia SurrealKV y Rendimiento)
 
-Move from in-memory to durable storage and optimize for scale.
+Almacenamiento persistente, aislamiento de concurrencia e indexación masiva.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 9.1 | **SurrealKV File Engine** | ✅ | `FileBridge` with `SurrealKV` for persistent storage and `Mem` fallback |
-| 9.1.1 | → Configurable engine via Tauri state | ✅ | Connects to `.mandala/db` dynamically on project open/init |
-| 9.2 | **Batch Insert Performance** | ✅ | `insert_batch` in `surreal_bridge.rs` for atomic high-throughput inserts |
-| 9.3 | **Lazy Loading de Mónadas** | ✅ | `get_monads_paginated` in `surreal_bridge.rs` and `get_monads_paginated_api` IPC |
-| 9.4 | **High-Perf Rendering Mode** | ✅ | Hardware-accelerated rendering optimizations for large graphs |
-| 9.5 | **Index Optimization** | ✅ | Composite indexes on `ring, coord.theta` and `name, ring` in `schemas.rs` |
+| 9.1 | **SurrealKV File Engine** | ✅ | Persistencia local en `.mandala/db/` con motor `SurrealKV` de SurrealDB v3 |
+| 9.1.1 | → Conexión unificada en `State<'_, SharedDb>` | ✅ | Eliminados los bloqueos de archivo (`os error 33`) en llamadas concurrentes |
+| 9.2 | **Inserciones Masivas Atómicas (`insert_batch`)** | ✅ | Carga de alto rendimiento para miles de nodos |
+| 9.3 | **Paginación y Carga Perezosa de Mónadas** | ✅ | `get_monads_paginated` para escalabilidad en proyectos grandes |
+| 9.4 | **Optimización de Renderizado** | ✅ | Agrupación en capas D3 y descarte de nodos fuera de viewport |
+| 9.5 | **Indexación Compuesta** | ✅ | Índices en `(ring, coord.theta)` y `(name, ring)` en `schemas.rs` |
 
 ---
 
-## 📍 Fase 10: La Red de Mandalas (Collaboration & Distribution)
+## 📍 Fase 10: La Red de Mandalas (Colaboración y Distribución)
 
-Collaborative features and project sharing.
+Herramientas para intercambio y síntesis entre proyectos y colaboradores.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 10.1 | **Export/Import de Mandala** | ✅ | `collaboration/mod.rs::export_mandala()` — `.mandala.json` archive |
-| 10.2 | **Mandala Diff** | ✅ | `diff_mandala()` — compare two mandalas ring-by-ring |
-| 10.3 | **Git Bridge (Read-Only)** | ✅ | `import_git_history()` — read-only git history import |
-| 10.4 | **Mandala Merge** | ✅ | `merge_mandala()` — Synarchic Synthesis with geometric resolution |
-| 10.5 | **Plugin System** | ✅ | `plugins/mod.rs::MandalaPlugin` trait — extensibility framework |
+| 10.1 | **Export/Import de Mandala** | ✅ | `collaboration/mod.rs::export_mandala()` — archivo `.mandala.json` |
+| 10.2 | **Mandala Diff** | ✅ | `diff_mandala()` — comparación anillo por anillo |
+| 10.3 | **Git Bridge (Lectura Completa)** | ✅ | `import_git_history()` convierte commits en anillos concéntricos |
+| 10.4 | **Mandala Merge Geométrico** | ✅ | `merge_mandala()` con resolución espacial y base compartida |
+| 10.5 | **Sistema de Plugins de Lenguaje** | ✅ | `plugins/mod.rs::MandalaPlugin` framework de extensibilidad |
 
 ---
 
-## 📍 Fase 11: El Navegador del Sínarca (Synarchy Explorer)
+## 📍 Fase 11: El Navegador del Sínarca (Synarchy Multi-Project Explorer)
 
-Organización visual de proyectos como repositorios con estilo Mandala - Visualización radial de repositorios externos.
+Organización visual de proyectos en constelaciones radiales.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 11.1 | **Project Registry** — Registro de proyectos | ✅ | `synarchy/registry.rs` — `ProjectRegistry`, `ProjectEntry`, `ProjectScanner` |
-| 11.1.1 | → Agregar path de proyecto | ✅ | `ProjectRegistry::add()` method |
-| 11.1.2 | → Detección automática | ✅ | `ProjectScanner::scan()` with multi-language file counting |
-| 11.1.3 | → Persistencia de registry | ✅ | `save()` / `load()` JSON persistence |
-| 11.2 | **Explorer UI** — Interfaz de exploración | ✅ | Operational in `explorer.astro` with dark/neon aesthetics |
-| 11.2.1 | → Vista de lista de proyectos | ✅ | `ProjectList.tsx` with filtering and search |
-| 11.2.2 | → Tarjeta visual de proyecto | ✅ | `ProjectCard.tsx` with Mini-mandala SVG generator |
-| 11.2.3 | → Estadísticas radiales | ✅ | Rings and monads counts per project |
-| 11.3 | **Synchronizer** — Sincronización | ✅ | `synarchy/sync.rs` — `Synchronizer` with periodic auto-scan |
-| 11.3.1 | → Auto-scan periódico | ✅ | `Synchronizer::start()` with 300s interval |
-| 11.3.2 | → Notificaciones de cambios | ✅ | `ProjectChangeEvent` with `ChangeType` enum |
-| 11.4 | **Project Detail** — Detalle de proyecto | 🚧 | Implementation in `pages/project/[id].astro` |
-| 11.4.1 | → Radial view del proyecto | ✅ | Integrated `MandalaCanvas` in detail view |
-| 11.4.2 | → Actividad récente | ✅ | Stats implemented, detailed log pending |
-| 11.4.3 | → Comparación de rings | ⬜ | Diff visual logic |
+| 11.1 | **Project Registry** — Registro central de proyectos | ✅ | `synarchy/registry.rs` con soporte de rescan y exclusión de locks |
+| 11.2 | **Explorer UI** — Interfaz de exploración responsiva | ✅ | Tarjetas en grid `minmax(310px, 1fr)`, mini-mandalas y barra de progreso |
+| 11.2.1 | → Botón global "⚡ Escanear Todos (Scan All)" | ✅ | Escaneo en lote de todos los proyectos registrados |
+| 11.2.2 | → Botones directos "🧭 Abrir Lienzo" y "↻ Scan AST" | ✅ | Navegación inmediata por proyecto |
+| 11.3 | **Inspector de Vectores y Linaje $SO(2)$ (`VectorsPanel`)** | ✅ | Desglose por sectores (`CORE`, `IO`, `DATA`, `UI`, `SERVICES`) y aristas inter-anulares |
+| 11.4 | **Project Detail & Ring Diff** | ✅ | Métricas de actividad en tiempo real y comparador formal de anillos (`mandala_ring_diff`) |
 
 ---
 
-## 📊 Progress Summary
+## 📍 Próximos Horizontes (Fases 12 - 14)
 
-| Phase | Total Items | ✅ Done | 🔧 Refine | ⬜ Pending |
+| # | Milestone | Status | Description |
+|---|-----------|--------|-------------|
+| 12.1 | **Malla de Sincronización P2P en Tiempo Real** | ⬜ | Intercambio peer-to-peer de mónadas mediante libp2p o WebRTC sin servidor central. |
+| 13.1 | **Compilador WASM y Plugins en Caliente** | ⬜ | Ejecución de transformadores de destilación y plugins de lenguaje directamente en WebAssembly. |
+| 14.1 | **Visualizador Celestial 3D (WebGPU / Three.js)** | ⬜ | Proyección de constelaciones de software en esferas armónicas 3D y toroides topológicos. |
+
+---
+
+## 📊 Resumen de Progreso Actualizado
+
+| Fase | Total Items | ✅ Done | 🔧 Refine | ⬜ Pending |
 |-------|------------|---------|-----------|-----------|
 | 0 — Fundación | 4 | 4 | 0 | 0 |
 | 1 — Motor Central | 8 | 8 | 0 | 0 |
 | 2 — Registro Akáshico | 7 | 7 | 0 | 0 |
 | 3 — El Tejedor | 14 | 14 | 0 | 0 |
 | 4 — El Telar IPC | 12 | 12 | 0 | 0 |
-| 5 — El Mandala UI | 21 | 20 | 0 | 1 |
-| 6 — Templates YAML | 7 | 6 | 0 | 1 |
-| 7 — CLI & TUI | 14 | 14 | 0 | 0 |
-| 8 — Multi-Language | 6 | 6 | 0 | 0 |
-| 9 — Performance | 5 | 1 | 0 | 4 |
-| 10 — Collaboration | 5 | 5 | 0 | 0 |
-| 11 — Synarchy Explorer | 15 | 14 | 0 | 1 |
-| R — Remaining Tasks | 13 | 0 | 0 | 13 |
-| **TOTAL** | **131** | **111** | **0** | **20** |
+| 5 — El Mandala UI | 21 | 21 | 0 | 0 |
+| 6 — Templates YAML & Recetas $SO(2)$ | 7 | 7 | 0 | 0 |
+| 7 — CLI, TUI & MCP v2.0 | 18 | 18 | 0 | 0 |
+| 8 — Multi-Language AST (22 Lenguajes) | 6 | 6 | 0 | 0 |
+| 9 — Persistencia SurrealKV & Rendimiento | 5 | 5 | 0 | 0 |
+| 10 — Colaboración y Red | 5 | 5 | 0 | 0 |
+| 11 — Synarchy Explorer | 15 | 15 | 0 | 0 |
+| 12-14 — Horizontes Futuros | 3 | 0 | 0 | 3 |
+| **TOTAL** | **125** | **122** | **0** | **3** |
 
 ---
 
-## 🎯 Recommended Next Steps (Priority Order)
+## 📝 Notas de Producción y Calidad
 
-### Immediate (Sprint 1)
-1. **11.4.2–11.4.3** — Complete Project Detail view with activity logs and ring comparison
-2. **6.4** — UI: Template Editor Panel (YAML editor with preview on Mandala)
-3. **3.4** — Implement Contract operation (outer ring archiving)
-
-### Short-term (Sprint 2)
-4. **9.1** — Migration to persistent SurrealKV storage (from in-memory)
-5. **10.1** — P2P synchronization logic
-
-### Medium-term (Sprint 3-4)
-
-All remaining Phase 2, 3, 5, and 10 tasks have been implemented.
-
----
-
-## 📝 Notas para Agentes de IA
-
-* **Contexto de Ejecución:** Antes de iniciar cualquier tarea, el Agente debe revisar `Architecture.md` para las restricciones de herramientas (No `libgit2`, sí `SurrealDB`).
-* **Aislamiento:** Cada submódulo de la Fase 1 y 2 debe poder ejecutarse mediante `cargo test` de forma aislada antes de integrarse con Tauri.
-* **Compilación:** Siempre ejecutar `cargo check` en `src-tauri/` después de cambios en Rust, y `pnpm run build` después de cambios en frontend.
-* **Dependencias Actuales (Rust):** `tauri 2.0`, `surrealdb 3.0.5`, `nalgebra 0.33`, `ast-grep-core 0.42`, `blake3 1.5`, `serde 1.0`, `anyhow 1.0`
-* **Dependencias Actuales (Frontend):** `astro 4.15`, `react 18.3`, `d3 7.9`, `zustand 4.5`, `@tauri-apps/api 2.0`
-* **Estado de Mock Data:** `commands.ts` includes `getMockState()` for browser-only dev. All 5 rings with domain names and angle offsets.
-* **DB Endpoints:** `mandala` namespace, `weaver` database. All queries go through `surreal_bridge.rs`.
+* **Compilación de Producción:** `"bundle": { "active": true }` y política CSP estricta habilitadas en `src-tauri/tauri.conf.json`.
+* **Higiene de Logs:** Toda la salida del motor se envía exclusivamente a `stderr` (`eprintln!`), manteniendo `stdout` 100% puro para tramas JSON-RPC del protocolo MCP y la bandera `--json` del CLI.
+* **Garantía No-Destructiva:** Ninguna herramienta de destilación o escaneo sobrescribe código fuente en disco; la salida generada se retorna en memoria o se escribe en el sandbox seguro `.mandala/distilled/`.
+* **Pruebas Unitarias:** 62 pruebas unitarias pasando al 100% (`cargo test --lib`).
+* **Frontend Build:** `pnpm run build` genera las rutas estáticas con 0 errores de compilación.

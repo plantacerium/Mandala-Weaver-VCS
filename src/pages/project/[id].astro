@@ -35,7 +35,9 @@ if (id && projects) {
           <span class="label">Monads</span>
         </div>
         <div class="stat-card">
-          <span class="value" id="last-activity">—</span>
+          <span class="value" id="last-activity" style="font-size: 1rem;">
+            {project && project.last_scanned ? new Date(project.last_scanned * 1000).toLocaleString() : 'Reciente'}
+          </span>
           <span class="label">Last Activity</span>
         </div>
         <div class="stat-card full-width">

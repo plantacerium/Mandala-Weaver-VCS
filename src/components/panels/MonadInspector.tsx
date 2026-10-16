@@ -10,6 +10,7 @@ const MonadInspector: React.FC = () => {
   const [isZenExpanded, setIsZenExpanded] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [showLineage, setShowLineage] = useState<boolean>(false);
+  const [customWidth, setCustomWidth] = useState<number | null>(null);
 
   // When selectedMonad changes, ensure panel is open
   useEffect(() => {
@@ -61,13 +62,51 @@ const MonadInspector: React.FC = () => {
       setTimeout(() => setCopied(false), 2000);
     };
 
+    const startResize = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = customWidth || Math.round(window.innerWidth * 0.32);
+      const onMove = (ev: MouseEvent) => {
+        const next = Math.max(360, Math.min(Math.round(window.innerWidth * 0.85), startW - (ev.clientX - startX)));
+        setCustomWidth(next);
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
+
     return (
-      <aside className={`inspector-split-dock ${isZenExpanded ? 'zen-expanded' : ''}`}>
+      <aside
+        className={`inspector-split-dock ${isZenExpanded ? 'zen-expanded' : ''}`}
+        style={
+          !isZenExpanded && customWidth
+            ? { width: `${customWidth}px`, maxWidth: '85vw', transition: 'none' }
+            : undefined
+        }
+      >
+        {/* Left-edge Resize Handle */}
+        <div
+          onMouseDown={startResize}
+          title="Arrastrar para redimensionar el inspector"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '6px',
+            cursor: 'ew-resize',
+            background: 'transparent',
+            zIndex: 10,
+          }}
+        />
         {/* Controls Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.6rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>
-              {isZenExpanded ? 'Zen Mode (75%)' : 'Split View (30%)'}
+              {isZenExpanded ? 'Zen Mode (75%)' : customWidth ? `Split (${customWidth}px)` : 'Split View (30%)'}
             </span>
           </div>
 

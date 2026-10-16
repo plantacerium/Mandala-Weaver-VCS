@@ -22,11 +22,28 @@ const DistillPanel: React.FC = () => {
     const [spatialArtifact, setSpatialArtifact] = useState<DistilledArtifact | null>(null);
     const [spatialError, setSpatialError] = useState<string | null>(null);
     const [copied, setCopied] = useState<boolean>(false);
+    const [panelWidth, setPanelWidth] = useState<number>(460);
 
     // Only show the panel if viewMode is 'distill'
     if (viewMode !== 'distill') {
         return null;
     }
+
+    const startResize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startW = panelWidth;
+        const onMove = (ev: MouseEvent) => {
+            const next = Math.max(360, Math.min(820, startW + (ev.clientX - startX)));
+            setPanelWidth(next);
+        };
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    };
 
     const unselectMonad = (id: string) => {
         setSelectedForDistill(selectedForDistill.filter(m => m.id !== id));
@@ -108,7 +125,20 @@ const DistillPanel: React.FC = () => {
     };
 
     return (
-        <div className="inspector" style={{ left: '2rem', right: 'auto', width: '460px', zIndex: 100, maxHeight: '88vh', overflowY: 'auto' }}>
+        <div className="inspector" style={{ left: '2rem', right: 'auto', width: `${panelWidth}px`, zIndex: 100, maxHeight: '88vh', overflowY: 'auto' }}>
+            <div
+                onMouseDown={startResize}
+                title="Arrastrar para redimensionar panel"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: '6px',
+                    cursor: 'ew-resize',
+                    background: 'transparent',
+                }}
+            />
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <h2>Weaver / Cristalización</h2>
                 <button 

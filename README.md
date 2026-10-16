@@ -7,11 +7,11 @@ This topology enables non-linear code orchestration: the Architect selects preci
 
 ## Main UI
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-45.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Checkpoint-46.JPG)
 
 ## Projects UI
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-44.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-46.JPG)
 ---
 
 ## Logo
@@ -102,9 +102,9 @@ Mandala Weaver VCS fundamenta el desarrollo, navegación y síntesis del softwar
 
 ---
 
-## Model Context Protocol (MCP) Integration
+## Model Context Protocol (MCP v2.0) Integration
 
-Mandala Weaver VCS includes a built-in, first-class **Model Context Protocol (MCP)** server over standard input/output (`stdio`), designed for AI coding agents and developer environments (such as Claude Desktop, Cursor, Antigravity, and Cline).
+Mandala Weaver VCS includes a built-in, first-class **Model Context Protocol (MCP)** server over standard input/output (`stdio`), designed for autonomous AI agents and developer environments (such as Claude Desktop, Cursor, Antigravity, Windsurf, Cline, and Roo Code).
 
 ### Starting the MCP Server
 ```bash
@@ -113,48 +113,64 @@ weave mcp
 
 # Or directly through cargo
 cargo run --manifest-path src-tauri/Cargo.toml -- mcp
+
+# Or using the production release binary
+./src-tauri/target/release/mandala-weaver mcp
 ```
 
-### Exposed Tools
+### Non-Destructive Sandbox Security Guarantee
+
+The MCP server enforces a strict **non-destructive policy by design**:
+1. **In-Memory Source Code Delivery:** Destillation tools (`mandala_distill`, `mandala_distill_spatial`, `mandala_unweave`) return assembled code directly in the JSON response payload. Agents can analyze or present code diffs without touching source files on disk.
+2. **Isolated Disk Sandbox:** When `"save_to_sandbox": true` is explicitly passed, artifacts are strictly written to `.mandala/distilled/`, completely protecting existing project files from accidental mutation.
+3. **Safe Ring Contraction:** `mandala_contract_ring` performs soft archiving (`is_archived = true`) inside SurrealDB, leaving repository files completely untouched.
+
+### Exposed Tools (17 Tools)
 
 | Tool | Parameters | Description |
 |---|---|---|
-| `mandala_telemetry` | `verbose?: bool` | Scans project topology, ring counts, active and invariant monads. |
-| `mandala_bindu` | `project_name?: string` | Instantiates Point Zero (0, 0) / project genesis. |
-| `mandala_crystallize` | `file?: string, message?: string` | Radial commit: extracts AST monads from source code and expands a new ring. |
-| `mandala_distill` | `monad_ids?: string[], template_path?: string, output_path?: string` | Compiles executable source code from selected monads or a YAML template. |
-| `mandala_focus` | `monad_id: string` | Deep inspection of a monad's AST, raw logic, line coordinates, and hash. |
-| `mandala_lineage` | `monad_id?: string, limit?: number` | Traces bidirectional evolutionary lineage through inner and outer rings. |
-| `mandala_spectrum` | `monad_id: string` | Chromatic analysis of semantic mutations using BLAKE3 and HSL projection. |
-| `mandala_scan_project` | `path: string` | Recursively scans and indexes a polyglot codebase into radial rings. |
-| `mandala_git_import` | `repo_path: string` | Chronologically imports repository commit history into concentric rings. |
-| `mandala_validate_template` | `content: string` | Validates declarative YAML distillation templates and checks syntax. |
+| `mandala_telemetry` | `verbose?: bool` | Scans project topology, ring counts, language distribution, active monads, and indexed contracts. |
+| `mandala_bindu` | `project_name: string` | Instantiates Point Zero (0, 0) / project genesis in SurrealDB. |
+| `mandala_crystallize` | `file_path: string`, `message?: string` | Radial commit: extracts AST monads from a source file and expands a new concentric ring. |
+| `mandala_unweave` | `path?: string` | **InnerKnow:** Shatters a monolith into atomic monads, populates the Tripartite Graph, and generates `distill.yaml`. |
+| `mandala_distill_spatial` | `seeds: string[]`, `target_angle_deg?: number`, `policy?: string`, `save_to_sandbox?: bool` | **Spatial Weaver $SO(2)$:** Assembles source code from seed symbols using continuous geodesic angular resolution. |
+| `mandala_resolve_contract` | `symbol_name: string`, `target_angle_deg?: number`, `max_ring?: number` | Resolves the nearest monad implementing a port or function within the continuous $SO(2)$ Lie group. |
+| `mandala_search_monads` | `query: string`, `kind?: string`, `language?: string`, `ring?: number` | Real-time semantic search by name, kind, language, semantic hash, or code snippet. |
+| `mandala_audit_topology` | `ring?: number` | Audits semantic coherence, duplicate symbol definitions, and tripartite interface contracts. |
+| `mandala_ring_diff` | `base_ring: number`, `target_ring: number` | Formal ring comparison: computes added (`+`), modified (`~`), removed (`-`), and identical (`=`) monads. |
+| `mandala_vectors` | `sector?: string` | Inspects $SO(2)$ angular domain sectors (`CORE`, `IO`, `DATA`, `UI`, `SERVICES`) and evolutionary lineage edges. |
+| `mandala_contract_ring` | `target_ring?: number` | Non-destructively contracts (soft-archives) the outermost ring or reverts to a specified ring level. |
+| `mandala_distill` | `monad_ids?: string[]`, `template_content?: string`, `save_to_sandbox?: bool` | Compiles source code from monad IDs or a declarative YAML template (returns code in JSON). |
+| `mandala_focus` | `monad_name_or_id: string` | Deep inspection of a monad (AST kind, 1-based line coordinates, contract hash, outbound calls, and source). |
+| `mandala_lineage` | `monad_id: string` | Traces bidirectional evolutionary lineage (`evolves_to`) through inner and outer rings. |
+| `mandala_spectrum` | `monad_name: string` | Chromatic analysis of semantic mutations using BLAKE3 and HSL projection across rings. |
+| `mandala_scan_project` | `path: string`, `force_rescan?: bool` | Recursively scans and indexes a 22-language codebase into radial rings with zero disk mutation. |
+| `mandala_git_import` | `repo_path: string` | Chronologically imports repository commit history into concentric evolutionary rings. |
+| `mandala_validate_template` | `template_yaml: string` | Validates syntax and schema of declarative YAML distillation templates and $SO(2)$ recipes. |
 
 ### Live Resources & Prompts
 - **`mandala://topology`**: Dynamic JSON graph of the entire mandala state (rings, monads, constellations, and edges).
 - **`mandala://rings`**: Detailed breakdown of concentric rings, radius tiers, and monad distribution.
+- **`mandala://contracts`**: Canonical contract definitions, nominal ports, and tripartite relations.
+- **`mandala://vectors`**: Angular domain allocations across $SO(2)$ sectors (`CORE`, `IO`, `DATA`, `UI`, `SERVICES`).
+- **`mandala://recipe`**: Active `.mandala/distill.yaml` or spatial distillation recipe.
 - **`architect_guidance` Prompt**: Interactive architectural instructions for AI assistants guiding circular software evolution.
+- **`spatial_distill_prompt` Prompt**: Guided interactive prompt for orchestrating $SO(2)$ spatial distillations from seed symbols.
 
-### AI Agent Configuration (`claude_desktop_config.json` / Cursor)
+### AI Agent Configuration (`claude_desktop_config.json` / Cursor / Antigravity)
 
 ```json
 {
   "mcpServers": {
     "mandala-weaver": {
-      "command": "cargo",
-      "args": [
-        "run",
-        "--manifest-path",
-        "Mandala-Weaver-VCS/src-tauri/Cargo.toml",
-        "--",
-        "mcp"
-      ]
+      "command": "<PATH_TO_MANDALA_WEAVER>/src-tauri/target/release/mandala-weaver",
+      "args": ["mcp"]
     }
   }
 }
 ```
 
-For more details, see [mcp/README.md](./mcp/README.md).
+For complete technical documentation and examples, see [mcp/README.md](./mcp/README.md).
 
 ---
 
@@ -290,13 +306,58 @@ Mandala Weaver provides the `weave` command-line tool for terminal-based workflo
 
 ---
 
+## Polyglot AST Extractor (22 Languages)
+
+The core syntax engine ([`ast_extractor.rs`](./src-tauri/src/weaver/ast_extractor.rs)) natively parses, extracts, and versions atomic code units across **22 programming and markup languages** using Tree-sitter grammars and `ast-grep-core`:
+
+| Language | Supported Extensions | Extracted AST Node Kinds |
+|---|---|---|
+| **Rust** | `.rs` | `function_item`, `struct_item`, `enum_item`, `trait_item`, `impl_item` |
+| **TypeScript / TSX** | `.ts`, `.tsx`, `.mts`, `.cts` | `function_declaration`, `class_declaration`, `interface_declaration`, `type_alias_declaration`, `method_definition` |
+| **JavaScript / JSX** | `.js`, `.jsx`, `.mjs`, `.cjs` | `function_declaration`, `class_declaration`, `lexical_declaration`, `method_definition` |
+| **Python** | `.py` | `function_definition`, `class_definition`, `decorated_definition` |
+| **Go** | `.go` | `function_declaration`, `method_declaration`, `type_declaration` |
+| **Java** | `.java` | `method_declaration`, `class_declaration`, `interface_declaration` |
+| **C / C++** | `.c`, `.h`, `.cpp`, `.hpp`, `.cc` | `function_definition`, `struct_specifier`, `class_specifier` |
+| **C#** | `.cs` | `method_declaration`, `class_declaration`, `interface_declaration` |
+| **Kotlin** | `.kt`, `.kts` | `function_declaration`, `class_declaration` |
+| **Swift** | `.swift` | `function_declaration`, `class_declaration`, `protocol_declaration` |
+| **Ruby** | `.rb` | `method`, `class`, `module` |
+| **PHP** | `.php` | `function_definition`, `class_declaration`, `method_declaration` |
+| **Scala** | `.scala` | `function_definition`, `class_definition`, `object_definition` |
+| **Elixir** | `.ex`, `.exs` | `call` (`def`, `defp`, `defmodule`) |
+| **Haskell** | `.hs` | `function_declaration`, `type_declaration` |
+| **Lua** | `.lua` | `function_declaration`, `local_function` |
+| **Dart** | `.dart` | `function_signature`, `class_definition` |
+| **SQL** | `.sql` | `create_function`, `create_table`, `create_view` |
+| **HTML / CSS** | `.html`, `.css`, `.scss` | Structured template blocks and rule sets |
+| **YAML / JSON** | `.yaml`, `.yml`, `.json` | Structured document configurations and schemas |
+
+- **Real 1-Based Line Numbers:** Precise line intervals using `node.start_pos().line() + 1` and `node.end_pos().line() + 1` (no byte offset confusion).
+- **Qualified Module & Test Names:** Module test blocks are cleanly qualified as `<file_stem>::tests` to prevent collision in concentric rings.
+
+---
+
+## Synarchy Multi-Project Engine & Vectors Panel
+
+Mandala Weaver's **Synarchy Explorer** organizes repositories into visual celestial constellations:
+
+- **Dual Ingestion Engine:** Scan projects natively without Git (`Mandala Scan`) or import chronological Git commit history (`Git Scan`).
+- **Responsive Constellation Grid:** Auto-fill responsive layout (`minmax(310px, 1fr)`) with instant "🧭 Abrir Lienzo", "↻ Scan AST", and global "⚡ Escanear Todos (Scan All)".
+- **Vectors & Lineage Panel:**
+  - **$SO(2)$ Domain Sectors:** Real-time density meters across functional sectors (`CORE`, `IO`, `DATA`, `UI`, `SERVICES`).
+  - **Inter-Ring Lineage Edges:** Explores evolutionary connections and `outbound_calls` with interactive canvas focus.
+
+---
+
 ## Technology Stack
 
 The Loom is built on three high-performance engineering pillars:
 
-- **The Engine (Backend):** Rust + [`nalgebra`](https://crates.io/crates/nalgebra) (Orbital and spatial math in the continuous $SO(2)$ Lie group) + [`ast-grep`](https://ast-grep.github.io/) (Canonical AST parsing & hygienic rewriting) + [`petgraph`](https://crates.io/crates/petgraph) (Tarjan Strongly Connected Components topological ordering) + [`tokio`](https://tokio.rs/) (Async runtime) + [`blake3`](https://crates.io/crates/blake3) (Dual-domain cryptographic Merkle tree hashing).
-- **The Akashic Record (Persistence):** SurrealDB 3.0 embedded graph database. Pure tripartite graph modeling (`monad` — `contract` — `port`) with continuous $SO(2)$ polar coordinates, `requires_contract`, `adapts_contract` bridge relations, composite indexing, and batch insertions.
-- **The Canvas (UI):** Tauri 2.0 + Astro + React + D3.js. Features a Zen Split View (70% Mandala | 30% Inspector) with line numbers, instant full-screen collapse/expand, interactive spatial distillation dials ($0 \dots 2\pi$), bridge trace alerts, and neo-metric dark glassmorphism.
+- **The Engine (Backend):** Rust 2021 + [`nalgebra 0.33`](https://crates.io/crates/nalgebra) (Orbital and spatial math in the continuous $SO(2)$ Lie group) + [`ast-grep-core 0.42`](https://ast-grep.github.io/) (Canonical AST parsing & hygienic rewriting for 22 languages) + [`petgraph 0.6`](https://crates.io/crates/petgraph) (Tarjan Strongly Connected Components topological ordering) + [`tokio 1.40`](https://tokio.rs/) (Async runtime) + [`blake3 1.5`](https://crates.io/crates/blake3) (Dual-domain cryptographic Merkle tree hashing) + [`serde_yml 0.0.12`](https://crates.io/crates/serde_yml).
+- **The Akashic Record (Persistence):** `surrealdb 3.0.5` embedded graph database with local `SurrealKV` file backend (`.mandala/db/`). Pure tripartite graph modeling (`monad` — `contract` — `port`) with continuous $SO(2)$ polar coordinates, `requires_contract`, `adapts_contract` bridge relations, composite indexing, and batch insertions.
+- **The Canvas (UI):** Tauri v2.0 + Astro 4.15 + React 18.3 + D3.js 7.9. Features a Zen Split View (70% Mandala | 30% Inspector) with line numbers, instant full-screen collapse/expand, interactive spatial distillation dials ($0 \dots 2\pi$), bridge trace alerts, and neo-metric dark glassmorphism.
+- **Production Hardening:** Active native bundling (`"bundle": { "active": true }`), strict Content-Security-Policy (CSP), and stderr-only logging (`eprintln!`) ensuring pristine stdout for MCP and CLI `--json` output.
 
 ---
 

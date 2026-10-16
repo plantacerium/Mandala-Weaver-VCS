@@ -15,6 +15,10 @@ interface CliResponse {
 
 const AVAILABLE_COMMANDS = [
   { cmd: 'bindu', desc: 'Initialize new Mandala project' },
+  { cmd: 'innerknow [path]', desc: 'Shatter monolith into atomic monads & recipe' },
+  { cmd: 'scan [path]', desc: 'Scan & index project into Mandala space' },
+  { cmd: 'seed <path>', desc: 'Import Git history as concentric rings' },
+  { cmd: 'audit', desc: 'Validate source coherence across monads' },
   { cmd: 'telemetry', desc: 'Show ecosystem statistics' },
   { cmd: 'status', desc: 'Display Mandala status' },
   { cmd: 'crystallize <file> [msg]', desc: 'Create new ring from file' },
@@ -102,6 +106,23 @@ const TerminalPanel: React.FC = () => {
       switch (command) {
         case 'bindu':
           response = await invoke<CliResponse>('cli_bindu');
+          break;
+        case 'innerknow':
+        case 'unweave':
+        case 'shatter':
+          response = await invoke<CliResponse>('cli_innerknow', {
+            path: args[0],
+            output: args[1],
+          });
+          break;
+        case 'scan':
+          response = await invoke<CliResponse>('cli_scan', { path: args[0] });
+          break;
+        case 'seed':
+          response = await invoke<CliResponse>('cli_seed', { source: args[0] || '.' });
+          break;
+        case 'audit':
+          response = await invoke<CliResponse>('cli_audit');
           break;
         case 'telemetry':
           response = await invoke<CliResponse>('cli_telemetry', { verbose: args.includes('-v') || args.includes('--verbose') });

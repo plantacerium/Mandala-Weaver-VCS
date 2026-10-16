@@ -213,3 +213,79 @@ export async function distillSpatialQuick(
         bridge_traces: [],
     };
 }
+
+/**
+ * Searches monads by name, kind, language, or content via Tauri `search_monads` or local state fallback.
+ */
+export async function searchMonads(query: string, fallbackMonads: Monad[] = []): Promise<Monad[]> {
+    const trimmed = query.trim();
+    if (!trimmed) {
+        return fallbackMonads.slice(0, 30);
+    }
+
+    if (isTauri()) {
+        try {
+            const results = await invoke<Monad[]>('search_monads', { query: trimmed });
+            if (results && results.length > 0) {
+                return results;
+            }
+        } catch (err) {
+            console.warn('[WARN] search_monads IPC failed, using local fallback:', err);
+        }
+    }
+
+    const q = trimmed.toLowerCase();
+    return fallbackMonads.filter(
+        (m) =>
+            m.name.toLowerCase().includes(q) ||
+            (m.kind && m.kind.toLowerCase().includes(q)) ||
+            (m.language && m.language.toLowerCase().includes(q)) ||
+            (m.content && m.content.toLowerCase().includes(q)) ||
+            `r${m.ring}` === q
+    );
+}
+
+/**
+ * Contracts (archives) the outermost active ring.
+ */
+export async function contractOuterRing(): Promise<number> {
+    if (!isTauri()) {
+        return 0;
+    }
+    return await invoke<number>('contract_outer_ring');
+}
+
+/**
+ * Reverts (archives) all rings above `ring`.
+ */
+export async function revertToLevel(ring: number): Promise<number> {
+    if (!isTauri()) {
+        return 0;
+    }
+    return await invoke<number>('revert_to_level', { ring });
+}
+
+/**
+ * Returns the count of archived (latent) monads in SurrealDB.
+ */
+export async function getArchivedMonadsCount(): Promise<number> {
+    if (!isTauri()) {
+        return 0;
+    }
+    try {
+        return await invoke<number>('get_archived_monads_count');
+    } catch {
+        return 0;
+    }
+}
+
+/**
+ * Permanently purges archived (latent) monads from SurrealDB.
+ */
+export async function purgeArchivedMonads(): Promise<number> {
+    if (!isTauri()) {
+        return 0;
+    }
+    return await invoke<number>('purge_archived_monads');
+}
+

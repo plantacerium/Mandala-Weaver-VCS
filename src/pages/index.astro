@@ -9,6 +9,7 @@ import RingsPanel from '../components/panels/RingsPanel';
 import VectorsPanel from '../components/panels/VectorsPanel';
 import TerminalPanel from '../components/panels/TerminalPanel';
 import WorkspaceHeader from '../components/panels/WorkspaceHeader';
+import CommandPalette from '../components/panels/CommandPalette';
 import '../styles/components/sidebar.css';
 import '../styles/components/workspace.css';
 import '../styles/panels/panels.css';
@@ -59,6 +60,7 @@ import '../styles/components/theme-selector.css';
 			</div>
 		</section>
 		
+		<CommandPalette client:load />
 		<TerminalPanel client:load />
 	</main>
 </AppLayout>
