@@ -477,11 +477,28 @@ pub async fn cli_seed(source: String, db: State<'_, SharedDb>) -> Result<CliResp
 }
 
 #[tauri::command]
-pub async fn cli_innerknow(path: Option<String>, output: Option<String>) -> Result<CliResponse, String> {
-    let p = path.map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
-    let out = output.map(PathBuf::from);
+pub async fn cli_innerknow(
+    path: Option<String>,
+    output: Option<String>,
+    db: State<'_, SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
+) -> Result<CliResponse, String> {
+    let default_root = {
+        let guard = active_root.read().await;
+        guard
+            .clone()
+            .or_else(crate::persistence::surreal_bridge::find_project_root)
+            .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
+    };
 
-    match crate::weaver::unweave::UnweaveEngine::unweave(&p, out.as_deref()).await {
+    let p = match path {
+        Some(ref s) if !s.trim().is_empty() && s.trim() != "." => PathBuf::from(s),
+        _ => default_root,
+    };
+    let out = output.map(PathBuf::from);
+    let db_guard = db.write().await;
+
+    match crate::weaver::unweave::UnweaveEngine::unweave_with_db(&*db_guard, &p, out.as_deref()).await {
         Ok(report) => {
             let mut out_str = format!(
                 "✨ ¡Innerknow completado con éxito!\nProyecto: {}\nMónadas: {}\nNiveles: {}\nDominios: {}\nReceta: {}\n\nContratos Principales:\n",
@@ -503,4 +520,70 @@ pub async fn cli_innerknow(path: Option<String>, output: Option<String>) -> Resu
         }),
     }
 }
+
+#[tauri::command]
+pub async fn cli_scan(
+    path: Option<String>,
+    db: State<'_, SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
+) -> Result<CliResponse, String> {
+    let default_root = {
+        let guard = active_root.read().await;
+        guard
+            .clone()
+            .or_else(crate::persistence::surreal_bridge::find_project_root)
+            .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
+    };
+
+    let p = match path {
+        Some(ref s) if !s.trim().is_empty() && s.trim() != "." => PathBuf::from(s),
+        _ => default_root,
+    };
+    let db_guard = db.write().await;
+
+    match crate::synarchy::ProjectScanner::scan_and_index_with_db_mode(&*db_guard, &p, Some("rescan")).await {
+        Ok(entry) => Ok(CliResponse {
+            success: true,
+            output: format!(
+                "✅ Mandala Scan Complete!\n  Project: {}\n  Path:    {}\n  Rings:   {}\n  Monads:  {}",
+                entry.name,
+                entry.path.display(),
+                entry.ring_count,
+                entry.monad_count
+            ),
+            error: None,
+        }),
+        Err(e) => Ok(CliResponse {
+            success: false,
+            output: String::new(),
+            error: Some(format!("Scan failed: {}", e)),
+        }),
+    }
+}
+
+#[tauri::command]
+pub async fn cli_audit(db: State<'_, SharedDb>) -> Result<CliResponse, String> {
+    let db_guard = db.read().await;
+    let all = get_all_monads(&*db_guard).await.map_err(|e| e.to_string())?;
+
+    match crate::weaver::source_compiler::validate_source_coherence(&all) {
+        Ok(_) => Ok(CliResponse {
+            success: true,
+            output: format!("✅ Audit passed ({} monads verified). No incoherencies found.", all.len()),
+            error: None,
+        }),
+        Err(reports) => {
+            let mut out = format!("⚠️ Found {} incoherencies:\n", reports.len());
+            for r in &reports {
+                out.push_str(&format!("  - [{:?}] {}\n", r.kind, r.message));
+            }
+            Ok(CliResponse {
+                success: true,
+                output: out,
+                error: None,
+            })
+        }
+    }
+}
+
 

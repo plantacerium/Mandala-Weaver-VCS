@@ -145,33 +145,44 @@ impl ProjectScanner {
         };
 
         let mut all_monads = crate::persistence::surreal_bridge::get_all_monads(db).await.unwrap_or_default();
+        let force_rescan = matches!(scan_mode, Some("rescan") | Some("force"))
+            || all_monads.iter().any(|m| m.name == "mandala_state.json" || m.name.trim().is_empty());
 
-        if all_monads.is_empty() {
+        if all_monads.is_empty() || force_rescan {
+            if force_rescan && !all_monads.is_empty() {
+                let _ = db.query("DELETE monad; DELETE evolves_to;").await;
+            }
+
             let bindu = crate::ontology::bindu::Bindu::genesis(&name);
             let val = serde_json::to_value(&bindu)?;
-            let _: Option<serde_json::Value> = db.create(("bindu", "genesis")).content(val).await?;
+            let _: Option<serde_json::Value> = db.upsert(("bindu", "genesis")).content(val).await?;
 
             let mut files = Vec::new();
-            let extensions = [
-                "rs", "ts", "tsx", "js", "jsx", "py", "go",
-                "java", "kt", "c", "cpp", "cc", "cxx", "h", "hpp", "cs",
-                "html", "css", "scss", "vue", "svelte", "astro",
-                "json", "yaml", "yml", "toml", "md", "txt", "sh", "sql"
-            ];
-            Self::collect_files_recursive(path, &extensions, &mut files, 0)?;
+            let extensions = crate::language::Language::code_extensions();
+            Self::collect_files_recursive(path, extensions, &mut files, 0)?;
 
             files.sort_by_key(|(depth, p)| (*depth, p.clone()));
 
             let mut ring_counters: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
+            let mut last_id_by_symbol: std::collections::HashMap<String, String> = std::collections::HashMap::new();
 
-            for (depth, file_path) in files.iter().take(150) {
+            for (depth, file_path) in files.iter().take(200) {
                 if let Ok(content) = std::fs::read_to_string(file_path) {
                     let ring = ((*depth as u32) + 1).min(10);
                     let lang = crate::language::detect_language(file_path);
+                    let ext_str = file_path
+                        .extension()
+                        .and_then(|e| e.to_str())
+                        .unwrap_or(lang.tree_sitter_name());
+                    let file_stem = file_path
+                        .file_stem()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("module");
+
                     let monads = crate::weaver::ast_extractor::extract_raw_monads_lang(
                         &content,
                         ring,
-                        lang.tree_sitter_name(),
+                        ext_str,
                     );
                     if monads.is_empty() && !content.trim().is_empty() {
                         let filename = file_path.file_name()
@@ -192,13 +203,39 @@ impl ProjectScanner {
                             content.lines().count() as u32,
                             lang.tree_sitter_name(),
                         );
-                        let _ = crate::persistence::surreal_bridge::insert_and_link(db, &m, None).await;
+                        let parent_id = last_id_by_symbol.get(&m.name).cloned();
+                        let _ = crate::persistence::surreal_bridge::insert_and_link(
+                            db,
+                            &m,
+                            parent_id.as_deref(),
+                        ).await;
+                        last_id_by_symbol.insert(m.name.clone(), m.id.clone());
                     } else {
                         for mut m in monads {
+                            if m.name == "tests" || m.name == "test" {
+                                m.name = format!("{}::{}", file_stem, m.name);
+                            } else if m.name.trim().is_empty() {
+                                m.name = format!("{}_{}", file_stem, m.line_start);
+                            }
                             let count = ring_counters.entry(ring).or_insert(0);
                             m.coord.theta = ((*count as f64) * 137.50776405) % 360.0;
                             *count += 1;
-                            let _ = crate::persistence::surreal_bridge::insert_and_link(db, &m, None).await;
+
+                            let parent_id = last_id_by_symbol
+                                .get(&m.name)
+                                .cloned()
+                                .or_else(|| {
+                                    m.outbound_calls
+                                        .iter()
+                                        .find_map(|callee| last_id_by_symbol.get(callee).cloned())
+                                });
+
+                            let _ = crate::persistence::surreal_bridge::insert_and_link(
+                                db,
+                                &m,
+                                parent_id.as_deref(),
+                            ).await;
+                            last_id_by_symbol.insert(m.name.clone(), m.id.clone());
                         }
                     }
                 }
@@ -245,6 +282,17 @@ impl ProjectScanner {
             let path = entry.path();
 
             if path.is_file() {
+                let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                if matches!(
+                    file_name,
+                    "mandala_state.json"
+                        | "package-lock.json"
+                        | "pnpm-lock.yaml"
+                        | "Cargo.lock"
+                        | "yarn.lock"
+                ) {
+                    continue;
+                }
                 if let Some(ext) = path.extension() {
                     if extensions.contains(&ext.to_str().unwrap_or("")) {
                         collected.push((depth, path));

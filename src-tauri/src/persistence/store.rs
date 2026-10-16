@@ -190,12 +190,17 @@ impl MandalaStore {
         }
 
         // 3. Asegurar la Mónada direccionada por implementation_hash
+        let semantic_hash = if !monad.semantic_hash.is_empty() {
+            &monad.semantic_hash
+        } else {
+            &impl_hash
+        };
         let monad_content = serde_json::json!({
             "id": impl_hash,
             "name": symbol_name,
             "symbol_name": symbol_name,
             "implementation_hash": impl_hash,
-            "semantic_hash": impl_hash,
+            "semantic_hash": semantic_hash,
             "contract_hash": contract_hash,
             "canonical_signature": canonical_sig,
             "content": monad.content,
@@ -205,7 +210,7 @@ impl MandalaStore {
             "line_start": monad.line_start,
             "line_end": monad.line_end,
             "language": monad.language,
-            "is_archived": false,
+            "is_archived": monad.is_archived,
             "outbound_calls": outbound_list,
             "coord": stored_coord,
         });

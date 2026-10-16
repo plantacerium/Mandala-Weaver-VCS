@@ -11,10 +11,22 @@ pub async fn distill_from_template(
     let template_content = std::fs::read_to_string(&template_path)
         .map_err(|e| format!("Failed to read template: {}", e))?;
 
-    let template: DistillationTemplate = serde_yaml::from_str(&template_content)
+    let db_conn = db.read().await;
+
+    // Si es una receta espacial con semillas (o manifiesto unificado), intentar primero el Spatial Weaver SO(2)
+    if let Ok(recipe) = serde_yml::from_str::<crate::weaver::spatial_weaver::DistillationRecipe>(&template_content) {
+        if !recipe.seeds.is_empty() {
+            let store = crate::persistence::MandalaStore::from_existing_db(db_conn.clone());
+            let weaver = crate::weaver::spatial_weaver::Weaver::new(&store);
+            if let Ok(artifact) = weaver.distill(&recipe).await {
+                return Ok(artifact.assembled_source);
+            }
+        }
+    }
+
+    let template: DistillationTemplate = serde_yml::from_str(&template_content)
         .map_err(|e| format!("Failed to parse template: {}", e))?;
 
-    let db_conn = db.read().await;
     let engine = crate::template::engine::TemplateEngine::new(db_conn.clone());
     let monads = engine
         .resolve(&template)
@@ -35,10 +47,30 @@ pub async fn distill_from_template_content(
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     template_content: String,
 ) -> Result<TemplateResult, String> {
-    let template: DistillationTemplate = serde_yaml::from_str(&template_content)
+    let db_conn = db.read().await;
+
+    // Intentar primero con el motor Spatial Weaver SO(2) si tiene semillas definidas
+    if let Ok(recipe) = serde_yml::from_str::<crate::weaver::spatial_weaver::DistillationRecipe>(&template_content) {
+        if !recipe.seeds.is_empty() {
+            let store = crate::persistence::MandalaStore::from_existing_db(db_conn.clone());
+            let weaver = crate::weaver::spatial_weaver::Weaver::new(&store);
+            if let Ok(artifact) = weaver.distill(&recipe).await {
+                let monad_names: Vec<String> = artifact.traces.iter().map(|t| t.symbol_name.clone()).collect();
+                let max_r = artifact.traces.iter().map(|t| t.selected_ring).max().unwrap_or(1);
+                return Ok(TemplateResult {
+                    source: artifact.assembled_source,
+                    monad_count: artifact.traces.len(),
+                    monad_names,
+                    rings_included: max_r.to_string(),
+                    output_file: format!("{}.rs", recipe.name),
+                });
+            }
+        }
+    }
+
+    let template: DistillationTemplate = serde_yml::from_str(&template_content)
         .map_err(|e| format!("Invalid template YAML: {}", e))?;
 
-    let db_conn = db.read().await;
     let engine = crate::template::engine::TemplateEngine::new(db_conn.clone());
     let monads = engine
         .resolve(&template)
@@ -68,30 +100,36 @@ pub async fn validate_template(template_path: String) -> Result<ValidationResult
     let template_content = std::fs::read_to_string(&template_path)
         .map_err(|e| format!("Failed to read template: {}", e))?;
 
-    let template: DistillationTemplate = serde_yaml::from_str(&template_content)
-        .map_err(|e| format!("Invalid template YAML: {}", e))?;
-
-    Ok(ValidationResult {
-        valid: true,
-        name: template.name,
-        version: template.version,
-        vectors_count: template.vectors.len(),
-    })
+    validate_template_content(template_content).await
 }
 
 #[tauri::command]
 pub async fn validate_template_content(
     template_content: String,
 ) -> Result<ValidationResult, String> {
-    let template: DistillationTemplate = serde_yaml::from_str(&template_content)
-        .map_err(|e| format!("Invalid template YAML: {}", e))?;
+    if let Ok(template) = serde_yml::from_str::<DistillationTemplate>(&template_content) {
+        return Ok(ValidationResult {
+            valid: true,
+            name: template.name,
+            version: template.version,
+            vectors_count: template.vectors.len(),
+        });
+    }
 
-    Ok(ValidationResult {
-        valid: true,
-        name: template.name,
-        version: template.version,
-        vectors_count: template.vectors.len(),
-    })
+    if let Ok(recipe) = serde_yml::from_str::<crate::weaver::spatial_weaver::DistillationRecipe>(&template_content) {
+        return Ok(ValidationResult {
+            valid: true,
+            name: recipe.name,
+            version: "1.0.0-so2".to_string(),
+            vectors_count: recipe.seeds.len(),
+        });
+    }
+
+    let err = serde_yml::from_str::<DistillationTemplate>(&template_content)
+        .err()
+        .map(|e| e.to_string())
+        .unwrap_or_else(|| "Unknown YAML format error".to_string());
+    Err(format!("Invalid template YAML: {}", err))
 }
 
 #[tauri::command]
@@ -110,7 +148,7 @@ pub fn create_template(name: String, version: String) -> Result<String, String> 
         },
         variables: Default::default(),
     };
-    serde_yaml::to_string(&template).map_err(|e| format!("Failed to serialize: {}", e))
+    serde_yml::to_string(&template).map_err(|e| format!("Failed to serialize: {}", e))
 }
 
 #[tauri::command]
@@ -119,7 +157,7 @@ pub async fn distill_and_write(
     template_content: String,
     output_dir: String,
 ) -> Result<WriteResult, String> {
-    let template: DistillationTemplate = serde_yaml::from_str(&template_content)
+    let template: DistillationTemplate = serde_yml::from_str(&template_content)
         .map_err(|e| format!("Invalid template YAML: {}", e))?;
 
     let db_conn = db.read().await;

@@ -211,7 +211,7 @@ struct SeedOutput {
 }
 
 async fn cmd_seed(source: &str, path: Option<PathBuf>, json: bool) -> Result<(), CliError> {
-    let target_path = path.map(|p| p).unwrap_or_else(|| PathBuf::from(source));
+    let target_path = path.unwrap_or_else(|| PathBuf::from(source));
     
     if !target_path.exists() {
         return Err(CliError::ProjectNotFound(format!("Path not found: {}", source)));
@@ -221,11 +221,19 @@ async fn cmd_seed(source: &str, path: Option<PathBuf>, json: bool) -> Result<(),
     
     let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
     
+    if target_path.join(".git").exists() {
+        let commits = crate::collaboration::import_git_history(&db, &target_path)
+            .await
+            .map_err(|e| CliError::Database(e.to_string()))?;
+        println!("  Imported {} historical rings from Git.", commits);
+    } else {
+        let entry = crate::synarchy::ProjectScanner::scan_and_index_with_db(&db, &target_path)
+            .await
+            .map_err(|e| CliError::Database(e.to_string()))?;
+        println!("  Indexed {} monads across {} rings.", entry.monad_count, entry.ring_count);
+    }
+    
     let all_monads = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
-    
-    // Active use of Language::extensions to filter (integration demo)
-    let _rust_exts = crate::language::Language::Rust.extensions();
-    
     let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
     
     println!("✓ Planted {} monads in {} rings", all_monads.len(), max_ring.saturating_add(1));
@@ -790,18 +798,38 @@ struct AbsorbOutput2 {
 }
 
 async fn cmd_absorb(remote: Option<String>, json: bool) -> Result<(), CliError> {
-    let source = remote.as_ref().cloned().unwrap_or_else(|| "network".to_string());
+    let source = remote.unwrap_or_else(|| "mandala.json".to_string());
+    let path = PathBuf::from(&source);
+    if !path.exists() {
+        return Err(CliError::ProjectNotFound(format!("Archive not found: {}", source)));
+    }
+
     println!("🌐 Absorbing from: {}", source);
-    
-    println!("⚠ Network sync not yet implemented");
-    println!("  Use local mode for now");
-    
+
+    let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref())
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+
+    let before = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
+    let before_rings = before.iter().map(|m| m.ring).max().unwrap_or(0);
+
+    crate::collaboration::import_mandala(&db, &path)
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+
+    let after = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
+    let after_rings = after.iter().map(|m| m.ring).max().unwrap_or(0);
+    let absorbed = after.len().saturating_sub(before.len());
+    let rings_expanded = after_rings.saturating_sub(before_rings);
+
+    println!("✓ Absorbed {} new monads (total: {})", absorbed, after.len());
+
     print_result(AbsorbOutput2 {
-        monads_absorbed: 0,
-        rings_expanded: 0,
+        monads_absorbed: after.len(),
+        rings_expanded,
         source,
     }, json);
-    
+
     Ok(())
 }
 
@@ -817,6 +845,24 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
     println!("⚛ Synthesizing {} with {:?}...", vector, with_vector);
     
     let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
+
+    // If vector points to an archive path, run geometric merge_mandala
+    let candidate_path = PathBuf::from(vector);
+    if candidate_path.exists() {
+        let merge_res = crate::collaboration::merge_mandala(&db, &candidate_path)
+            .await
+            .map_err(|e| CliError::Database(e.to_string()))?;
+        let names: Vec<String> = merge_res.merged_monads.iter().map(|m| m.name.clone()).collect();
+        println!("✓ Merged {} monads ({} conflicts resolved)", names.len(), merge_res.conflicts_resolved.len());
+        print_result(SynthesizeOutput2 {
+            vector_a: vector.to_string(),
+            vector_b: with_vector,
+            synthesized_monads: names,
+            conflicts_resolved: merge_res.conflicts_resolved.len(),
+        }, json);
+        return Ok(());
+    }
+
     let all = get_all_monads(&db).await.map_err(|e| CliError::Database(e.to_string()))?;
     
     let angle_a = match vector {
@@ -824,7 +870,7 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
         "UI" => (45.0, 135.0),
         "PERSISTENCE" => (135.0, 225.0),
         "NETWORK" => (225.0, 315.0),
-        _ => return Err(CliError::Parse("Unknown vector".to_string())),
+        _ => return Err(CliError::Parse(format!("Unknown vector or archive path: {}", vector))),
     };
     
     let vec_a: Vec<_> = all.iter()
@@ -833,14 +879,16 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
     
     println!("✓ Vector {}: {} monads", vector, vec_a.len());
     
-    let synthesized_monads = Vec::new();
+    let mut synthesized_monads: Vec<String> = vec_a.iter().map(|m| m.name.clone()).collect();
+    let mut conflicts_resolved = 0usize;
+
     if let Some(b) = with_vector.clone() {
         let angle_b = match b.as_str() {
             "CORE" => (0.0, 45.0),
             "UI" => (45.0, 135.0),
             "PERSISTENCE" => (135.0, 225.0),
             "NETWORK" => (225.0, 315.0),
-            _ => return Err(CliError::Parse("Unknown vector".to_string())),
+            _ => return Err(CliError::Parse(format!("Unknown vector: {}", b))),
         };
         
         let vec_b: Vec<_> = all.iter()
@@ -848,13 +896,20 @@ async fn cmd_synthesize(vector: &str, with_vector: Option<String>, json: bool) -
             .collect();
         
         println!("  With {}: {} monads", b, vec_b.len());
+        for m in vec_b {
+            if synthesized_monads.contains(&m.name) {
+                conflicts_resolved += 1;
+            } else {
+                synthesized_monads.push(m.name.clone());
+            }
+        }
     }
     
     print_result(SynthesizeOutput2 {
         vector_a: vector.to_string(),
-        vector_b: with_vector.clone(),
+        vector_b: with_vector,
         synthesized_monads,
-        conflicts_resolved: 0,
+        conflicts_resolved,
     }, json);
     
     Ok(())
@@ -868,7 +923,8 @@ struct EmanateOutput2 {
 }
 
 async fn cmd_emanate(remote: Option<String>, json: bool) -> Result<(), CliError> {
-    let target = remote.as_ref().cloned().unwrap_or_else(|| "network".to_string());
+    let target = remote.clone().unwrap_or_else(|| ".".to_string());
+    let target_path = PathBuf::from(&target);
     println!("📡 Emanating to: {}", target);
     
     let db = connect_db(crate::persistence::surreal_bridge::find_project_root().as_deref()).await.map_err(|e| CliError::Database(e.to_string()))?;
@@ -878,16 +934,20 @@ async fn cmd_emanate(remote: Option<String>, json: bool) -> Result<(), CliError>
         return Ok(());
     }
     
+    let exported_file = crate::collaboration::export_mandala(&db, "mandala-project", &target_path)
+        .await
+        .map_err(|e| CliError::Database(e.to_string()))?;
+    
     let max_ring = all.iter().map(|m| m.ring).max().unwrap_or(0);
     let min_ring = all.iter().map(|m| m.ring).min().unwrap_or(0);
     
-    println!("✓ Emanated {} monads", all.len());
+    println!("✓ Emanated {} monads to {}", all.len(), exported_file.display());
     println!("  Rings: {} → {}", min_ring, max_ring);
     
     print_result(EmanateOutput2 {
         monads_emanated: all.len(),
         ring_range: (min_ring, max_ring),
-        target: remote,
+        target: Some(exported_file.display().to_string()),
     }, json);
     
     Ok(())
@@ -912,9 +972,6 @@ async fn cmd_status(verbose: bool, json: bool) -> Result<(), CliError> {
     
     println!("  Rings: {}", max_ring);
     println!("  Monads: {}", all.len());
-    
-    // Active use of ChangeType for status metadata
-    let _demo_change = crate::synarchy::sync::ChangeType::Modified;
     
     if verbose {
         let mut ring_map: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
@@ -1016,11 +1073,8 @@ async fn cmd_plugins(json: bool) -> Result<(), CliError> {
     let mut output = Vec::new();
     for p in plugins {
         println!("  - {} v{} ({})", p.name(), p.version(), p.description());
-        
-        // Active integration of render and extract logic
         let render = p.render(&[]);
-        let _test_extract = p.extract("", "rust");
-        println!("    Render Support: {} (Size: {})", render.interactive, render.svg.len());
+        println!("    Render Support: {} (SVG Size: {} bytes)", render.interactive, render.svg.len());
         
         output.push(PluginOutput {
             name: p.name().to_string(),
@@ -1045,16 +1099,6 @@ async fn cmd_audit(json: bool) -> Result<(), CliError> {
     match result {
         Ok(_) => {
             println!("✅ No incoherencies found. System is stable.");
-            
-            // Integration: Use all variants to satisfy compiler
-            let _demo_variants = vec![
-                crate::synarchy::sync::ChangeType::New,
-                crate::synarchy::sync::ChangeType::Removed,
-                crate::synarchy::sync::ChangeType::Rescan,
-                crate::synarchy::sync::ChangeType::Modified,
-            ];
-            let _demo_mode = crate::weaver::source_compiler::CrossLangMode::SingleFile;
-            
             print_result(Vec::<String>::new(), json);
         }
         Err(reports) => {

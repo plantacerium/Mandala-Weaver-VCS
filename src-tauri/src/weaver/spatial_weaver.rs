@@ -401,7 +401,7 @@ impl<'a> Weaver<'a> {
     }
 
     /// Selecciona la Mónada óptima para un símbolo aplicando `pins` o cercanía angular con `UnitComplex`
-    async fn resolve_single_symbol(
+    pub async fn resolve_single_symbol(
         &self,
         symbol: &str,
         caller: &str,

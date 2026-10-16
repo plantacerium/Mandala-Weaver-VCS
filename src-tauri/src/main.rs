@@ -61,6 +61,8 @@ use interface::cli_api::{
     cli_emanate,
     cli_seed,
     cli_innerknow,
+    cli_scan,
+    cli_audit,
 };
 use interface::synarchy_api::{
     get_projects,
@@ -163,17 +165,9 @@ fn main() {
             let plugin_registry = crate::plugins::PluginRegistry::init();
             handle.manage(plugin_registry);
 
-            let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-            crate::weaver::watcher::spawn_watcher(handle, cwd);
-
-            // Integration: Use ProjectChangeEvent
-            let _demo_event = crate::synarchy::sync::ProjectChangeEvent {
-                project_id: "test".to_string(),
-                project_name: "test".to_string(),
-                change_type: crate::synarchy::sync::ChangeType::Modified,
-                monads_added: 0,
-                rings_changed: vec![],
-            };
+            let cwd = db_path.unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")));
+            let watcher_controller = crate::weaver::watcher::spawn_watcher(handle.clone(), &cwd);
+            handle.manage(watcher_controller);
             
             Ok(())
         })
@@ -219,6 +213,8 @@ fn main() {
             cli_emanate,
             cli_seed,
             cli_innerknow,
+            cli_scan,
+            cli_audit,
             get_projects,
             add_project,
             remove_project,

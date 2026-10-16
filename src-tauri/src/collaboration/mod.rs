@@ -114,12 +114,23 @@ pub async fn export_mandala(
     Ok(file_path)
 }
 
-/// Imports a mandala archive (replaces current state)
+fn resolve_archive_file(path: &PathBuf) -> PathBuf {
+    if path.is_dir() {
+        path.join("mandala.json")
+    } else if path.extension().and_then(|e| e.to_str()) == Some("json") || path.is_file() {
+        path.clone()
+    } else {
+        path.join("mandala.json")
+    }
+}
+
+/// Imports a mandala archive (upserts into current state)
 pub async fn import_mandala(
     db: &Surreal<Db>,
     archive_path: &PathBuf,
 ) -> anyhow::Result<()> {
-    let content = std::fs::read_to_string(archive_path.join("mandala.json"))?;
+    let file_path = resolve_archive_file(archive_path);
+    let content = std::fs::read_to_string(&file_path)?;
     let archive: ExportArchive = serde_json::from_str(&content)?;
 
     for monad in archive.monads {
@@ -134,7 +145,8 @@ pub async fn diff_mandala(
     local_db: &Surreal<Db>,
     remote_path: &PathBuf,
 ) -> anyhow::Result<MandalaDiff> {
-    let remote_content = std::fs::read_to_string(remote_path.join("mandala.json"))?;
+    let file_path = resolve_archive_file(remote_path);
+    let remote_content = std::fs::read_to_string(&file_path)?;
     let remote_archive: ExportArchive = serde_json::from_str(&remote_content)?;
 
     let local_monads = get_all_monads(local_db).await?;
@@ -192,7 +204,8 @@ pub async fn merge_mandala(
     base_db: &Surreal<Db>,
     remote_path: &PathBuf,
 ) -> anyhow::Result<MergeResult> {
-    let remote_content = std::fs::read_to_string(remote_path.join("mandala.json"))?;
+    let file_path = resolve_archive_file(remote_path);
+    let remote_content = std::fs::read_to_string(&file_path)?;
     let remote_archive: ExportArchive = serde_json::from_str(&remote_content)?;
 
     let base_monads = get_all_monads(base_db).await?;
@@ -229,8 +242,9 @@ pub async fn merge_mandala(
                         coord: resolved_coord,
                         ring: base.ring + 1,
                         is_archived: false,
-                        ..base.clone()
+                        ..remote_m.clone()
                     };
+                    insert_and_link(base_db, &expanded_monad, Some(&base.id)).await?;
                     merged.push(expanded_monad);
                 } else if is_semantic_diff {
                     conflicts.push(Conflict {
@@ -246,6 +260,7 @@ pub async fn merge_mandala(
                 }
             }
             None => {
+                insert_and_link(base_db, remote_m, None).await?;
                 merged.push(remote_m.clone());
             }
         }
@@ -290,7 +305,7 @@ pub async fn import_git_history(
 
     let max_commits = commit_lines.len().min(50);
     let mut ring = 0u32;
-    let source_extensions = ["rs", "ts", "tsx", "js", "jsx", "py", "go"];
+    let source_extensions = crate::language::Language::code_extensions();
 
     for (commit_idx, line) in commit_lines.iter().take(max_commits).enumerate() {
         let parts: Vec<&str> = line.splitn(2, '|').collect();

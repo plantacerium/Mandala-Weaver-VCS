@@ -149,11 +149,11 @@ pub async fn rescan_project(
     
     let mut new_entry = if is_active {
         let db_conn = db.read().await;
-        ProjectScanner::scan_and_index_with_db(&*db_conn, &path)
+        ProjectScanner::scan_and_index_with_db_mode(&*db_conn, &path, Some("rescan"))
             .await
             .map_err(|e| e.to_string())?
     } else {
-        ProjectScanner::scan(&path)
+        ProjectScanner::scan_with_mode(&path, Some("rescan"))
             .await
             .map_err(|e| e.to_string())?
     };

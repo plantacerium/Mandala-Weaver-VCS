@@ -216,7 +216,7 @@ output:
   structure:
     type: Flat
 "#;
-        let template: DistillationTemplate = serde_yaml::from_str(yaml).unwrap();
+        let template: DistillationTemplate = serde_yml::from_str(yaml).unwrap();
         assert_eq!(template.name, "test");
         assert_eq!(template.version, "0.1.0");
     }
@@ -238,7 +238,7 @@ output:
   structure:
     type: Flat
 "#;
-        let template: DistillationTemplate = serde_yaml::from_str(yaml).unwrap();
+        let template: DistillationTemplate = serde_yml::from_str(yaml).unwrap();
         if let RingSelector::Range { min, max } = template.rings {
             assert_eq!(min, 1);
             assert_eq!(max, 5);

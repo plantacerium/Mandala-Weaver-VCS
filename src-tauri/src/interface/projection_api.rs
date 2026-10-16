@@ -56,10 +56,44 @@ async fn get_bindu_name(db: &Surreal<Db>) -> String {
 #[tauri::command]
 pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_bridge::SharedDb>) -> Result<String, String> {
     let db_conn = db.read().await;
-    let all_monads = get_all_monads(&*db_conn).await
-        .map_err(|e| e.to_string())?;
-        
-    let edges = get_all_edges(&*db_conn).await.unwrap_or_default();
+    let all_monads: Vec<Monad> = get_all_monads(&*db_conn)
+        .await
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .filter(|m| !m.is_archived && m.name != "mandala_state.json")
+        .collect();
+
+    let mut edges = get_all_edges(&*db_conn).await.unwrap_or_default();
+
+    // Synthesize cross-ring evolution and outbound-call edges if DB edges are empty
+    if edges.is_empty() && !all_monads.is_empty() {
+        let mut seen = std::collections::HashSet::new();
+        let mut sorted = all_monads.clone();
+        sorted.sort_by_key(|m| m.ring);
+        let mut by_name: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+
+        for m in &sorted {
+            if let Some(prev_id) = by_name.get(&m.name) {
+                if prev_id != &m.id && seen.insert((prev_id.clone(), m.id.clone())) {
+                    edges.push(EdgeDto {
+                        parent_id: prev_id.clone(),
+                        child_id: m.id.clone(),
+                    });
+                }
+            }
+            for call in &m.outbound_calls {
+                if let Some(target_id) = by_name.get(call) {
+                    if target_id != &m.id && seen.insert((target_id.clone(), m.id.clone())) {
+                        edges.push(EdgeDto {
+                            parent_id: target_id.clone(),
+                            child_id: m.id.clone(),
+                        });
+                    }
+                }
+            }
+            by_name.insert(m.name.clone(), m.id.clone());
+        }
+    }
 
     let bindu_name = get_bindu_name(&*db_conn).await;
     let total_monads = all_monads.len();
@@ -135,6 +169,8 @@ pub async fn expand_ring(
 #[tauri::command]
 pub async fn init_project(
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
+    active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
+    watcher: State<'_, crate::weaver::watcher::SharedWatcher>,
     project_name: String,
     project_path: Option<String>,
 ) -> Result<String, String> {
@@ -146,6 +182,11 @@ pub async fn init_project(
         
         let mut db_write = db.write().await;
         *db_write = new_db;
+
+        let mut current_write = active_root.write().await;
+        *current_write = Some(path.clone());
+
+        watcher.watch_directory(path);
     }
 
     let db_conn = db.read().await;
@@ -153,7 +194,7 @@ pub async fn init_project(
     let json_value = serde_json::to_value(&bindu)
         .map_err(|e| e.to_string())?;
 
-    let _: Option<serde_json::Value> = db_conn.create(("bindu", "genesis"))
+    let _: Option<serde_json::Value> = db_conn.upsert(("bindu", "genesis"))
         .content(json_value)
         .await
         .map_err(|e| e.to_string())?;
@@ -165,6 +206,7 @@ pub async fn init_project(
 pub async fn open_project(
     db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     active_root: State<'_, crate::persistence::surreal_bridge::ActiveProjectState>,
+    watcher: State<'_, crate::weaver::watcher::SharedWatcher>,
     project_path: String,
 ) -> Result<String, String> {
     let target_path = std::path::PathBuf::from(&project_path);
@@ -196,7 +238,9 @@ pub async fn open_project(
     *db_write = new_db;
 
     let mut current_write = active_root.write().await;
-    *current_write = Some(target_path);
+    *current_write = Some(target_path.clone());
+
+    watcher.watch_directory(target_path);
     
     Ok("Project successfully opened.".to_string())
 }
@@ -376,11 +420,17 @@ mod tests {
 
     #[tokio::test]
     async fn test_export_mandala_state_direct() {
-        let root = std::path::PathBuf::from("..");
-        let db = crate::persistence::surreal_bridge::connect_db(Some(&root)).await.unwrap();
+        let db = crate::persistence::surreal_bridge::connect_embedded().await.unwrap();
+        let m1 = Monad::spawn(
+            "m_export_1".to_string(),
+            "alpha".to_string(),
+            crate::geometry::polar_space::PolarCoord::new(100.0, 0.0),
+            "fn alpha() {}".to_string(),
+            1,
+        );
+        crate::persistence::surreal_bridge::insert_and_link(&db, &m1, None).await.unwrap();
         let all_monads = get_all_monads(&db).await.unwrap();
-        println!(">>> test_export: all_monads count = {}", all_monads.len());
-        assert_eq!(all_monads.len(), 336);
+        assert_eq!(all_monads.len(), 1);
 
         let edges = get_all_edges(&db).await.unwrap_or_default();
         let bindu_name = get_bindu_name(&db).await;

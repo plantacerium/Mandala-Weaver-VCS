@@ -74,32 +74,65 @@ fn is_valid_symbol_identifier(s: &str) -> bool {
     })
 }
 
-pub fn is_rust_prelude_symbol(s: &str) -> bool {
+pub fn is_common_builtin_symbol(s: &str) -> bool {
     matches!(
         s,
         "Ok" | "Err" | "Some" | "None" | "println" | "eprintln" | "format" | "panic"
         | "assert" | "assert_eq" | "assert_ne" | "todo" | "unimplemented" | "unreachable" | "vec"
+        | "clone" | "to_string" | "unwrap" | "unwrap_or" | "unwrap_or_default" | "unwrap_or_else"
+        | "expect" | "as_str" | "as_ref" | "into" | "from" | "iter" | "collect" | "len" | "is_empty"
+        | "push" | "push_str" | "insert" | "get" | "map" | "and_then" | "filter" | "find"
+        | "print" | "range" | "enumerate" | "isinstance" | "str" | "int" | "float" | "list" | "dict" | "set"
+        | "log" | "warn" | "error" | "info" | "parseInt" | "parseFloat" | "String" | "Number" | "Boolean" | "Array" | "Object"
+        | "make" | "append" | "recover" | "close"
     )
 }
 
-/// Extrae llamadas a otros símbolos dentro de un subárbol AST
+pub fn is_rust_prelude_symbol(s: &str) -> bool {
+    is_common_builtin_symbol(s)
+}
+
+/// Extrae llamadas a otros símbolos dentro de un subárbol AST (Rust, TS/JS, Python, Go, C/C++, Java, C#)
 pub fn extract_outbound_calls<D: ast_grep_core::Doc>(body_node: &Node<D>, self_name: &str) -> BTreeSet<String> {
     let mut calls = BTreeSet::new();
 
+    fn record_symbol(sym: &str, self_name: &str, calls: &mut BTreeSet<String>) {
+        let trimmed = sym.trim();
+        let tail = trimmed
+            .rsplit(|c| c == '.' || c == ':')
+            .next()
+            .unwrap_or(trimmed)
+            .trim();
+        if is_valid_symbol_identifier(tail)
+            && tail != self_name
+            && !is_common_builtin_symbol(tail)
+        {
+            calls.insert(tail.to_string());
+        }
+    }
+
     fn walk_calls<D: ast_grep_core::Doc>(node: &Node<D>, self_name: &str, calls: &mut BTreeSet<String>) {
-        if node.kind() == "call_expression" {
-            if let Some(func_expr) = node.field("function") {
-                let func_kind = func_expr.kind();
-                if func_kind == "identifier" || func_kind == "scoped_identifier" {
-                    let called_symbol = func_expr.text().trim().to_string();
-                    if is_valid_symbol_identifier(&called_symbol)
-                        && called_symbol != self_name
-                        && !is_rust_prelude_symbol(&called_symbol)
-                    {
-                        calls.insert(called_symbol);
+        let k = node.kind();
+        let k_ref: &str = &k;
+        match k_ref {
+            "call_expression" | "call" | "invocation_expression" => {
+                if let Some(func_expr) = node.field("function") {
+                    let func_kind = func_expr.kind();
+                    let fk: &str = &func_kind;
+                    if fk == "identifier" || fk == "scoped_identifier" {
+                        let text = func_expr.text().to_string();
+                        if is_valid_symbol_identifier(text.trim())
+                            && text.trim() != self_name
+                            && !is_common_builtin_symbol(text.trim())
+                        {
+                            calls.insert(text.trim().to_string());
+                        } else {
+                            record_symbol(&text, self_name, calls);
+                        }
                     }
                 }
             }
+            _ => {}
         }
         for child in node.children() {
             walk_calls(&child, self_name, calls);
@@ -189,22 +222,49 @@ pub fn extract_rust_function_identity(fn_node: &Node<StrDoc<SupportLang>>) -> Re
     Ok((identity, outbound_calls))
 }
 
-/// Fallback canónico para cualquier lenguaje o nodo que no sea una función Rust especializada
+/// Extractor canónico políglota para funciones, métodos, clases y contratos en cualquier lenguaje
 pub fn extract_generic_identity<D: ast_grep_core::Doc>(node: &Node<D>, symbol_name: &str) -> (SemanticIdentity, BTreeSet<String>) {
     let mut impl_hasher = blake3::Hasher::new_derive_key("MANDALA_WEAVER_IMPL_V1");
-    hash_ast_canonical(node, &mut impl_hasher);
+    if let Some(body) = node.field("body") {
+        hash_ast_canonical(&body, &mut impl_hasher);
+    } else {
+        hash_ast_canonical(node, &mut impl_hasher);
+    }
     let impl_hash = impl_hasher.finalize().to_hex().to_string();
 
     let mut contract_hasher = blake3::Hasher::new_derive_key("MANDALA_WEAVER_CONTRACT_V1");
+    contract_hasher.update(b"NAME:");
     contract_hasher.update(symbol_name.as_bytes());
-    let contract_hash = contract_hasher.finalize().to_hex().to_string();
 
+    let mut canonical_sig = if let Some(params) = node.field("parameters") {
+        contract_hasher.update(b"PARAMS:");
+        hash_ast_canonical(&params, &mut contract_hasher);
+        let p_text = params.text().trim().to_string();
+        if p_text.starts_with('(') {
+            format!("fn {}{}", symbol_name, p_text)
+        } else {
+            format!("fn {}({})", symbol_name, p_text)
+        }
+    } else {
+        format!("sym {}", symbol_name)
+    };
+
+    if let Some(ret) = node.field("return_type").or_else(|| node.field("result")) {
+        contract_hasher.update(b"RETURN:");
+        hash_ast_canonical(&ret, &mut contract_hasher);
+        let r_text = ret.text().trim().trim_start_matches(':').trim_start_matches("->").trim().to_string();
+        if !r_text.is_empty() {
+            canonical_sig.push_str(&format!(" -> {}", r_text));
+        }
+    }
+
+    let contract_hash = contract_hasher.finalize().to_hex().to_string();
     let outbound_calls = extract_outbound_calls(node, symbol_name);
 
     let identity = SemanticIdentity {
         contract_hash,
         implementation_hash: impl_hash,
-        canonical_signature: format!("sym {}", symbol_name),
+        canonical_signature: canonical_sig,
     };
 
     (identity, outbound_calls)

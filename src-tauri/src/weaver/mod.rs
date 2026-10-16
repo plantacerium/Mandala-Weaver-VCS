@@ -59,7 +59,7 @@ pub async fn expand_from_source(
     // 7. Perform Semantic Diff for logging/telemetry
     let diffs = SemanticDiff::generate_batch(&base_monads, &new_monads);
     for diff in diffs {
-        println!("  Δ Semantic Change in {}: {}", diff.monad_id, SemanticDiff::format_colored(&diff));
+        eprintln!("  Δ Semantic Change in {}: {}", diff.monad_id, SemanticDiff::format_colored(&diff));
     }
 
     // 8. Persistir deltas en lote y vincular con padres si existen (Phase 9.2)

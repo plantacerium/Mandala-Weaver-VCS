@@ -50,13 +50,12 @@ pub async fn diff_mandala_states(
 
 #[tauri::command]
 pub async fn merge_mandala_states(
+    db: State<'_, crate::persistence::surreal_bridge::SharedDb>,
     remote_path: String,
 ) -> Result<MergeResult, String> {
+    let db_conn = db.read().await;
     let path = PathBuf::from(remote_path);
-    let _db = crate::persistence::surreal_bridge::connect_embedded()
-        .await
-        .map_err(|e| e.to_string())?;
-    collaboration::merge_mandala(&_db, &path).await
+    collaboration::merge_mandala(&*db_conn, &path).await
         .map_err(|e| e.to_string())
 }
 

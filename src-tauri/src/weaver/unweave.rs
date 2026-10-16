@@ -1,13 +1,9 @@
 use crate::geometry::polar_space::PolarCoord;
-use crate::geometry::PolarCoordinate;
 use crate::language::detect_language;
 use crate::ontology::bindu::Bindu;
 use crate::ontology::monad::{Monad, MonadKind};
 use crate::persistence::surreal_bridge::{connect_db, insert_and_link, Db};
-use crate::persistence::MandalaStore;
-use crate::template::{
-    DistillationTemplate, OutputConfig, OutputStructure, RingSelector, VectorSelector,
-};
+use crate::template::{OutputConfig, OutputStructure, RingSelector, VectorSelector};
 use crate::weaver::ast_extractor::extract_raw_monads_lang;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -46,13 +42,24 @@ pub struct UnweaveReport {
 pub struct UnweaveEngine;
 
 impl UnweaveEngine {
-    /// Ejecuta el proceso de desensamblado (unweave / shatter):
+    /// Ejecuta el proceso de desensamblado (unweave / shatter) abriendo una conexión de base de datos:
+    pub async fn unweave(
+        project_path: &Path,
+        output_recipe: Option<&Path>,
+    ) -> anyhow::Result<UnweaveReport> {
+        let canonical_path = project_path.canonicalize().unwrap_or_else(|_| project_path.to_path_buf());
+        let db = connect_db(Some(&canonical_path)).await?;
+        Self::unweave_with_db(&db, &canonical_path, output_recipe).await
+    }
+
+    /// Ejecuta el proceso de desensamblado (unweave / shatter) reutilizando una conexión activa de SurrealDB:
     /// 1. Extrae todas las mónadas usando el Hasher Merkle-AST Canónico.
     /// 2. Construye el grafo de llamadas y calcula la centralidad de contratos.
     /// 3. Asigna anillos gravitacionales (Núcleo/Contrato -> Anillo 1, Hojas/UI -> Anillos exteriores).
     /// 4. Agrupa angularmente por dominio/módulo (θ).
-    /// 5. Persiste en SurrealDB y genera el archivo `distill.yaml` para reconstrucción determinista.
-    pub async fn unweave(
+    /// 5. Persiste en SurrealDB y genera el archivo `distill.yaml` unificado (Spatial Weaver + Template).
+    pub async fn unweave_with_db(
+        db: &Surreal<Db>,
         project_path: &Path,
         output_recipe: Option<&Path>,
     ) -> anyhow::Result<UnweaveReport> {
@@ -63,16 +70,10 @@ impl UnweaveEngine {
             .unwrap_or("mandala-project")
             .to_string();
 
-        let db = connect_db(Some(&canonical_path)).await?;
-
         // 1. Recolectar archivos fuente políglotas
         let mut source_files = Vec::new();
-        let extensions = [
-            "rs", "ts", "tsx", "js", "jsx", "py", "go", "java", "kt",
-            "c", "cpp", "cc", "h", "hpp", "cs", "html", "css", "scss",
-            "json", "yaml", "yml", "toml", "md", "sql", "sh",
-        ];
-        Self::collect_files_recursive(&canonical_path, &extensions, &mut source_files, 0)?;
+        let extensions = crate::language::Language::code_extensions();
+        Self::collect_files_recursive(&canonical_path, extensions, &mut source_files, 0)?;
         source_files.sort_by_key(|(depth, p)| (*depth, p.clone()));
 
         // 2. Extraer mónadas con identidad canónica y puertos de salida
@@ -85,6 +86,10 @@ impl UnweaveEngine {
                 }
 
                 let lang = detect_language(file_path);
+                let ext_str = file_path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or(lang.tree_sitter_name());
                 let relative = file_path
                     .strip_prefix(&canonical_path)
                     .unwrap_or(file_path);
@@ -93,7 +98,7 @@ impl UnweaveEngine {
                 let monads = extract_raw_monads_lang(
                     &content,
                     1, // Se recalculará tras el análisis de centralidad
-                    lang.tree_sitter_name(),
+                    ext_str,
                 );
 
                 if monads.is_empty() {
@@ -269,20 +274,28 @@ impl UnweaveEngine {
         }
 
         // 6. Persistir en SurrealDB
-        Self::persist_unweave_state(&db, &project_name, &final_monads, &out_dependencies).await?;
+        Self::persist_unweave_state(db, &project_name, &final_monads, &out_dependencies).await?;
 
-        // 7. Generar receta `distill.yaml`
+        let max_ring = final_monads.iter().map(|m| m.ring).max().unwrap_or(1);
+
+        // 7. Generar receta unificada `distill.yaml` (compatible con Spatial Weaver SO(2) y TemplateEngine)
         let recipe_path = match output_recipe {
             Some(p) => p.to_path_buf(),
             None => canonical_path.join("distill.yaml"),
         };
 
-        Self::generate_distill_recipe(&recipe_path, &project_name, &domains, sector_size)?;
+        Self::generate_distill_recipe(
+            &recipe_path,
+            &project_name,
+            &domains,
+            sector_size,
+            max_ring,
+            &final_monads,
+            &centrality_metrics,
+        )?;
 
         // 8. Exportar estado a JSON para la UI de Mandala Weaver
         Self::export_mandala_json(&canonical_path, &project_name, &final_monads).ok();
-
-        let max_ring = final_monads.iter().map(|m| m.ring).max().unwrap_or(1);
 
         // Ordenar métricas de contratos más centrales (mayor in-degree)
         centrality_metrics.sort_by(|a, b| b.in_degree.cmp(&a.in_degree));
@@ -371,13 +384,9 @@ impl UnweaveEngine {
         let val = serde_json::to_value(&bindu)?;
         let _: Option<serde_json::Value> = db.upsert(("bindu", "genesis")).content(val).await.ok().flatten();
 
-        let store = MandalaStore::from_existing_db(db.clone());
-
-        // Insertar cada mónada en el almacén de compatibilidad y en el grafo tripartito
+        // Insertar cada mónada (insert_and_link ya puebla tanto `monad` como el Grafo Tripartito en MandalaStore)
         for m in monads {
             let _ = insert_and_link(db, m, None).await;
-            let polar = PolarCoordinate::from(&m.coord);
-            let _ = store.upsert_monad(m, &polar).await;
         }
 
         // Crear relaciones de grafo de llamadas/evolución en SurrealDB
@@ -396,12 +405,17 @@ impl UnweaveEngine {
         Ok(())
     }
 
-    /// Genera la receta canónica `distill.yaml` con los sectores descubiertos
+    /// Genera la receta canónica unificada `distill.yaml` que funciona tanto con el
+    /// Weaver Espacial SO(2) (`DistillationRecipe` por semillas y contratos) como con
+    /// el motor de sectores (`DistillationTemplate`).
     fn generate_distill_recipe(
         recipe_path: &Path,
         project_name: &str,
         domains: &[String],
         sector_size: f64,
+        max_ring: u32,
+        monads: &[Monad],
+        metrics: &[CentralityMetric],
     ) -> anyhow::Result<()> {
         let mut vectors = Vec::new();
         for (i, domain) in domains.iter().enumerate() {
@@ -415,9 +429,65 @@ impl UnweaveEngine {
             });
         }
 
-        let template = DistillationTemplate {
+        // Inferir semillas raíz óptimas para el Spatial Weaver:
+        // 1. Si existe `main`, incluirla primero.
+        // 2. Añadir puntos de entrada con out_degree > 0 e in_degree == 0 (orquestadores).
+        // 3. Si no hay ninguno, usar las primeras funciones extraídas.
+        let mut seed_symbols: Vec<String> = Vec::new();
+        if monads.iter().any(|m| m.name == "main") {
+            seed_symbols.push("main".to_string());
+        }
+        for metric in metrics {
+            if metric.out_degree > 0 && metric.in_degree == 0 && !seed_symbols.contains(&metric.symbol_name) {
+                seed_symbols.push(metric.symbol_name.clone());
+                if seed_symbols.len() >= 5 {
+                    break;
+                }
+            }
+        }
+        if seed_symbols.is_empty() {
+            for m in monads.iter().filter(|m| m.kind == MonadKind::Function).take(3) {
+                if !seed_symbols.contains(&m.name) {
+                    seed_symbols.push(m.name.clone());
+                }
+            }
+        }
+        if seed_symbols.is_empty() {
+            if let Some(first) = monads.first() {
+                seed_symbols.push(first.name.clone());
+            }
+        }
+
+        #[derive(Serialize)]
+        struct UnifiedManifest {
+            name: String,
+            version: String,
+            target_angle_rad: f64,
+            max_ring: u32,
+            angular_policy: crate::weaver::spatial_weaver::AngularPolicy,
+            ring_penalty_rad: f64,
+            prelude: String,
+            seeds: Vec<crate::weaver::spatial_weaver::SeedSpec>,
+            rings: RingSelector,
+            vectors: Vec<VectorSelector>,
+            exclude: Vec<crate::template::ExcludeRule>,
+            adapters: Vec<crate::template::AdapterConfig>,
+            output: OutputConfig,
+            variables: HashMap<String, crate::template::VariableDef>,
+        }
+
+        let unified = UnifiedManifest {
             name: format!("{}-distill", project_name),
             version: "1.0.0".to_string(),
+            target_angle_rad: 0.0,
+            max_ring,
+            angular_policy: crate::weaver::spatial_weaver::AngularPolicy::GlobalTarget,
+            ring_penalty_rad: 0.05,
+            prelude: format!("//! Artefacto destilado espacialmente por Mandala Weaver VCS para {}", project_name),
+            seeds: seed_symbols
+                .into_iter()
+                .map(|symbol| crate::weaver::spatial_weaver::SeedSpec { symbol })
+                .collect(),
             rings: RingSelector::All,
             vectors,
             exclude: Vec::new(),
@@ -430,13 +500,13 @@ impl UnweaveEngine {
             variables: HashMap::new(),
         };
 
-        let yaml_content = serde_yaml::to_string(&template)?;
+        let yaml_content = serde_yml::to_string(&unified)?;
         let header = format!(
             "# ====================================================================\n\
-             # Mandala Weaver VCS — Receta de Destilación Canónica\n\
-             # Generada automáticamente por el comando `weave unweave` (shatter)\n\
+             # Mandala Weaver VCS — Receta de Destilación Unificada (SO(2) + Sectores)\n\
+             # Generada automáticamente por el comando `weave innerknow` (unweave/shatter)\n\
              # Proyecto: {}\n\
-             # Mónadas y sectores angulares inferidos por centralidad de contratos\n\
+             # Compatible con Spatial Weaver (seeds + contratos) y TemplateEngine (vectors)\n\
              # Reconstruir proyecto: `weave distill --template distill.yaml`\n\
              # ====================================================================\n\n",
             project_name

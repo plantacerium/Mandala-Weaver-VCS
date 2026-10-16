@@ -17,21 +17,30 @@ pub fn snap_to_nearest_domain(angle: f64) -> String {
 /// Maps a language to its default vector angle.
 pub fn language_to_vector(language: Language) -> f64 {
     match language {
-        Language::Rust => 45.0,
-        Language::TypeScript | Language::JavaScript => 225.0,
-        Language::Python => 135.0,
-        Language::Go => 90.0,
-        Language::Unknown => 0.0,
+        Language::Rust | Language::C | Language::Cpp => 45.0,
+        Language::Go | Language::Shell => 90.0,
+        Language::Python | Language::Ruby | Language::Lua => 135.0,
+        Language::Sql | Language::Json | Language::Yaml | Language::Toml => 180.0,
+        Language::TypeScript | Language::JavaScript | Language::Html | Language::Css => 225.0,
+        Language::Java | Language::CSharp | Language::Kotlin | Language::Swift | Language::Php => {
+            315.0
+        }
+        Language::Markdown | Language::Unknown => 0.0,
     }
 }
 
 /// Gets vector name for language.
 pub fn language_vector_name(language: Language) -> &'static str {
     match language {
-        Language::Rust => "CORE",
-        Language::TypeScript | Language::JavaScript => "UI",
-        Language::Python => "DATA",
-        Language::Go => "IO",
-        Language::Unknown => "MISC",
+        Language::Rust | Language::C | Language::Cpp => "CORE",
+        Language::TypeScript | Language::JavaScript | Language::Html | Language::Css => "UI",
+        Language::Python | Language::Sql | Language::Json | Language::Yaml | Language::Toml => {
+            "DATA"
+        }
+        Language::Go | Language::Shell | Language::Lua | Language::Ruby => "IO",
+        Language::Java | Language::CSharp | Language::Kotlin | Language::Swift | Language::Php => {
+            "SERVICES"
+        }
+        Language::Markdown | Language::Unknown => "MISC",
     }
 }
