@@ -11,7 +11,7 @@ This topology enables non-linear code orchestration: the Architect selects preci
 
 ## Projects UI
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-46.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-47.JPG)
 ---
 
 ## Logo
