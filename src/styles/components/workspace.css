@@ -11,7 +11,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	background: linear-gradient(to bottom, rgba(5, 5, 8, 0.9), transparent);
+	background: linear-gradient(to bottom, var(--bg-panel), transparent);
 	z-index: 10;
 	border-bottom: 1px solid var(--glass-border);
 }
@@ -23,7 +23,7 @@
 	font-weight: 400;
 	text-transform: uppercase;
 	color: var(--text-main);
-	text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+	text-shadow: 0 0 12px var(--glass-highlight);
 }
 
 .path {
@@ -34,7 +34,7 @@
 }
 
 .btn-expand {
-	background: rgba(0, 229, 255, 0.1);
+	background: var(--glass-highlight);
 	border: 1px solid var(--accent-primary);
 	color: var(--accent-primary);
 	padding: 0.6rem 1.2rem;
@@ -44,7 +44,7 @@
 	font-weight: 500;
 	letter-spacing: 1px;
 	cursor: pointer;
-	box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+	box-shadow: 0 0 15px var(--glass-highlight);
 	text-transform: uppercase;
 	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -52,7 +52,7 @@
 .btn-expand:hover {
 	background: var(--accent-primary);
 	color: var(--bg-dark);
-	box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+	box-shadow: 0 0 25px var(--accent-primary);
 	transform: scale(1.02);
 }
 
@@ -67,10 +67,10 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    /* Deep space grid background effect */
+    /* Bioluminescent space grid background effect */
     background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        linear-gradient(var(--grid-line, rgba(255, 255, 255, 0.02)) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line, rgba(255, 255, 255, 0.02)) 1px, transparent 1px);
     background-size: 40px 40px;
     background-position: center center;
 }

@@ -37,23 +37,25 @@ El servidor MCP de Mandala Weaver implementa una política de **seguridad no des
 
 ---
 
-## 🧰 Catálogo de Herramientas Expuestas (17 Tools)
+## 🧰 Catálogo de Herramientas Expuestas (19 Tools)
 
-El servidor expone **17 herramientas especializadas** agrupadas según su dominio en el ecosistema radial:
+El servidor expone **19 herramientas especializadas** agrupadas según su dominio en el ecosistema radial:
 
 ### 1. Topología, Telemetría y Génesis
 
 | Herramienta | Parámetros | Descripción |
 |---|---|---|
-| `mandala_telemetry` | `verbose?: bool` | Escanea la topología completa: pulso del ecosistema, recuento de anillos, desglose por lenguajes (22 soportados), mónadas activas/archivadas y contratos indexados. |
+| `mandala_telemetry` | `verbose?: bool` | Escanea la topología completa: pulso del ecosistema, recuento de anillos, desglose por lenguajes (39 soportados), mónadas activas/archivadas y contratos indexados. |
 | `mandala_bindu` | `project_name: string` | Instancia el Punto Cero $(0,0)$ o génesis ontológico del proyecto en SurrealDB. |
 | `mandala_audit_topology` | `ring?: number` | Audita la coherencia semántica del proyecto: detecta colisiones de símbolos duplicados, contratos huérfanos y violaciones de interfaz en anillos activos. |
 
-### 2. Extracción Políglota y Autoconocimiento
+### 2. Extracción Políglota (39 Lenguajes) y Autoconocimiento
 
 | Herramienta | Parámetros | Descripción |
 |---|---|---|
-| `mandala_scan_project` | `path: string`<br>`force_rescan?: bool` | Escanea un directorio con el extractor AST nativo para 22 lenguajes, registrando mónadas (con líneas reales 1-based), puertos, contratos y aristas evolutivas en SurrealDB. |
+| `mandala_scan_project` | `path: string`<br>`force_rescan?: bool` | Escanea un directorio con el extractor AST nativo para 39 lenguajes, registrando mónadas (con líneas reales 1-based), puertos, contratos y aristas evolutivas en SurrealDB. |
+| `mandala_extract_ast` | `source_code?: string`<br>`language?: string`<br>`file_path?: string`<br>`ring?: number` | Extrae en memoria mónadas atómicas, rangos de línea 1-based, coordenadas de Vogel, hashes BLAKE3 y llamadas salientes desde un fragmento de código o archivo en cualquiera de los 39 lenguajes. |
+| `mandala_supported_languages` | Ninguno | Devuelve la matriz completa de los 39 lenguajes de programación y formatos soportados, sus extensiones y su motor AST/estructural. |
 | `mandala_crystallize` | `file_path: string`<br>`message?: string` | Commit radial: extrae mónadas AST de un archivo fuente políglota y expande la constelación hacia un nuevo anillo exterior. |
 | `mandala_unweave` | `path?: string` | **InnerKnow Unweaver:** Descompone un monolito en mónadas atómicas, puebla el Grafo Tripartito (puertos/contratos) y genera automáticamente `.mandala/distill.yaml`. |
 | `mandala_git_import` | `repo_path: string` | Importa el historial cronológico de Git traduciendo cada commit a anillos concéntricos evolutivos. |
@@ -86,7 +88,7 @@ El servidor expone **17 herramientas especializadas** agrupadas según su domini
 
 ---
 
-## 📦 Recursos Expuestos (5 Resources)
+## 📦 Recursos Expuestos (6 Resources)
 
 Los agentes pueden suscribirse o leer directamente los siguientes esquemas URI:
 
@@ -97,6 +99,7 @@ Los agentes pueden suscribirse o leer directamente los siguientes esquemas URI:
 | `mandala://contracts` | Catálogo de contratos canónicos, puertos nominales e implementaciones en el Grafo Tripartito. |
 | `mandala://vectors` | Proyecciones angulares divididas por sectores funcionales $SO(2)$ (`CORE`, `IO`, `DATA`, `UI`, `SERVICES`). |
 | `mandala://recipe` | Manifiesto actual `.mandala/distill.yaml` o receta espacial del proyecto activo. |
+| `mandala://languages` | Matriz completa de los 39 lenguajes soportados, extensiones y motores de extracción AST. |
 
 ---
 

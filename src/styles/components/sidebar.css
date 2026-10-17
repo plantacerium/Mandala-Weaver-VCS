@@ -69,9 +69,9 @@
 }
 
 .nav-links button:hover, .nav-links a:hover, .nav-links button.active {
-	background: rgba(0, 229, 255, 0.05);
+	background: var(--glass-highlight);
 	color: var(--accent-primary);
-	text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+	text-shadow: 0 0 10px var(--glass-highlight);
 }
 
 .nav-links button.active::before {

@@ -90,10 +90,17 @@ const ProjectDetail: React.FC = () => {
     );
   }
 
-  const handleRescan = async () => {
+  const handleRescan = async (mode?: 'git' | 'mandala') => {
     try {
-      const updated = await rescanProject(project.id);
+      const updated = await rescanProject(project.id, mode);
       setProject(updated);
+      if (isTauri()) {
+        const stateStr = await getProjectMandala(project.id);
+        const parsed = JSON.parse(stateStr);
+        if (parsed && parsed.constellations) {
+          setMandalaState(parsed);
+        }
+      }
     } catch (err) {
       console.error('Rescan failed:', err);
     }
@@ -136,7 +143,7 @@ const ProjectDetail: React.FC = () => {
         >
           Abrir en Workspace
         </a>
-        <button onClick={handleRescan} style={{
+        <button onClick={() => handleRescan('mandala')} style={{
           padding: '6px 16px',
           background: 'var(--accent-primary, #e85d04)',
           color: '#fff',

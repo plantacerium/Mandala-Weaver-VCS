@@ -65,7 +65,7 @@ const MonadInspector: React.FC = () => {
     const startResize = (e: React.MouseEvent) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startW = customWidth || Math.round(window.innerWidth * 0.32);
+      const startW = customWidth || Math.round(window.innerWidth * 0.382);
       const onMove = (ev: MouseEvent) => {
         const next = Math.max(360, Math.min(Math.round(window.innerWidth * 0.85), startW - (ev.clientX - startX)));
         setCustomWidth(next);
@@ -106,7 +106,7 @@ const MonadInspector: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.6rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>
-              {isZenExpanded ? 'Zen Mode (75%)' : customWidth ? `Split (${customWidth}px)` : 'Split View (30%)'}
+              {isZenExpanded ? 'Zen Mode (61.8%)' : customWidth ? `Split (${customWidth}px)` : 'Split View Áureo (38.2%)'}
             </span>
           </div>
 

@@ -1,15 +1,19 @@
 :root {
-	--bg-dark: #1a0a10;
-	--bg-panel: rgba(40, 10, 20, 0.75);
-	--bg-panel-solid: #1f0a12;
-	--accent-primary: #ff2d55; /* Rose red */
-	--accent-secondary: #ff6b9d; /* Soft pink */
-	--text-main: #ffdde5;
-	--text-dim: #aa6677;
-	--glass-border: rgba(255, 45, 85, 0.1);
-	--glass-highlight: rgba(255, 45, 85, 0.15);
-	--border: #3a1520;
-	--gradient-radial: radial-gradient(ellipse at center, rgba(255, 45, 85, 0.08) 0%, rgba(255, 107, 157, 0.03) 40%, transparent 80%);
+	--bg-dark: #180309;
+	--bg-panel: rgba(46, 5, 16, 0.78);
+	--bg-panel-solid: #21040c;
+	--accent-primary: #ff1e4d; /* Passion Crimson Rose */
+	--accent-secondary: #ff5c8a; /* Bioluminescent Coral Rose */
+	--text-main: #ffe3ea;
+	--text-dim: #bf6b80;
+	--glass-border: rgba(255, 38, 82, 0.18);
+	--glass-highlight: rgba(255, 45, 92, 0.18);
+	--border: #480d1e;
+	--grid-line: rgba(255, 45, 90, 0.035);
+	--gradient-radial:
+		radial-gradient(circle at 50% 50%, rgba(255, 16, 64, 0.22) 0%, rgba(185, 6, 48, 0.13) 30%, rgba(95, 3, 24, 0.08) 58%, transparent 85%),
+		radial-gradient(ellipse at 18% 82%, rgba(255, 42, 95, 0.11) 0%, transparent 55%),
+		radial-gradient(ellipse at 84% 18%, rgba(220, 10, 62, 0.11) 0%, transparent 55%);
 	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 	--font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
 }
@@ -23,8 +27,9 @@
 	--text-main: #f0f0f5;
 	--text-dim: #8a8a9a;
 	--glass-border: rgba(255, 255, 255, 0.05);
-	--glass-highlight: rgba(255, 255, 255, 0.1);
+	--glass-highlight: rgba(0, 229, 255, 0.08);
 	--border: #333;
+	--grid-line: rgba(255, 255, 255, 0.02);
 	--gradient-radial: radial-gradient(ellipse at center, rgba(157, 78, 221, 0.05) 0%, rgba(0, 229, 255, 0.02) 40%, transparent 80%);
 }
 
@@ -37,22 +42,27 @@
 	--text-main: #1f2937;
 	--text-dim: #6b7280;
 	--glass-border: rgba(0, 0, 0, 0.05);
-	--glass-highlight: rgba(255, 255, 255, 0.8);
+	--glass-highlight: rgba(2, 132, 199, 0.1);
 	--border: #e5e7eb;
+	--grid-line: rgba(0, 0, 0, 0.03);
 }
 
 [data-theme="love"] {
-	--bg-dark: #1a0a10;
-	--bg-panel: rgba(40, 10, 20, 0.75);
-	--bg-panel-solid: #1f0a12;
-	--accent-primary: #ff2d55; /* Rose red */
-	--accent-secondary: #ff6b9d; /* Soft pink */
-	--text-main: #ffdde5;
-	--text-dim: #aa6677;
-	--glass-border: rgba(255, 45, 85, 0.1);
-	--glass-highlight: rgba(255, 45, 85, 0.15);
-	--border: #3a1520;
-	--gradient-radial: radial-gradient(ellipse at center, rgba(255, 45, 85, 0.08) 0%, rgba(255, 107, 157, 0.03) 40%, transparent 80%);
+	--bg-dark: #180309;
+	--bg-panel: rgba(46, 5, 16, 0.78);
+	--bg-panel-solid: #21040c;
+	--accent-primary: #ff1e4d; /* Passion Crimson Rose */
+	--accent-secondary: #ff5c8a; /* Bioluminescent Coral Rose */
+	--text-main: #ffe3ea;
+	--text-dim: #bf6b80;
+	--glass-border: rgba(255, 38, 82, 0.18);
+	--glass-highlight: rgba(255, 45, 92, 0.18);
+	--border: #480d1e;
+	--grid-line: rgba(255, 45, 90, 0.035);
+	--gradient-radial:
+		radial-gradient(circle at 50% 50%, rgba(255, 16, 64, 0.22) 0%, rgba(185, 6, 48, 0.13) 30%, rgba(95, 3, 24, 0.08) 58%, transparent 85%),
+		radial-gradient(ellipse at 18% 82%, rgba(255, 42, 95, 0.11) 0%, transparent 55%),
+		radial-gradient(ellipse at 84% 18%, rgba(220, 10, 62, 0.11) 0%, transparent 55%);
 }
 
 [data-theme="golden"] {

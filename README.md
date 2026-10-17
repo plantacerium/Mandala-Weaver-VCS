@@ -11,7 +11,7 @@ This topology enables non-linear code orchestration: the Architect selects preci
 
 ## Projects UI
 
-![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-47.JPG)
+![Mandala Weaver VCS](public/assets/Mandala-Weaver-VCS-Synarchy-Checkpoint-46.JPG)
 ---
 
 ## Logo
@@ -75,6 +75,27 @@ Mandala Weaver VCS fundamenta el desarrollo, navegación y síntesis del softwar
 ### 12. Split View Zen (70% Mandala | 30% Inspector) con Ocultación Dinámica
 - **Modo Dividido Ergonómico:** Al seleccionar una mónada, el Mandala se ajusta al 70% de la pantalla y el 30% derecho se convierte en un visor de código Zen a altura completa (`100% vertical`) con canal de números de línea (`gutter`).
 - **Alternancia y Pantalla Completa:** Botón `▶ Ocultar Panel` para devolver el Mandala al 100% de la pantalla con una píldora flotante minimalista (`◀ Desplegar Mónada`), y botón `⤢ Zen` para expandir el código al 75% cuando se requiere concentración absoluta.
+
+---
+
+## Quickstart
+```bash
+pnpm install
+```
+
+```bash
+pnpm run build
+```
+
+**Essential**
+```bash
+pnpm run dev
+```
+
+```bash
+pnpm run tauri-dev
+```
+
 
 ---
 
@@ -702,7 +723,7 @@ flowchart TD
 ### Development (Desktop Application)
 Starts the Vite dev server and compiles the Rust backend, opening the native Tauri window with Hot Module Replacement (HMR):
 ```bash
-pnpm run tauri dev
+pnpm run tauri-dev
 ```
 
 ### Core Engine Tests (Backend Rust)

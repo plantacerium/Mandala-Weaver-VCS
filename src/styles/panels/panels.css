@@ -94,9 +94,9 @@
     top: 0;
     bottom: 0;
     height: 100%;
-    width: 32vw;
+    width: 38.2vw;
     min-width: 420px;
-    max-width: 650px;
+    max-width: 720px;
     background: rgba(8, 9, 16, 0.94);
     backdrop-filter: blur(28px);
     border-left: 1px solid var(--glass-border);
@@ -110,7 +110,7 @@
 }
 
 .inspector-split-dock.zen-expanded {
-    width: 75vw;
+    width: 61.8vw;
     max-width: 90vw;
 }
 
