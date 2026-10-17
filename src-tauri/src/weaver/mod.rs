@@ -73,3 +73,44 @@ pub async fn expand_from_source(
 
     Ok(next_ring)
 }
+
+/// Sincroniza un archivo modificado en caliente dentro de su anillo arquitectónico (1..=5)
+/// sin inflar artificialmente el número total de anillos en cada guardado de disco.
+pub async fn sync_file_in_place(
+    db: &Surreal<Db>,
+    file_path: &str,
+) -> anyhow::Result<u32> {
+    let source_code = fs::read_to_string(file_path)?;
+    let all_monads = get_all_monads(db).await?;
+
+    let path = Path::new(file_path);
+    let lang = detect_language(path);
+    let lang_name = lang.tree_sitter_name();
+
+    let mut extracted = extract_raw_monads_lang(&source_code, 1, lang_name);
+    for m in &mut extracted {
+        let ring = crate::synarchy::ProjectScanner::classify_architectural_ring(path, &m.kind, 2);
+        m.ring = ring;
+        m.coord.r = (ring as f64) * 60.0;
+    }
+
+    let deltas = identify_deltas(&all_monads, &extracted);
+    if deltas.is_empty() {
+        return Ok(all_monads.iter().map(|m| m.ring).max().unwrap_or(5));
+    }
+
+    let mut target_ring = 3;
+    let batch_items: Vec<(&crate::ontology::monad::Monad, Option<&str>)> = deltas
+        .iter()
+        .map(|monad| {
+            target_ring = monad.ring;
+            let parent = all_monads.iter().find(|m| m.name == monad.name);
+            let parent_id = parent.map(|p| p.id.as_str());
+            (monad, parent_id)
+        })
+        .collect();
+
+    crate::persistence::surreal_bridge::insert_batch(db, &batch_items).await?;
+    Ok(target_ring)
+}
+

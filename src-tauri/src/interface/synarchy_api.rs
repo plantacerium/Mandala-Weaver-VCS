@@ -193,7 +193,7 @@ pub async fn get_project_mandala(
         }
     };
 
-    let (all_monads, edges) = if is_active {
+    let (mut all_monads, edges) = if is_active {
         let db_conn = db.read().await;
         let monads = crate::persistence::surreal_bridge::get_all_monads(&*db_conn).await.unwrap_or_default();
         let edges = crate::persistence::surreal_bridge::get_all_edges(&*db_conn).await.unwrap_or_default();
@@ -212,17 +212,27 @@ pub async fn get_project_mandala(
         }
     };
 
+    all_monads.retain(|m| !m.is_archived && m.name != "mandala_state.json");
+
+    if crate::synarchy::ProjectScanner::needs_rebalance(&all_monads) {
+        for m in &mut all_monads {
+            m.ring = crate::synarchy::ProjectScanner::classify_monad_ring(m);
+        }
+    }
+
+    crate::synarchy::ProjectScanner::apply_golden_vogel_layout(&mut all_monads, 320.0);
+
     let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
 
-    let mut rings_map: std::collections::HashMap<u32, Vec<crate::ontology::monad::Monad>> = std::collections::HashMap::new();
+    let mut rings_map: std::collections::BTreeMap<u32, Vec<crate::ontology::monad::Monad>> = std::collections::BTreeMap::new();
     for m in all_monads {
         rings_map.entry(m.ring).or_default().push(m);
     }
 
-    let mut constellations = rings_map.into_iter()
+    let constellations = rings_map
+        .into_iter()
         .map(|(ring_level, monads)| serde_json::json!({ "ring_level": ring_level, "monads": monads }))
         .collect::<Vec<_>>();
-    constellations.sort_by_key(|c| c["ring_level"].as_u64().unwrap_or(0));
 
     let total: usize = constellations.iter().map(|c| c["monads"].as_array().map(|a| a.len()).unwrap_or(0)).sum();
 

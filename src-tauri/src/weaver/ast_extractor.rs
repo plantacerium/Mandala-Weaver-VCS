@@ -8,20 +8,26 @@ use ast_grep_language::SupportLang;
 /// Maps a tree-sitter node kind across supported languages to our MonadKind enum.
 fn kind_from_node(node_kind: &str) -> Option<MonadKind> {
     match node_kind {
-        // Functions & Methods (Rust, TS/JS, Python, Go, C/C++, Java, C#, Kotlin, Swift, Ruby, PHP, Lua, Bash)
+        // Functions & Methods (Rust, TS/JS, Python, Go, C/C++, Java, C#, Kotlin, Swift, Ruby, PHP, Lua, Bash, Scala, Haskell, Solidity, Elixir)
         "function_item"
         | "function_declaration"
         | "function_definition"
+        | "async_function_definition"
+        | "function_definition_statement"
+        | "local_function_definition_statement"
         | "method_definition"
         | "method_declaration"
         | "constructor_declaration"
+        | "init_declaration"
         | "generator_function_declaration"
         | "method"
         | "singleton_method"
         | "preproc_function_def"
-        | "macro_definition" => Some(MonadKind::Function),
+        | "macro_definition"
+        | "modifier_definition"
+        | "function" => Some(MonadKind::Function),
 
-        // Structs, Classes, Records & Objects (Rust, TS/JS, Python, C/C++, Java, C#, Kotlin, Swift, Ruby, PHP, CSS rules)
+        // Structs, Classes, Contracts, Records & Objects (Rust, TS/JS, Python, C/C++, Java, C#, Kotlin, Swift, Ruby, PHP, Scala, Solidity, CSS)
         "struct_item"
         | "struct_specifier"
         | "struct_declaration"
@@ -32,41 +38,62 @@ fn kind_from_node(node_kind: &str) -> Option<MonadKind> {
         | "class"
         | "record_declaration"
         | "object_declaration"
+        | "object_definition"
+        | "contract_declaration"
+        | "library_declaration"
+        | "data_type"
+        | "adt"
+        | "newtype"
         | "rule_set" => Some(MonadKind::Struct),
 
-        // Enums (Rust, TS, C/C++, Java, C#, Kotlin, Swift)
-        "enum_item" | "enum_declaration" | "enum_specifier" => Some(MonadKind::Enum),
-
-        // Impls (Rust)
-        "impl_item" => Some(MonadKind::Impl),
-
-        // Traits, Interfaces & Protocols (Rust, TS, Java, C#, Kotlin, Swift, PHP)
-        "trait_item" | "interface_declaration" | "protocol_declaration" | "trait_declaration" => {
-            Some(MonadKind::Trait)
+        // Enums (Rust, TS, C/C++, Java, C#, Kotlin, Swift, Scala, Solidity)
+        "enum_item" | "enum_declaration" | "enum_specifier" | "enum_definition" => {
+            Some(MonadKind::Enum)
         }
 
-        // Modules & Namespaces (Rust, TS, C++, C#, Ruby, CSS @media/@keyframes)
+        // Impls, Extensions & Instances (Rust, Swift, Haskell)
+        "impl_item" | "extension_declaration" | "instance_decl" | "instance" => {
+            Some(MonadKind::Impl)
+        }
+
+        // Traits, Interfaces, Protocols & Typeclasses (Rust, TS, Java, C#, Kotlin, Swift, PHP, Scala, Solidity, Haskell)
+        "trait_item"
+        | "trait_definition"
+        | "interface_declaration"
+        | "protocol_declaration"
+        | "trait_declaration"
+        | "class_decl" => Some(MonadKind::Trait),
+
+        // Modules, Packages & Namespaces (Rust, TS, C++, C#, Ruby, Scala, CSS @media/@keyframes)
         "mod_item"
         | "internal_module"
         | "module"
         | "namespace_definition"
         | "namespace_declaration"
+        | "package_clause"
         | "media_statement"
         | "keyframes_statement" => Some(MonadKind::Module),
 
-        // Constants & Top-level Lexical/Var Declarations (Rust, TS/JS, Go, C/C++)
+        // Constants, State Variables & Top-level Lexical/Var/Val Declarations (Rust, TS/JS, Go, C/C++, Scala, Solidity, Nix)
         "const_item"
         | "static_item"
         | "lexical_declaration"
         | "variable_declaration"
         | "const_declaration"
-        | "var_declaration" => Some(MonadKind::Constant),
+        | "var_declaration"
+        | "val_definition"
+        | "var_definition"
+        | "state_variable_declaration"
+        | "event_definition"
+        | "binding" => Some(MonadKind::Constant),
 
-        // Type Aliases & Type Declarations (Rust, TS, Go, C/C++)
+        // Type Aliases & Type Declarations (Rust, TS, Go, C/C++, Scala, Haskell)
         "type_item"
         | "type_alias_declaration"
         | "type_declaration"
-        | "type_definition" => Some(MonadKind::TypeAlias),
+        | "type_definition"
+        | "type_synomym"
+        | "type_alias" => Some(MonadKind::TypeAlias),
 
         _ => None,
     }
@@ -97,6 +124,7 @@ const EXTRACTABLE_KINDS: &[&str] = &[
     "lexical_declaration",
     // Python
     "function_definition",
+    "async_function_definition",
     "class_definition",
     // Go
     "method_declaration",
@@ -110,19 +138,43 @@ const EXTRACTABLE_KINDS: &[&str] = &[
     "namespace_definition",
     "type_definition",
     "preproc_function_def",
-    // Java / C# / Kotlin / Swift
+    // Java / C# / Kotlin / Swift / Scala
     "record_declaration",
     "struct_declaration",
     "object_declaration",
+    "object_definition",
+    "trait_definition",
+    "enum_definition",
+    "val_definition",
+    "var_definition",
     "protocol_declaration",
     "constructor_declaration",
+    "init_declaration",
+    "extension_declaration",
     "namespace_declaration",
-    // Ruby / PHP / Lua
+    // Solidity / Haskell / Nix
+    "contract_declaration",
+    "library_declaration",
+    "modifier_definition",
+    "event_definition",
+    "state_variable_declaration",
+    "function",
+    "data_type",
+    "adt",
+    "newtype",
+    "type_synomym",
+    "type_alias",
+    "class_decl",
+    "instance_decl",
+    "binding",
+    // Ruby / PHP / Lua / Bash
     "method",
     "singleton_method",
     "class",
     "module",
     "trait_declaration",
+    "function_definition_statement",
+    "local_function_definition_statement",
     // CSS / SCSS
     "rule_set",
     "keyframes_statement",
@@ -459,7 +511,8 @@ fn extract_with_ast_grep(
     monads
 }
 
-/// Fallback heuristic extractor for languages without ast-grep grammar or structured files (SQL, TOML, Markdown, etc.).
+/// Fallback structural extractor for languages without ast-grep grammar or structured files
+/// (Zig, Dart, Julia, OCaml, Clojure, GraphQL, Protobuf, Terraform/HCL, Shaders, SQL, TOML, Markdown, etc.).
 fn extract_with_heuristic(source_code: &str, ring: u32, language: &str) -> Vec<Monad> {
     let mut monads = Vec::new();
     let lines: Vec<&str> = source_code.lines().collect();
@@ -469,21 +522,48 @@ fn extract_with_heuristic(source_code: &str, ring: u32, language: &str) -> Vec<M
     let mut block_start_line: u32 = 1;
 
     let keywords: &[(&str, MonadKind)] = &[
+        ("pub fn ", MonadKind::Function),
         ("fn ", MonadKind::Function),
         ("function ", MonadKind::Function),
         ("func ", MonadKind::Function),
+        ("defp ", MonadKind::Function),
+        ("defmacro ", MonadKind::Function),
         ("def ", MonadKind::Function),
         ("sub ", MonadKind::Function),
+        ("(defn- ", MonadKind::Function),
+        ("(defn ", MonadKind::Function),
+        ("(defmacro ", MonadKind::Function),
+        ("let rec ", MonadKind::Function),
+        ("rpc ", MonadKind::Function),
+        ("mutable struct ", MonadKind::Struct),
         ("struct ", MonadKind::Struct),
         ("class ", MonadKind::Struct),
+        ("object ", MonadKind::Struct),
+        ("contract ", MonadKind::Struct),
+        ("library ", MonadKind::Module),
         ("record ", MonadKind::Struct),
+        ("(defrecord ", MonadKind::Struct),
+        ("message ", MonadKind::Struct),
+        ("service ", MonadKind::Trait),
+        ("resource ", MonadKind::Struct),
+        ("variable ", MonadKind::Constant),
+        ("output ", MonadKind::Constant),
+        ("input ", MonadKind::Struct),
+        ("type ", MonadKind::TypeAlias),
         ("enum ", MonadKind::Enum),
+        ("union ", MonadKind::Enum),
         ("impl ", MonadKind::Impl),
+        ("extension ", MonadKind::Impl),
+        ("mixin ", MonadKind::Trait),
         ("trait ", MonadKind::Trait),
         ("interface ", MonadKind::Trait),
         ("protocol ", MonadKind::Trait),
+        ("defprotocol ", MonadKind::Trait),
+        ("(defprotocol ", MonadKind::Trait),
+        ("defmodule ", MonadKind::Module),
         ("namespace ", MonadKind::Module),
         ("module ", MonadKind::Module),
+        ("(ns ", MonadKind::Module),
         ("CREATE TABLE ", MonadKind::Struct),
         ("create table ", MonadKind::Struct),
         ("CREATE VIEW ", MonadKind::Trait),
@@ -495,7 +575,7 @@ fn extract_with_heuristic(source_code: &str, ring: u32, language: &str) -> Vec<M
         let trimmed = line.trim();
         let line_num = (i as u32) + 1;
 
-        // Detect TOML `[section]` or Markdown `# Heading` or code keyword
+        // Detect TOML `[section]` or Markdown `# Heading` or Terraform `resource "type" "name"` or code keyword
         let matched = if (language == "toml" || language == "ini") && trimmed.starts_with('[') && trimmed.ends_with(']') {
             Some((trimmed.trim_matches(|c| c == '[' || c == ']').to_string(), MonadKind::Module))
         } else if (language == "md" || language == "mdx" || language == "markdown") && trimmed.starts_with('#') {
@@ -505,22 +585,43 @@ fn extract_with_heuristic(source_code: &str, ring: u32, language: &str) -> Vec<M
             } else {
                 None
             }
+        } else if (language == "tf" || language == "hcl" || language == "terraform")
+            && (trimmed.starts_with("resource ") || trimmed.starts_with("data ") || trimmed.starts_with("variable ") || trimmed.starts_with("output ") || trimmed.starts_with("module "))
+        {
+            let parts: Vec<&str> = trimmed
+                .split_whitespace()
+                .map(|p| p.trim_matches(|c| c == '"' || c == '{'))
+                .filter(|p| !p.is_empty())
+                .collect();
+            let kw = parts.first().copied().unwrap_or("resource");
+            let name = if parts.len() >= 3 {
+                format!("{}.{}", parts[1], parts[2])
+            } else if parts.len() >= 2 {
+                parts[1].to_string()
+            } else {
+                kw.to_string()
+            };
+            let kind = match kw {
+                "variable" | "output" => MonadKind::Constant,
+                "module" => MonadKind::Module,
+                _ => MonadKind::Struct,
+            };
+            Some((name, kind))
         } else {
             keywords.iter().find_map(|(kw, kind)| {
                 if let Some(pos) = trimmed.find(kw) {
-                    let after = &trimmed[pos + kw.len()..];
-                    let name: String = after
-                        .chars()
-                        .take_while(|c| c.is_alphanumeric() || *c == '_' || *c == '.')
-                        .collect();
-                    if !name.is_empty() {
-                        Some((name, kind.clone()))
-                    } else {
-                        None
+                    if pos == 0 || trimmed[..pos].trim().split_whitespace().all(|w| matches!(w, "pub" | "export" | "async" | "static" | "public" | "private" | "protected" | "abstract" | "final" | "open" | "inline")) {
+                        let after = trimmed[pos + kw.len()..].trim_start_matches('"');
+                        let name: String = after
+                            .chars()
+                            .take_while(|c| c.is_alphanumeric() || *c == '_' || *c == '.' || *c == '-')
+                            .collect();
+                        if !name.is_empty() {
+                            return Some((name, kind.clone()));
+                        }
                     }
-                } else {
-                    None
                 }
+                None
             })
         };
 
@@ -690,6 +791,24 @@ impl Foo {
         let toml_names: Vec<&str> = toml_monads.iter().map(|m| m.name.as_str()).collect();
         assert!(toml_names.contains(&"package"), "TOML should extract [package], got {:?}", toml_names);
         assert!(toml_names.contains(&"dependencies"), "TOML should extract [dependencies], got {:?}", toml_names);
+    }
+
+    #[test]
+    fn test_extended_polyglot_languages_extraction() {
+        let sol_source = "pragma solidity ^0.8.20;\ncontract Vault {\n    function deposit(uint256 amount) public {}\n}\n";
+        let sol_monads = extract_raw_monads_lang(sol_source, 1, "sol");
+        assert!(!sol_monads.is_empty(), "Solidity should extract Vault contract/functions");
+
+        let zig_source = "pub fn compute(a: u32) u32 {\n    return a + 1;\n}\n";
+        let zig_monads = extract_raw_monads_lang(zig_source, 1, "zig");
+        assert_eq!(zig_monads.len(), 1);
+        assert_eq!(zig_monads[0].name, "compute");
+
+        let tf_source = "resource \"aws_s3_bucket\" \"archive\" {\n  bucket = \"mandala\"\n}\nvariable \"region\" {\n  type = string\n}\n";
+        let tf_monads = extract_raw_monads_lang(tf_source, 1, "tf");
+        let tf_names: Vec<&str> = tf_monads.iter().map(|m| m.name.as_str()).collect();
+        assert!(tf_names.contains(&"aws_s3_bucket.archive"));
+        assert!(tf_names.contains(&"region"));
     }
 }
 

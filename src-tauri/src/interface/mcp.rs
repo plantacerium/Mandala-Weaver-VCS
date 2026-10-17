@@ -183,6 +183,12 @@ pub async fn handle_mcp_request(req: JsonRpcRequest) -> Option<JsonRpcResponse> 
                         "name": "Active Distillation Recipe (.mandala/distill.yaml)",
                         "mimeType": "text/yaml",
                         "description": "Current YAML distillation manifest if present in .mandala/distill.yaml"
+                    },
+                    {
+                        "uri": "mandala://languages",
+                        "name": "Supported Polyglot AST Languages (39 Languages)",
+                        "mimeType": "application/json",
+                        "description": "Matrix of all 39 supported programming languages, file extensions, and AST extraction engines"
                     }
                 ]
             })),
@@ -192,7 +198,7 @@ pub async fn handle_mcp_request(req: JsonRpcRequest) -> Option<JsonRpcResponse> 
             let params = req.params.unwrap_or(json!({}));
             let uri = params.get("uri").and_then(|v| v.as_str()).unwrap_or("");
             let root = find_project_root();
-            let db = match connect_db(root.as_deref()).await {
+            let db = match get_or_init_mcp_db(root.as_deref()).await {
                 Ok(d) => d,
                 Err(e) => {
                     return Some(JsonRpcResponse {
@@ -542,10 +548,31 @@ pub fn get_mcp_tools_schema() -> Vec<JsonValue> {
                 "required": ["template_yaml"]
             }
         }),
+        json!({
+            "name": "mandala_supported_languages",
+            "description": "List all 39 supported programming languages, file extensions, and Tree-sitter / polyglot AST extraction engines.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {}
+            }
+        }),
+        json!({
+            "name": "mandala_extract_ast",
+            "description": "Extract atomic Monads, 1-based line numbers, Vogel Golden Angle coordinates, BLAKE3 hashes, and outbound calls from source code or a file path across 39 supported languages (100% read-only in-memory).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "source_code": { "type": "string", "description": "Source code string to parse (optional if file_path is provided)" },
+                    "language": { "type": "string", "description": "Language or extension (e.g. 'rust', 'tsx', 'python', 'sol', 'scala', 'zig', 'tf', 'astro')" },
+                    "file_path": { "type": "string", "description": "Optional file path to read and extract monads from" },
+                    "ring": { "type": "integer", "description": "Target ring level for polar coordinates (default: 1)" }
+                }
+            }
+        }),
     ]
 }
 
-async fn read_mcp_resource(
+pub async fn read_mcp_resource(
     db: &Surreal<Db>,
     uri: &str,
     root: Option<&std::path::Path>,
@@ -628,13 +655,58 @@ async fn read_mcp_resource(
                 ))
             }
         }
+        "mandala://languages" => {
+            let langs = crate::language::Language::all_supported_info();
+            let payload = serde_json::to_string_pretty(&json!({
+                "total_supported_languages": langs.len(),
+                "languages": langs
+            }))
+            .unwrap_or_default();
+            Ok(("application/json".to_string(), payload))
+        }
         _ => Err(format!("Resource not found: {}", uri)),
     }
 }
 
+static MCP_DB_CACHE: std::sync::OnceLock<tokio::sync::Mutex<Option<Surreal<Db>>>> =
+    std::sync::OnceLock::new();
+
+/// Obtains a reusable SurrealDB handle for the MCP server.
+/// If `.mandala/db` is locked by a running Tauri desktop app, automatically falls back to an
+/// in-memory `Mem` database and hydrates it by scanning the project directory on-the-fly.
+async fn get_or_init_mcp_db(root: Option<&std::path::Path>) -> Result<Surreal<Db>, String> {
+    let mutex = MCP_DB_CACHE.get_or_init(|| tokio::sync::Mutex::new(None));
+    let mut guard = mutex.lock().await;
+    if let Some(ref existing) = *guard {
+        return Ok(existing.clone());
+    }
+
+    let db = match connect_db(root).await {
+        Ok(d) => d,
+        Err(_lock_err) => {
+            let mem_db = crate::persistence::surreal_bridge::connect_embedded()
+                .await
+                .map_err(|e| e.to_string())?;
+            if let Some(proj_root) = root {
+                let path_buf = proj_root.to_path_buf();
+                let _ = crate::synarchy::ProjectScanner::scan_and_index_with_db_mode(
+                    &mem_db,
+                    &path_buf,
+                    Some("mandala"),
+                )
+                .await;
+            }
+            mem_db
+        }
+    };
+
+    *guard = Some(db.clone());
+    Ok(db)
+}
+
 pub async fn execute_tool(name: &str, args: JsonValue) -> Result<String, String> {
     let root = find_project_root();
-    let db = connect_db(root.as_deref()).await.map_err(|e| e.to_string())?;
+    let db = get_or_init_mcp_db(root.as_deref()).await?;
     execute_tool_with_db(&db, name, args, root).await
 }
 
@@ -1289,6 +1361,58 @@ pub async fn execute_tool_with_db(
             });
             Ok(serde_json::to_string_pretty(&info).unwrap())
         }
+        "mandala_supported_languages" => {
+            let langs = crate::language::Language::all_supported_info();
+            let info = json!({
+                "total_supported_languages": langs.len(),
+                "extensions_count": crate::language::Language::code_extensions().len(),
+                "languages": langs
+            });
+            Ok(serde_json::to_string_pretty(&info).unwrap())
+        }
+        "mandala_extract_ast" => {
+            let ring = args
+                .get("ring")
+                .and_then(|v| v.as_u64())
+                .map(|r| r as u32)
+                .unwrap_or(1);
+
+            let (source, lang_str) = if let Some(fp) = args.get("file_path").and_then(|v| v.as_str()) {
+                let path = PathBuf::from(fp);
+                let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+                let ext = path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| {
+                        crate::language::detect_language(&path)
+                            .tree_sitter_name()
+                            .to_string()
+                    });
+                (content, ext)
+            } else {
+                let src = args
+                    .get("source_code")
+                    .and_then(|v| v.as_str())
+                    .ok_or("Provide either 'source_code' or 'file_path'")?
+                    .to_string();
+                let lang = args
+                    .get("language")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("rust")
+                    .to_string();
+                (src, lang)
+            };
+
+            let monads = crate::weaver::ast_extractor::extract_raw_monads_lang(&source, ring, &lang_str);
+            let resp = json!({
+                "language": lang_str,
+                "ring": ring,
+                "monads_extracted": monads.len(),
+                "monads": monads
+            });
+            Ok(serde_json::to_string_pretty(&resp).unwrap())
+        }
         _ => Err(format!("Unknown tool: {}", name)),
     }
 }
@@ -1408,7 +1532,7 @@ mod tests {
         .await
         .unwrap();
         let tools = tools_resp.result.unwrap()["tools"].as_array().unwrap().clone();
-        assert!(tools.len() >= 17, "Expected at least 17 MCP tools, got {}", tools.len());
+        assert!(tools.len() >= 19, "Expected at least 19 MCP tools, got {}", tools.len());
 
         // 2. Test tools on an isolated in-memory SurrealDB instance
         let db = connect_embedded().await?;
@@ -1497,6 +1621,29 @@ mod tests {
             .as_str()
             .unwrap()
             .contains("calcular_impuesto"));
+
+        // Supported languages (39+)
+        let langs_out = execute_tool_with_db(&db, "mandala_supported_languages", json!({}), None)
+            .await
+            .unwrap();
+        let langs_val: JsonValue = serde_json::from_str(&langs_out)?;
+        assert!(langs_val["total_supported_languages"].as_u64().unwrap() >= 38);
+
+        // Extract AST directly in-memory
+        let ast_out = execute_tool_with_db(
+            &db,
+            "mandala_extract_ast",
+            json!({
+                "source_code": "contract Treasury {\n  function withdraw() public {}\n}",
+                "language": "sol",
+                "ring": 2
+            }),
+            None,
+        )
+        .await
+        .unwrap();
+        let ast_val: JsonValue = serde_json::from_str(&ast_out)?;
+        assert!(ast_val["monads_extracted"].as_u64().unwrap() >= 1);
 
         Ok(())
     }

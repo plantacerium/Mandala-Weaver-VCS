@@ -56,12 +56,22 @@ async fn get_bindu_name(db: &Surreal<Db>) -> String {
 #[tauri::command]
 pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_bridge::SharedDb>) -> Result<String, String> {
     let db_conn = db.read().await;
-    let all_monads: Vec<Monad> = get_all_monads(&*db_conn)
+    let mut all_monads: Vec<Monad> = get_all_monads(&*db_conn)
         .await
         .map_err(|e| e.to_string())?
         .into_iter()
         .filter(|m| !m.is_archived && m.name != "mandala_state.json")
         .collect();
+
+    // Auto-heal legacy or skewed ring distributions (e.g. >5 watcher rings or single-ring Git dumps)
+    if crate::synarchy::ProjectScanner::needs_rebalance(&all_monads) {
+        for m in &mut all_monads {
+            m.ring = crate::synarchy::ProjectScanner::classify_monad_ring(m);
+        }
+    }
+
+    // Apply coupled Golden Ratio annular bounds + Vogel Sunflower Phyllotaxis (r_n, θ_n)
+    crate::synarchy::ProjectScanner::apply_golden_vogel_layout(&mut all_monads, 320.0);
 
     let mut edges = get_all_edges(&*db_conn).await.unwrap_or_default();
 
@@ -99,48 +109,16 @@ pub async fn export_mandala_state(db: State<'_, crate::persistence::surreal_brid
     let total_monads = all_monads.len();
     let max_ring = all_monads.iter().map(|m| m.ring).max().unwrap_or(0);
 
-    // Agrupar por anillos
-    let mut rings_map: std::collections::HashMap<u32, Vec<Monad>> = std::collections::HashMap::new();
+    // Group by rings (preserving deterministic Vogel order within each ring)
+    let mut rings_map: std::collections::BTreeMap<u32, Vec<Monad>> = std::collections::BTreeMap::new();
     for m in all_monads {
         rings_map.entry(m.ring).or_default().push(m);
     }
 
-    let mut constellations: Vec<ConstellationDto> = rings_map.into_iter()
-        .map(|(ring_level, mut monads)| {
-            let total = monads.len();
-            if total > 0 {
-                let ring_gap = 70.0;
-                let base_ring_radius = 50.0 + ((ring_level as f64) - 1.0) * ring_gap;
-                let band_width = crate::geometry::polar_coordinate::compute_adaptive_band_width(
-                    base_ring_radius,
-                    ring_gap,
-                    total,
-                );
-
-                let unique_angles: std::collections::HashSet<i64> = monads.iter()
-                    .map(|m| m.coord.theta.round() as i64)
-                    .collect();
-                let should_redistribute_angles = unique_angles.len() < total.min(32);
-                let offset = ((ring_level % 2) as f64) * (180.0 / total as f64);
-
-                for (idx, monad) in monads.iter_mut().enumerate() {
-                    if should_redistribute_angles {
-                        monad.coord.theta = ((360.0 / total as f64) * (idx as f64) + offset) % 360.0;
-                    }
-                    if band_width > 0.0 {
-                        let r_offset = crate::geometry::polar_coordinate::compute_jittered_radius_offset(idx, band_width);
-                        monad.coord.r = base_ring_radius + r_offset;
-                    } else {
-                        monad.coord.r = base_ring_radius;
-                    }
-                }
-            }
-            ConstellationDto { ring_level, monads }
-        })
+    let constellations: Vec<ConstellationDto> = rings_map
+        .into_iter()
+        .map(|(ring_level, monads)| ConstellationDto { ring_level, monads })
         .collect();
-    
-    // Sort constellations by ring level for consistent output
-    constellations.sort_by_key(|c| c.ring_level);
 
     let state = MandalaState {
         bindu_name,
@@ -485,8 +463,6 @@ mod tests {
         };
 
         let json = serde_json::to_string_pretty(&state).unwrap();
-        println!(">>> test_export: json length = {}, total_monads = {}", json.len(), state.total_monads);
-        let _ = std::fs::write("../public/mandala_state.json", &json);
         assert!(json.len() > 100);
     }
 }

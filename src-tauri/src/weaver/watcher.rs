@@ -95,7 +95,7 @@ pub fn spawn_watcher(app_handle: AppHandle, watch_path: impl AsRef<Path>) -> Sha
                                 {
                                     let db_guard = db_state.read().await;
                                     if let Ok(ring) =
-                                        crate::weaver::expand_from_source(&*db_guard, &path_clone).await
+                                        crate::weaver::sync_file_in_place(&*db_guard, &path_clone).await
                                     {
                                         ring_expanded = Some(ring);
                                     }

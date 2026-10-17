@@ -1,7 +1,8 @@
+use serde::Serialize;
 use std::path::Path;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub enum Language {
     Rust,
     TypeScript,
@@ -25,7 +26,32 @@ pub enum Language {
     Toml,
     Sql,
     Markdown,
+    Scala,
+    Elixir,
+    Haskell,
+    Solidity,
+    Nix,
+    Dart,
+    Zig,
+    Julia,
+    R,
+    Perl,
+    OCaml,
+    Erlang,
+    Clojure,
+    GraphQL,
+    Protobuf,
+    Terraform,
+    Shader,
     Unknown,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LanguageSupportInfo {
+    pub id: &'static str,
+    pub display_name: &'static str,
+    pub extensions: &'static [&'static str],
+    pub engine: &'static str,
 }
 
 impl Language {
@@ -53,6 +79,23 @@ impl Language {
             "toml" => Language::Toml,
             "sql" => Language::Sql,
             "md" | "mdx" | "markdown" => Language::Markdown,
+            "scala" | "sc" => Language::Scala,
+            "ex" | "exs" | "elixir" => Language::Elixir,
+            "hs" | "lhs" | "haskell" => Language::Haskell,
+            "sol" | "solidity" => Language::Solidity,
+            "nix" => Language::Nix,
+            "dart" => Language::Dart,
+            "zig" => Language::Zig,
+            "jl" | "julia" => Language::Julia,
+            "r" | "rmd" => Language::R,
+            "pl" | "pm" | "perl" => Language::Perl,
+            "ml" | "mli" | "fs" | "fsx" | "ocaml" => Language::OCaml,
+            "erl" | "hrl" | "erlang" => Language::Erlang,
+            "clj" | "cljs" | "cljc" | "edn" | "clojure" => Language::Clojure,
+            "graphql" | "gql" => Language::GraphQL,
+            "proto" | "protobuf" => Language::Protobuf,
+            "tf" | "hcl" | "terraform" => Language::Terraform,
+            "wgsl" | "glsl" | "hlsl" | "vert" | "frag" | "comp" => Language::Shader,
             _ => Language::Unknown,
         }
     }
@@ -71,6 +114,12 @@ impl Language {
             if content.contains("ruby") {
                 return Language::Ruby;
             }
+            if content.contains("elixir") {
+                return Language::Elixir;
+            }
+            if content.contains("perl") {
+                return Language::Perl;
+            }
         }
         if content.contains(": React.FC") || content.contains("React.ReactElement") || content.contains("interface ") {
             return Language::TypeScript;
@@ -81,17 +130,87 @@ impl Language {
         if content.contains("package ") && content.contains("func ") {
             return Language::Go;
         }
+        if content.contains("defmodule ") && content.contains(" do") {
+            return Language::Elixir;
+        }
+        if content.contains("pragma solidity") || content.contains("contract ") {
+            return Language::Solidity;
+        }
         Language::Unknown
     }
 
-    /// Extensiones de código fuente principal para escaneo automático de proyectos
+    /// Extensiones de código fuente principal para escaneo automático de proyectos (39 lenguajes)
     pub fn code_extensions() -> &'static [&'static str] {
         &[
             "rs", "ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs",
             "py", "pyi", "go", "c", "h", "cpp", "cc", "cxx", "hpp", "hh",
             "java", "cs", "kt", "kts", "swift", "rb", "php", "lua",
             "sh", "bash", "astro", "vue", "svelte", "css", "scss", "sql",
+            "scala", "sc", "ex", "exs", "hs", "lhs", "sol", "nix",
+            "dart", "zig", "jl", "r", "pl", "pm", "ml", "mli", "fs",
+            "erl", "hrl", "clj", "cljs", "cljc", "graphql", "gql",
+            "proto", "tf", "hcl", "wgsl", "glsl", "hlsl",
         ]
+    }
+
+    pub fn all_languages() -> &'static [Language] {
+        &[
+            Language::Rust,
+            Language::TypeScript,
+            Language::JavaScript,
+            Language::Python,
+            Language::Go,
+            Language::C,
+            Language::Cpp,
+            Language::Java,
+            Language::CSharp,
+            Language::Kotlin,
+            Language::Swift,
+            Language::Ruby,
+            Language::Php,
+            Language::Lua,
+            Language::Shell,
+            Language::Html,
+            Language::Css,
+            Language::Json,
+            Language::Yaml,
+            Language::Toml,
+            Language::Sql,
+            Language::Markdown,
+            Language::Scala,
+            Language::Elixir,
+            Language::Haskell,
+            Language::Solidity,
+            Language::Nix,
+            Language::Dart,
+            Language::Zig,
+            Language::Julia,
+            Language::R,
+            Language::Perl,
+            Language::OCaml,
+            Language::Erlang,
+            Language::Clojure,
+            Language::GraphQL,
+            Language::Protobuf,
+            Language::Terraform,
+            Language::Shader,
+        ]
+    }
+
+    pub fn all_supported_info() -> Vec<LanguageSupportInfo> {
+        Self::all_languages()
+            .iter()
+            .map(|lang| LanguageSupportInfo {
+                id: lang.tree_sitter_name(),
+                display_name: lang.display_name(),
+                extensions: lang.extensions(),
+                engine: if lang.ast_grep_lang().is_some() {
+                    "tree-sitter (ast-grep)"
+                } else {
+                    "polyglot-structural-parser"
+                },
+            })
+            .collect()
     }
 
     pub fn extensions(&self) -> &'static [&'static str] {
@@ -118,6 +237,23 @@ impl Language {
             Language::Toml => &["toml"],
             Language::Sql => &["sql"],
             Language::Markdown => &["md", "mdx"],
+            Language::Scala => &["scala", "sc"],
+            Language::Elixir => &["ex", "exs"],
+            Language::Haskell => &["hs", "lhs"],
+            Language::Solidity => &["sol"],
+            Language::Nix => &["nix"],
+            Language::Dart => &["dart"],
+            Language::Zig => &["zig"],
+            Language::Julia => &["jl"],
+            Language::R => &["r", "rmd"],
+            Language::Perl => &["pl", "pm"],
+            Language::OCaml => &["ml", "mli", "fs", "fsx"],
+            Language::Erlang => &["erl", "hrl"],
+            Language::Clojure => &["clj", "cljs", "cljc", "edn"],
+            Language::GraphQL => &["graphql", "gql"],
+            Language::Protobuf => &["proto"],
+            Language::Terraform => &["tf", "hcl"],
+            Language::Shader => &["wgsl", "glsl", "hlsl", "vert", "frag", "comp"],
             Language::Unknown => &[],
         }
     }
@@ -146,6 +282,23 @@ impl Language {
             Language::Toml => "toml",
             Language::Sql => "sql",
             Language::Markdown => "markdown",
+            Language::Scala => "scala",
+            Language::Elixir => "elixir",
+            Language::Haskell => "haskell",
+            Language::Solidity => "solidity",
+            Language::Nix => "nix",
+            Language::Dart => "dart",
+            Language::Zig => "zig",
+            Language::Julia => "julia",
+            Language::R => "r",
+            Language::Perl => "perl",
+            Language::OCaml => "ocaml",
+            Language::Erlang => "erlang",
+            Language::Clojure => "clojure",
+            Language::GraphQL => "graphql",
+            Language::Protobuf => "protobuf",
+            Language::Terraform => "terraform",
+            Language::Shader => "wgsl",
             Language::Unknown => "",
         }
     }
@@ -174,6 +327,23 @@ impl Language {
             Language::Toml => "TOML",
             Language::Sql => "SQL",
             Language::Markdown => "Markdown",
+            Language::Scala => "Scala",
+            Language::Elixir => "Elixir",
+            Language::Haskell => "Haskell",
+            Language::Solidity => "Solidity",
+            Language::Nix => "Nix",
+            Language::Dart => "Dart",
+            Language::Zig => "Zig",
+            Language::Julia => "Julia",
+            Language::R => "R",
+            Language::Perl => "Perl",
+            Language::OCaml => "OCaml/F#",
+            Language::Erlang => "Erlang",
+            Language::Clojure => "Clojure",
+            Language::GraphQL => "GraphQL",
+            Language::Protobuf => "Protocol Buffers",
+            Language::Terraform => "Terraform/HCL",
+            Language::Shader => "WGSL/GLSL Shader",
             Language::Unknown => "Unknown",
         }
     }
@@ -188,7 +358,8 @@ impl Language {
             Language::C => ast_grep_language::SupportLang::from_str("c").ok(),
             Language::Cpp => ast_grep_language::SupportLang::from_str("cpp").ok(),
             Language::Java => ast_grep_language::SupportLang::from_str("java").ok(),
-            Language::CSharp => ast_grep_language::SupportLang::from_str("csharp").ok()
+            Language::CSharp => ast_grep_language::SupportLang::from_str("csharp")
+                .ok()
                 .or_else(|| ast_grep_language::SupportLang::from_str("cs").ok()),
             Language::Kotlin => ast_grep_language::SupportLang::from_str("kotlin").ok(),
             Language::Swift => ast_grep_language::SupportLang::from_str("swift").ok(),
@@ -201,7 +372,12 @@ impl Language {
             Language::Json => ast_grep_language::SupportLang::from_str("json").ok(),
             Language::Yaml => ast_grep_language::SupportLang::from_str("yaml").ok(),
             Language::Sql => ast_grep_language::SupportLang::from_str("sql").ok(),
-            Language::Toml | Language::Markdown | Language::Unknown => None,
+            Language::Scala => ast_grep_language::SupportLang::from_str("scala").ok(),
+            Language::Elixir => ast_grep_language::SupportLang::from_str("elixir").ok(),
+            Language::Haskell => ast_grep_language::SupportLang::from_str("haskell").ok(),
+            Language::Solidity => ast_grep_language::SupportLang::from_str("solidity").ok(),
+            Language::Nix => ast_grep_language::SupportLang::from_str("nix").ok(),
+            _ => None,
         }
     }
 }
@@ -263,6 +439,18 @@ mod tests {
         assert_eq!(detect_language(Path::new("Layout.astro")), Language::Html);
         assert_eq!(detect_language(Path::new("styles.scss")), Language::Css);
         assert_eq!(detect_language(Path::new("schema.sql")), Language::Sql);
+        assert_eq!(detect_language(Path::new("Actor.scala")), Language::Scala);
+        assert_eq!(detect_language(Path::new("worker.ex")), Language::Elixir);
+        assert_eq!(detect_language(Path::new("Parser.hs")), Language::Haskell);
+        assert_eq!(detect_language(Path::new("Vault.sol")), Language::Solidity);
+        assert_eq!(detect_language(Path::new("flake.nix")), Language::Nix);
+        assert_eq!(detect_language(Path::new("main.zig")), Language::Zig);
+        assert_eq!(detect_language(Path::new("app.dart")), Language::Dart);
+        assert_eq!(detect_language(Path::new("schema.graphql")), Language::GraphQL);
+        assert_eq!(detect_language(Path::new("service.proto")), Language::Protobuf);
+        assert_eq!(detect_language(Path::new("main.tf")), Language::Terraform);
+        assert_eq!(detect_language(Path::new("shader.wgsl")), Language::Shader);
+        assert!(Language::all_supported_info().len() >= 38);
     }
 
     #[test]
@@ -276,6 +464,8 @@ mod tests {
         assert_eq!(Language::TypeScript.display_name(), "TypeScript");
         assert_eq!(Language::Python.display_name(), "Python");
         assert_eq!(Language::Cpp.display_name(), "C++");
+        assert_eq!(Language::Solidity.display_name(), "Solidity");
+        assert_eq!(Language::Elixir.display_name(), "Elixir");
     }
 
     #[test]
@@ -285,5 +475,7 @@ mod tests {
         assert_eq!(Language::JavaScript.tree_sitter_name(), "javascript");
         assert_eq!(Language::Python.tree_sitter_name(), "python");
         assert_eq!(Language::Go.tree_sitter_name(), "go");
+        assert_eq!(Language::Scala.tree_sitter_name(), "scala");
+        assert_eq!(Language::Haskell.tree_sitter_name(), "haskell");
     }
 }

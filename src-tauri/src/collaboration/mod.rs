@@ -279,15 +279,14 @@ pub async fn merge_mandala(
     })
 }
 
-/// Imports git history as initial concentric rings (read-only bridge).
-/// Each commit in chronological order becomes a ring, extracting real source code AST Monads.
+/// Imports git repository with full structural and visual parity with Weaver scan,
+/// stratifying AST Monads across the 5 Golden Harmonic Rings while preserving Git lineage.
 pub async fn import_git_history(
     db: &Surreal<Db>,
     repo_path: &PathBuf,
 ) -> anyhow::Result<u32> {
     use std::process::Command;
 
-    // Use git log in reverse (chronological order: oldest commit -> Ring 1)
     let git_log = Command::new("git")
         .args(["log", "--reverse", "--format=%H|%s"])
         .current_dir(repo_path)
@@ -297,77 +296,14 @@ pub async fn import_git_history(
         anyhow::bail!("Failed to read git history: {}", String::from_utf8_lossy(&git_log.stderr));
     }
 
-    let commits_output = String::from_utf8_lossy(&git_log.stdout);
-    let commit_lines: Vec<&str> = commits_output.lines().filter(|l| !l.is_empty()).collect();
-    if commit_lines.is_empty() {
-        return Ok(0);
-    }
+    let entry = crate::synarchy::ProjectScanner::scan_and_index_with_db_mode(
+        db,
+        repo_path,
+        Some("git"),
+    )
+    .await?;
 
-    let max_commits = commit_lines.len().min(50);
-    let mut ring = 0u32;
-    let source_extensions = crate::language::Language::code_extensions();
-
-    for (commit_idx, line) in commit_lines.iter().take(max_commits).enumerate() {
-        let parts: Vec<&str> = line.splitn(2, '|').collect();
-        if parts.is_empty() {
-            continue;
-        }
-        let commit_hash = parts[0];
-
-        ring = (commit_idx as u32) + 1;
-
-        let diff_output = Command::new("git")
-            .args(["diff-tree", "--no-commit-id", "-r", "--name-only", commit_hash])
-            .current_dir(repo_path)
-            .output()?;
-
-        let diff_stdout = String::from_utf8_lossy(&diff_output.stdout);
-        let files: Vec<&str> = diff_stdout.lines()
-            .filter(|l| !l.is_empty())
-            .filter(|f| {
-                let ext = f.rsplit('.').next().unwrap_or("");
-                source_extensions.contains(&ext)
-            })
-            .collect();
-
-        if files.is_empty() {
-            continue;
-        }
-
-        let previous_monads = if ring > 1 {
-            crate::persistence::surreal_bridge::get_ring(db, ring - 1).await.unwrap_or_default()
-        } else {
-            vec![]
-        };
-
-        for file in files.iter().take(15) {
-            let show_arg = format!("{}:{}", commit_hash, file);
-            let show_output = Command::new("git")
-                .args(["show", &show_arg])
-                .current_dir(repo_path)
-                .output();
-
-            if let Ok(out) = show_output {
-                if out.status.success() {
-                    let content = String::from_utf8_lossy(&out.stdout).to_string();
-                    let lang = crate::language::detect_language(std::path::Path::new(file));
-                    let monads = crate::weaver::ast_extractor::extract_raw_monads_lang(
-                        &content,
-                        ring,
-                        lang.tree_sitter_name(),
-                    );
-
-                    for monad in monads {
-                        let parent = previous_monads.iter().find(|p| p.name == monad.name);
-                        let parent_id = parent.map(|p| p.id.as_str());
-                        let _ = insert_and_link(db, &monad, parent_id).await;
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(ring)
+    Ok(entry.ring_count.max(1))
 }
 
 use surrealdb::Surreal;
