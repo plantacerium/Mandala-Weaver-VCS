@@ -2,7 +2,7 @@
 name = "mandala-weaver"
 version = "0.1.0"
 description = "VCS Espacial y Radial"
-authors = ["Tu Nombre"]
+authors = ["Plantacerium"]
 edition = "2021"
 
 [profile.release]
